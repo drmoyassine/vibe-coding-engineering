@@ -17,14 +17,15 @@ The cost isn't just inconvenience — it's **repeated work**. Re-litigating deci
 
 ### Layer 1 — Content (the artifacts)
 
-Five core documents, each with a clear purpose and privacy boundary:
+Six core documents, each with a clear purpose and privacy boundary:
 
 | Document | Purpose | Public? | Source of truth |
 |---|---|---|---|
-| **VISION.md** | Why we exist, north-star direction, problem/solution framing | ✅ Public | This file — markdown |
+| **VISION.md** | Why we exist, north-star direction, problem/solution framing | ✅ Public | Markdown with frontmatter per theme |
 | **ARCHITECTURE.md** | How the system works — data model, key patterns, design decisions | ❌ Private | Markdown + ADR-style records |
-| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities | ✅ Public | **Generated** from frontmatter items (e.g., `roadmap/ROADMAP-0042.md`) |
-| **TASKS.md** | WBS of roadmap — tasks with status, owners, dependencies | ❌ Private | **Generated** from frontmatter items (e.g., `tasks/TASK-0142.md`) |
+| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities | ✅ Public | Markdown with frontmatter per item |
+| **TASKS.md** | WBS of roadmap — tasks with status, owners, dependencies | ❌ Private | Markdown with frontmatter per task |
+| **DECISIONS.md** | Architectural/product/technical decisions with context & rationale | ❌ Private | Markdown with frontmatter per decision |
 | **BUGS** | Bug tracker, platform health | ✅ Public | **GitHub Issues** (no markdown file — the Issues *are* the source) |
 
 Plus:
@@ -33,16 +34,22 @@ Plus:
 
 **Key pattern:** interactive documents (ROADMAP, BUGS) have a **canonical markdown source** (read-only, version-controlled) AND a **paired intake tool**. Users never write the canonical doc; they interact with the intake tool (Fider, GitHub Discussions, GitHub Issues). Promotion into the curated doc is a privileged act enforced by the tool's permissions.
 
-### Layer 2 — Discipline (the `/product-docs` skill)
+### Layer 2 — Discipline (the skills)
 
-A Claude skill that enforces structure, handles assembly, and prevents drift:
+Four Claude skills that enforce structure, handle updates, and prevent drift:
 
-- **Schema enforcement** — each doc type has a frontmatter contract (what fields a roadmap item needs, what a task needs). The skill validates on ingest.
-- **Assembly** — `ROADMAP.md` and `TASKS.md` are *generated* from their fragment files (`roadmap/*.md`, `tasks/*.md`). Run `/product-docs reconcile` to regenerate.
-- **Reconciliation** — graduating a roadmap proposal → task, syncing GitHub Issues → the BUGS view, detecting orphaned items.
-- **Canonical definition** — the skill *is* the framework. If you want to change how ROADMAP items are structured, you edit the skill.
+- **`/tasks`** — Add, update, complete, list, and reconcile tasks in TASKS.md
+- **`/roadmap`** — Add, update, graduate (→ tasks), list, and reconcile roadmap items in ROADMAP.md
+- **`/bugs`** — Create, resolve, list, and sync bugs between GitHub Issues and product_failures table
+- **`/decisions`** — Add, update, supersede, list, and reconcile decisions in DECISIONS.md
 
-The skill is the carrier — not a system prompt (too expensive for 90% of sessions) and not "a framework" (that's the *future* generalization of this skill beyond your repos). For now, it's just a skill you invoke when direction-changing work lands.
+Each skill:
+- Validates frontmatter schemas on add/update
+- Handles list filtering (by status, priority, etc.)
+- Provides reconciliation (detects orphans, validates cross-links)
+- Commits with structured messages ending with `Co-Authored-By: Claude <noreply@anthropic.com>`
+
+Skills are the carrier — not a system prompt (too expensive for 90% of sessions). Invoke when direction-changing work lands.
 
 ### Layer 3 — Trigger (the thin hook)
 
@@ -65,8 +72,9 @@ That's it. No always-on tax. The skill fires when *needed*, not every session.
 Six months from now, a contributor joins your project. They ask: *"What's the architecture? What are we building? What's blocking the next release?"*
 
 - They open `ARCHITECTURE.md` — key patterns, data model, design decisions are all there, with links to the specific items that motivated them.
-- They open `ROADMAP.md` — quarters are clearly scoped, priorities are visible, and every item links back to the discussion or bug that spawned it.
-- They open `TASKS.md` — tasks have owners, status, dependencies. They can filter by status, priority, or assignee.
+- They open `ROADMAP.md` — quarters are clearly scoped, priorities are visible, and every item links back to VISION themes and forward to tasks.
+- They open `TASKS.md` — tasks have owners, status, dependencies, and bidirectional links to roadmap items and decisions.
+- They open `DECISIONS.md` — architectural decisions are captured with context, rationale, and consequences.
 - They search GitHub Issues — bugs are public, commentable, and their status flows back into the planning view.
 
 And when they ship a feature, they run `/product-docs reconcile` — and VISION/ARCHITECTURE/ROADMAP/TASKS all update to reflect the new reality. No rot. No drift. No "I swear we discussed this somewhere."
@@ -79,12 +87,24 @@ And when they ship a feature, they run `/product-docs reconcile` — and VISION/
 
 It's a **documentation framework** optimized for AI-assisted engineering. One job: keep the canonical product context in sync, queryable, and discoverable — by humans and by AI.
 
-## Next steps
+## Implementation pattern (from studygram-app)
 
-1. **Create the remaining core docs** — `ARCHITECTURE.md`, `ROADMAP.md` (seed with `studygram-platform-roadmap.md` content), `TASKS.md` (seed with existing task list).
-2. **Build the `/product-docs` skill** — define schemas, assembly logic, reconciliation rules.
-3. **Choose ROADMAP intake tool** — Fider (better UX, new infra) or GitHub Discussions (zero infra, clunkier).
-4. **Wire GitHub Issues as BUGS source** — no `BUGS.md` file; the skill queries Issues directly.
-5. **Add automation** — GitHub Actions or n8n workflows that watch the external tools and push fragments into the repo.
+**Core docs (6):**
+- ROADMAP.md, TASKS.md, DECISIONS.md — created with markdown frontmatter per item
+- BUGS — GitHub Issues (no markdown file)
+- VISION.md, ARCHITECTURE.md — planned
+
+**Skills (4):**
+- /tasks, /roadmap, /bugs, /decisions — each handles list/add/update/reconcile
+
+**Schema patterns (URL-based cross-linking):**
+- Tasks → Roadmap via `roadmap_item` (URL)
+- Tasks → Bugs via `related_bugs` (URLs)
+- Tasks → Decisions via `related_decisions` (URLs)
+- Roadmap items → Vision via `vision_theme` (URL)
+- Roadmap items → Tasks via `related_tasks` (URLs)
+- Decisions → Tasks/Roadmap via `related_tasks`/`related_roadmap_items` (URLs)
+
+**Key insight:** URLs in frontmatter enable bidirectional navigation and make cross-doc dependencies machine-readable. GitHub blob URLs (`https://github.com/user/repo/blob/main/FILE.md#ID`) are the canonical reference format.
 
 This framework is the substrate for everything you ship. Start simple, evolve when you feel pain.

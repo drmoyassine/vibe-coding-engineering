@@ -14,8 +14,9 @@ This repo is **not** an app. It's the definition of a system. The consumers are 
 |---|---|---|---|
 | **VISION.md** | Why the framework exists, north-star direction, success criteria | Rarely — only when the framing changes |
 | **ARCHITECTURE.md** | How the framework works — schemas, assembly rules, sync flows | When you add a new doc type or change a schema |
-| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities (generated) | Via `/product-docs reconcile` (don't edit directly) |
-| **TASKS.md** | WBS of roadmap — tasks, status, owners, dependencies (generated) | Via `/product-docs reconcile` (don't edit directly) |
+| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities | Via `/roadmap reconcile` |
+| **TASKS.md** | WBS of roadmap — tasks, status, owners, dependencies | Via `/tasks reconcile` |
+| **DECISIONS.md** | Architectural/product/technical decisions | Via `/decisions reconcile` |
 | **BUGS** | Bug tracker (GitHub Issues — no markdown file) | Create/edit Issues directly |
 | **AGENTS.md** | Agent profiles, tool/skill catalogs, context-gating rules | When agent tooling changes |
 | **CLAUDE.md** | This file — repo-level instructions for Claude | When the workflow changes |
@@ -24,109 +25,127 @@ This repo is **not** an app. It's the definition of a system. The consumers are 
 
 ### Markdown is source of truth for prose, frontmatter for structure
 
-- Prose sections (VISION, ARCHITECTURE) are edited directly as markdown.
-- Structured sections (ROADMAP items, tasks) are **fragment files** with YAML frontmatter (`roadmap/ROADMAP-0042.md`, `tasks/TASK-0142.md`).
-- The rendered docs (`ROADMAP.md`, `TASKS.md`) are **generated** from fragments — never edit them directly.
+- All docs use YAML frontmatter for machine-readable metadata (id, status, links, etc.)
+- Prose lives in the markdown body below the frontmatter
+- Items live directly in the doc (not separate fragment files) — one ROADMAP.md, one TASKS.md, one DECISIONS.md
+- Cross-linking uses GitHub blob URLs: `https://github.com/user/repo/blob/main/FILE.md#ID`
 
-### Frontmatter schema
+### Frontmatter schemas
 
-Roadmap item (`roadmap/ROADMAP-XXXX.md`):
+**Task (`TASKS.md`):**
 ```yaml
 ---
-id: ROADMAP-XXXX
-title: Short title
-status: proposed | approved | in-progress | completed | cancelled
-priority: P0 | P1 | P2 | P3
-quarter: Q1 | Q2 | Q3 | Q4
-depends_on:
-  - ROADMAP-YYYY
-owners:
-  - drmoy
-related_issues:
-  - 42
-related_decisions:
-  - ARCH-XXXX
-last_updated: 2026-08-12
----
-
-Full prose description of the item, including:
-- What problem it solves
-- What the implementation looks like
-- Open decisions or blockers
-```
-
-Task (`tasks/TASK-XXXX.md`):
-```yaml
----
-id: TASK-XXXX
-title: Short title
+id: TASK-001
+title: Short description
+description: One-line summary
 status: pending | in-progress | completed | cancelled
 priority: P0 | P1 | P2 | P3
-roadmap_item: ROADMAP-XXXX
-assignee: drmoy
+roadmap_item: https://github.com/user/repo/blob/main/ROADMAP.md#ROADMAP-001
+assignee:
 depends_on:
-  - TASK-YYYY
+  - https://github.com/user/repo/blob/main/TASKS.md#TASK-000
 related_bugs:
-  - 123
-estimated_hours: 8
+  - https://github.com/user/repo/issues/42
+related_decisions:
+  - https://github.com/user/repo/blob/main/DECISIONS.md#DEC-001
 last_updated: 2026-08-12
 ---
 
-Task description, acceptance criteria, implementation notes.
+Full prose description, acceptance criteria, implementation notes.
 ```
 
-### The `/product-docs` skill
+**Roadmap item (`ROADMAP.md`):**
+```yaml
+---
+id: ROADMAP-001
+title: PowerPoint support
+description: Support pptx uploads and text extraction
+quarter: Q1
+status: Deferred | In Progress | Completed
+priority: P1
+vision_theme: https://github.com/user/repo/blob/main/VISION.md#document-intelligence
+related_tasks:
+  - https://github.com/user/repo/blob/main/TASKS.md#TASK-006
+related_decisions:
+  - https://github.com/user/repo/blob/main/DECISIONS.md#DEC-002
+last_updated: 2026-08-12
+---
 
-When you complete direction-changing work (features, refactorings, decisions), run:
-
+Problem, solution, dependencies.
 ```
-/product-docs reconcile
+
+**Decision (`DECISIONS.md`):**
+```yaml
+---
+id: DEC-001
+title: Short description
+status: accepted | deprecated | superseded
+context: What problem led to this decision
+decision: What we decided
+rationale: Why this option over alternatives
+consequences: Impact (positive + negative)
+superseded_by: https://github.com/user/repo/blob/main/DECISIONS.md#DEC-002
+related_tasks:
+  - https://github.com/user/repo/blob/main/TASKS.md#TASK-001
+related_roadmap_items:
+  - https://github.com/user/repo/blob/main/ROADMAP.md#ROADMAP-001
+last_updated: 2026-08-12
+---
+
+Full prose expansion.
 ```
 
-This:
-1. Validates frontmatter schemas across all fragment files
-2. Regenerates `ROADMAP.md` from `roadmap/*.md`
-3. Regenerates `TASKS.md` from `tasks/*.md`
-4. Syncs GitHub Issues → BUGS view (no file, but the skill can query)
-5. Detects orphans (items that reference non-existent dependencies)
-6. Commits the changes with a structured message
+### The four skills
 
-The skill is the **canonical definition** of the framework. If you want to change how ROADMAP items are structured, you edit the skill — not this file.
+When you complete direction-changing work, invoke the appropriate skill:
+
+- **`/tasks reconcile`** — Validate task schemas, detect orphans, regenerate if needed
+- **`/roadmap reconcile`** — Validate roadmap schemas, detect orphans, regenerate if needed
+- **`/decisions reconcile`** — Validate decision schemas, detect superseded items, regenerate if needed
+- **`/bugs sync`** — Cross-reference GitHub Issues with product_failures table
+
+Skills are the **canonical definition** of the framework. If you want to change how items are structured, you edit the skill — not this file.
 
 ### External tool integrations
 
-- **BUGS:** GitHub Issues (`https://github.com/drmoyassine/vibe-coding-engineering/issues`). Labels: `bug`, `feature`, `question`, `platform-health`.
-- **ROADMAP proposals:** Fider (self-hosted) OR GitHub Discussions (zero infra). Decision pending.
+- **BUGS:** GitHub Issues. Labels: `bug`, `feature`, `question`, `platform-health`.
+- **ROADMAP intake:** (Future) Fider (self-hosted) OR GitHub Discussions (zero infra).
 
-Automations (GitHub Actions, n8n) watch these tools and push fragments into the repo. The skill then ingests and assembles them.
+Automations (GitHub Actions, n8n) can watch these tools and trigger skills to update docs.
 
 ## How to work with this repo
 
 ### Adding a roadmap item
 
-1. Create `roadmap/ROADMAP-XXXX.md` with the frontmatter schema above.
-2. Run `/product-docs reconcile` to update `ROADMAP.md`.
-3. Commit with a message like: `Add ROADMAP-XXXX: Context-gated tools/skills`.
+1. Edit `ROADMAP.md`, add a new section with frontmatter.
+2. Run `/roadmap reconcile` to validate.
+3. Commit with message: `Add ROADMAP-001: Context-gated tools/skills`.
 
 ### Adding a task
 
-1. Create `tasks/TASK-XXXX.md` with the frontmatter schema above.
-2. Link it to a roadmap item via `roadmap_item`.
-3. Run `/product-docs reconcile` to update `TASKS.md`.
-4. Commit with a message like: `Add TASK-XXXX: Implement activeWhen predicate`.
+1. Edit `TASKS.md`, add a new section with frontmatter.
+2. Link to roadmap item via `roadmap_item` (URL).
+3. Run `/tasks reconcile` to validate.
+4. Commit with message: `Add TASK-001: Implement activeWhen predicate`.
+
+### Adding a decision
+
+1. Edit `DECISIONS.md`, add a new section with frontmatter.
+2. Run `/decisions reconcile` to validate.
+3. Commit with message: `Add DEC-001: Use markdown as source of truth`.
 
 ### Reporting a bug
 
 1. Create a GitHub Issue with the `bug` label.
-2. The skill surfaces it via BUGS view (no file).
-3. If the bug spawns a task, link it via `related_bugs`.
+2. Run `/bugs sync` to cross-reference with product_failures.
+3. If the bug spawns a task, link it via `related_bugs` (URL).
 
 ### Changing the framework
 
 1. Edit `ARCHITECTURE.md` to document the change.
-2. Edit the `/product-docs` skill to implement it.
-3. Run `/product-docs reconcile` to propagate.
-4. Commit with a message like: `Update framework: add new frontmatter field for tasks`.
+2. Update the affected skills to implement new schema/logic.
+3. Run reconcile on all affected docs.
+4. Commit with message: `Update framework: add new frontmatter field`.
 
 ## Non-goals
 

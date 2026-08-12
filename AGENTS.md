@@ -93,27 +93,142 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 
 ## Skill catalog
 
-### `/product-docs`
+### `/tasks`
 
-**Purpose:** Reconcile product documentation (VISION, ARCHITECTURE, ROADMAP, TASKS, BUGS).
+**Purpose:** Manage TASKS.md — list, add, update, complete, reconcile tasks.
 
 **When invoked:**
-- User runs `/product-docs reconcile`
-- GitHub Action triggers after fragment changes (planned)
+- `/tasks list` — show all tasks (filter by status/priority/assignee/roadmap_item)
+- `/tasks add` — add a new task with frontmatter
+- `/tasks update TASK-XXX` — update existing task fields
+- `/tasks complete TASK-XXX` — mark task as completed
+- `/tasks reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Validates frontmatter schemas
-2. Assembles ROADMAP.md from `roadmap/*.md`
-3. Assembles TASKS.md from `tasks/*.md`
-4. Queries GitHub Issues for BUGS view
-5. Detects orphans and inconsistencies
-6. Commits with structured message
+1. Reads TASKS.md
+2. Validates frontmatter schemas
+3. Reports inconsistencies
+4. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
 
 **Schema rules:**
-- ROADMAP item: `id, title, status, priority, quarter, depends_on, owners, related_issues, related_decisions, last_updated`
-- Task: `id, title, status, priority, roadmap_item, assignee, depends_on, related_bugs, estimated_hours, last_updated`
+```yaml
+id: TASK-XXX
+title: Short description
+description: One-line summary (in YAML)
+status: pending | in-progress | completed | cancelled
+priority: P0 | P1 | P2 | P3
+roadmap_item: URL to ROADMAP.md item
+assignee: name or empty
+depends_on: [URLs to tasks]
+related_bugs: [URLs to issues]
+related_decisions: [URLs to decisions]
+last_updated: 2026-08-12
+```
 
-**Implementation:** `vibe-coding-engineering/.claude/skills/product-docs/` (not yet built)
+### `/roadmap`
+
+**Purpose:** Manage ROADMAP.md — list, add, graduate, reconcile roadmap items.
+
+**When invoked:**
+- `/roadmap list` — show all items (filter by quarter/status)
+- `/roadmap add` — add a new roadmap item with frontmatter
+- `/roadmap graduate "Q1 — PowerPoint"` — graduate item → tasks
+- `/roadmap reconcile` — validate schemas, detect orphans
+
+**What it does:**
+1. Reads ROADMAP.md
+2. Validates frontmatter schemas
+3. Reports inconsistencies
+4. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+
+**Schema rules:**
+```yaml
+id: ROADMAP-XXX
+title: Short description
+description: Full description (in YAML)
+quarter: Q1 | Q2 | Q3 | Q4
+status: Deferred | In Progress | Completed | Blocked
+priority: P0 | P1 | P2 | P3
+vision_theme: URL to VISION.md theme
+related_tasks: [URLs to tasks]
+related_decisions: [URLs to decisions]
+last_updated: 2026-08-12
+```
+
+### `/bugs`
+
+**Purpose:** Manage bugs via GitHub Issues + product_failures table.
+
+**When invoked:**
+- `/bugs list` — show bugs (filter by status/label)
+- `/bugs create` — create GitHub Issue + product_failures row
+- `/bugs resolve 42` — close Issue + update product_failures
+- `/bugs sync` — cross-reference Issues ↔ product_failures
+
+**What it does:**
+1. Queries GitHub Issues with `bug` label
+2. Queries product_failures table (source = 'github')
+3. Reports discrepancies
+4. Creates/updates Issues and table rows
+
+**product_failures schema:**
+```sql
+source TEXT -- 'github'
+kind TEXT -- 'issue'
+severity TEXT -- 'P0' | 'P1' | 'P2' | 'P3'
+status TEXT -- 'open' | 'resolved' | 'ignored'
+details JSONB -- issue_number, title, labels
+```
+
+### `/decisions`
+
+**Purpose:** Manage DECISIONS.md — list, add, update, supersede, reconcile decisions.
+
+**When invoked:**
+- `/decisions list` — show all decisions (filter by status)
+- `/decisions add` — add a new decision with frontmatter
+- `/decisions update DEC-XXX` — update existing decision
+- `/decisions supersede DEC-XXX` — mark as superseded by new decision
+- `/decisions reconcile` — validate schemas, detect orphans
+
+**What it does:**
+1. Reads DECISIONS.md
+2. Validates frontmatter schemas
+3. Reports inconsistencies
+4. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+
+**Schema rules:**
+```yaml
+id: DEC-XXX
+title: Short description
+status: accepted | deprecated | superseded
+context: Problem situation
+decision: What was decided
+rationale: Why this option
+consequences: Impact (positive + negative)
+superseded_by: URL to new decision
+related_tasks: [URLs to tasks]
+related_roadmap_items: [URLs to roadmap items]
+last_updated: 2026-08-12
+```
+
+### `/studygram-check-failures`
+
+**Purpose:** Triage the Studygram agent platform's failure log (`product_failures` table).
+
+**See:** `studygram-app/.claude/skills/studygram-check-failures/`
+
+**When invoked:**
+- User runs `/studygram-check-failures`
+- Scheduled cron job (planned)
+
+**What it does:**
+1. Pulls open failures from `product_failures`
+2. Presents triage summary (escalations, hotspots, volume)
+3. Offers follow-ups (show detail, resolve/ignore, prune)
+
+**Context gating:**
+- Active for `studygram-agent` only (product-specific)
 
 ### `/studygram-check-failures`
 
@@ -176,12 +291,37 @@ Only surfaces where a doc target exists; silent on list/dashboard routes.
 
 **Capability-gated:** Proposal only; RLS is the backstop. Client pre-check `canWriteDocumentFor(targetId)` via `contact_in_my_scope` RPC avoids proposing scopes RLS rejects.
 
-## Next steps
+## Implementation status (studygram-app)
 
-1. **Build the `/product-docs` skill** — implement schemas, assembly, reconciliation
-2. **Add `activeWhen` to agent-runtime** — implement context-gated tool/skill activation
-3. **Wire `link_document` tool** — first consumer of the gating framework
-4. **Add GitHub Actions trigger** — auto-reconcile on fragment changes
-5. **Extend to other tools/skills** — surface `link_document` in agent-chat, gate `/studygram-check-failures` to `agent` channel
+**Skills shipped (2026-08-12):**
+- ✅ /tasks — manages TASKS.md
+- ✅ /roadmap — manages ROADMAP.md
+- ✅ /bugs — manages GitHub Issues + product_failures
+- ✅ /decisions — manages DECISIONS.md
+
+**Docs created (2026-08-12):**
+- ✅ ROADMAP.md — Q1 pptx, Q2 sandboxed dev, Q4 context-gated tools
+- ✅ TASKS.md — 6 open tasks (TASK-001 to TASK-006)
+- ✅ DECISIONS.md — template with frontmatter schema
+- ✅ BUGS — GitHub Issues (existing)
+
+**Schema patterns proven:**
+- ✅ URL-based cross-linking (tasks → roadmap, roadmap → vision, etc.)
+- ✅ Frontmatter per item (not separate fragment files)
+- ✅ Bidirectional linking via URLs
+
+**Known gaps (future work):**
+- Tasks need `description` field in YAML (currently in prose only)
+- Roadmap items need `description` field in YAML
+- All related_ fields should use URLs (some still use IDs)
+- VISION.md needs frontmatter per theme (TASK-006)
+
+## Next steps for the framework
+
+1. **Schema refinement** — Add `description` to all schemas, migrate IDs → URLs
+2. **VISION.md frontmatter** — Add frontmatter per theme with cross-links to ROADMAP
+3. **External tool integrations** — Wire Fider or GitHub Discussions for ROADMAP proposals
+4. **GitHub Actions** — Auto-reconcile on doc changes
+5. **Generalize to other repos** — Package framework for reuse
 
 This AGENTS.md is the **manual** for your agent workforce. When you add a new tool or skill, document it here. When you change a gating rule, update it here. When you debug an agent behavior, start here.
