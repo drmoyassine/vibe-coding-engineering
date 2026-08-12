@@ -1,4 +1,4 @@
-# vibe-coding-engineering
+# vibe-engineering-framework
 
 **A structured documentation framework for AI-assisted product engineering.**
 
@@ -17,7 +17,7 @@ Decisions, tasks, roadmap, and bugs are scattered across Slack threads, Claude t
 
 The cost isn't inconvenience — it's **repeated work**. Re-litigating decisions. Re-discovering dependencies. Re-explaining context to your AI pair every session because there's no persistent, structured place for it to read.
 
-**vibe-coding-engineering solves this** by making product context a first-class, structured artifact — not a side effect of chat logs.
+**vibe-engineering-framework solves this** by making product context a first-class, structured artifact — not a side effect of chat logs.
 
 ---
 
@@ -252,7 +252,7 @@ If your repo has docs that predate the framework (bare IDs, missing frontmatter,
 
 ## Relationship to OKF
 
-vibe-coding-engineering is an **implementation and extension** of the [Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md), specialized for product documentation. See [DEC-002](DECISIONS.md#DEC-002) for the adoption decision.
+vibe-engineering-framework is an **implementation and extension** of the [Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md), specialized for product documentation. See [DEC-002](DECISIONS.md#DEC-002) for the adoption decision.
 
 | OKF concept | Our implementation |
 |-------------|--------------------|
@@ -273,7 +273,7 @@ vibe-coding-engineering is an **implementation and extension** of the [Open Know
 - **GitHub Issues integration** — `related_bugs` links to an external issue tracker (bugs have no markdown file)
 - **Multi-repo support** — canonical definition (this repo) + consumer repos
 
-**Comparison to [OpenKB](https://github.com/VectifyAI/OpenKB) / [LLM-Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f):** those compile *raw documents* into a structured wiki using LLMs (LLM-authored links). vibe-coding-engineering inverts the model: **human-structured schemas** with skill-based management, where the LLM assists via the `/apply` migration skill rather than generating the graph. Different scope, complementary tools.
+**Comparison to [OpenKB](https://github.com/VectifyAI/OpenKB) / [LLM-Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f):** those compile *raw documents* into a structured wiki using LLMs (LLM-authored links). vibe-engineering-framework inverts the model: **human-structured schemas** with skill-based management, where the LLM assists via the `/apply` migration skill rather than generating the graph. Different scope, complementary tools.
 
 ---
 
@@ -283,8 +283,8 @@ vibe-coding-engineering is an **implementation and extension** of the [Open Know
 
 > **npm publish pending.** Until the package is on the npm registry, use it locally:
 > ```bash
-> git clone https://github.com/drmoyassine/vibe-coding-engineering.git
-> cd vibe-coding-engineering && npm install && npm link
+> git clone https://github.com/drmoyassine/vibe-engineering-framework.git
+> cd vibe-engineering-framework && npm install && npm link
 > vef --help   # now available globally
 > ```
 

@@ -13,7 +13,7 @@ The cost isn't just inconvenience — it's **repeated work**. Re-litigating deci
 
 ## The solution
 
-**vibe-coding-engineering** is a structured documentation framework for AI-assisted product development. Three layers:
+**vibe-engineering-framework** is a structured documentation framework for AI-assisted product development. Three layers:
 
 ### Layer 1 — Content (the artifacts)
 

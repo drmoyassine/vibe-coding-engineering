@@ -1,6 +1,6 @@
 # /apply
 
-Align a repo to the vibe-coding-engineering framework standard via **per-document discovery**, reconciliation planning, and framework alignment review. Spawns a 6-phase multi-agent workflow that exhaustively discovers, extracts, and migrates every item (tasks, roadmap items, decisions, bugs, vision) into the standard frontmatter format with `id + name + url` cross-linking.
+Align a repo to the vibe-engineering-framework standard via **per-document discovery**, reconciliation planning, and framework alignment review. Spawns a 6-phase multi-agent workflow that exhaustively discovers, extracts, and migrates every item (tasks, roadmap items, decisions, bugs, vision) into the standard frontmatter format with `id + name + url` cross-linking.
 
 ## When to use
 
@@ -136,7 +136,7 @@ This ensures traceability — you can always see WHERE each item came from.
 
 ## OKF-style docs (LOG.md, INDEX.md)
 
-This workflow supports the [Open Knowledge Framework v0.2](https://github.com/drmoyassine/vibe-coding-engineering/blob/main/DECISIONS.md#DEC-002) pattern:
+This workflow supports the [Open Knowledge Framework v0.2](https://github.com/drmoyassine/vibe-engineering-framework/blob/main/DECISIONS.md#DEC-002) pattern:
 
 - **`LOG.md`** (reserved filename) — Chronological change log + session learnings. Durable session learnings live here — NOT in private Claude auto-memory (gitignored, drifts).
 - **`INDEX.md`** (reserved filename) — Doc index/table of contents.

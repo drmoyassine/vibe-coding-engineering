@@ -1,5 +1,5 @@
 // /apply workflow — multi-agent framework alignment (redesigned)
-// Aligns a repo's docs to the vibe-coding-engineering standard via per-document discovery,
+// Aligns a repo's docs to the vibe-engineering-framework standard via per-document discovery,
 // reconciliation planning, and framework alignment review.
 //
 // 6-phase structure:
@@ -14,7 +14,7 @@
 
 export const meta = {
   name: 'apply-framework',
-  description: 'Align a repo to the vibe-coding-engineering doc framework via per-document discovery and reconciliation',
+  description: 'Align a repo to the vibe-engineering-framework doc framework via per-document discovery and reconciliation',
   phases: [
     { title: 'Discover', detail: 'one agent per artifact document (exhaustive)' },
     { title: 'Reconcile', detail: 'orchestrator analyzes and drafts reconciliation plan' },

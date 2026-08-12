@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This document defines the agent profiles, tool catalogs, skill catalogs, and context-gating rules for the **vibe-coding-engineering** framework.
+This document defines the agent profiles, tool catalogs, skill catalogs, and context-gating rules for the **vibe-engineering-framework** framework.
 
 ## Skills — How to invoke
 

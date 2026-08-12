@@ -1,6 +1,6 @@
 # LOG.md
 
-**vibe-coding-engineering Change Log** — Chronological history of framework updates, decisions, and learnings.
+**vibe-engineering-framework Change Log** — Chronological history of framework updates, decisions, and learnings.
 
 This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest first. Durable session learnings live here — NOT in private Claude auto-memory (which is gitignored and drifts).
 
@@ -27,7 +27,7 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 - ⬜ VISION.md needs frontmatter per theme (studygram-app TASK-006 — deferred)
 
 ### Canonical/consumer split confirmed
-- **`vibe-coding-engineering`** = framework DEFINITION (canonical schemas here; ships only `/apply`).
+- **`vibe-engineering-framework`** = framework DEFINITION (canonical schemas here; ships only `/apply`).
 - **`studygram-app`** = CONSUMER (ships `/tasks` `/roadmap` `/bugs` `/decisions` `/apply` + the 3 doc files; BUGS = GitHub Issues).
 
 ---

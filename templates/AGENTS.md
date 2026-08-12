@@ -4,7 +4,7 @@ Detailed working conventions for AI agents in this repo. Companion to `CLAUDE.md
 
 ## Doc framework
 
-This repo uses the [vibe-engineering-framework](https://github.com/drmoyassine/vibe-coding-engineering) documentation system. See `CLAUDE.md` for the skills table and doc-framework overview.
+This repo uses the [vibe-engineering-framework](https://github.com/drmoyassine/vibe-engineering-framework) documentation system. See `CLAUDE.md` for the skills table and doc-framework overview.
 
 ## Editing workflow
 

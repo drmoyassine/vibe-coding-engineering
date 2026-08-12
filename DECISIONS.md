@@ -1,6 +1,6 @@
 # DECISIONS.md
 
-**vibe-coding-engineering Framework Decisions** — Architectural, product, and technical decisions with context and rationale.
+**vibe-engineering-framework Decisions** — Architectural, product, and technical decisions with context and rationale.
 
 Last updated: 2026-08-12
 

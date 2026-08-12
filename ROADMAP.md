@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-**vibe-coding-engineering Framework Roadmap** — Directional themes for the documentation framework.
+**vibe-engineering-framework Roadmap** — Directional themes for the documentation framework.
 
 Last updated: 2026-08-12
 
@@ -226,14 +226,14 @@ Once the framework is proven in studygram-app, generalize it for other repos.
 - **last_updated:** 2026-08-12
 
 **Approach options:**
-- Git submodule — `vibe-coding-engineering` as a submodule, skills symlinked
-- NPM package — `npm install vibe-coding-engineering`, copy skills on postinstall
+- Git submodule — `vibe-engineering-framework` as a submodule, skills symlinked
+- NPM package — `npm install vibe-engineering-framework`, copy skills on postinstall
 - GitHub template repo — fork/copy to start a new project
 
 ### FRAMEWORK-012: Framework CLI
 - **id:** FRAMEWORK-012
 - **title:** CLI to scaffold docs in a new repo
-- **description:** `npx vibe-coding-engineering init` creates VISION/ARCHITECTURE/ROADMAP/TASKS/DECISIONS + skills
+- **description:** `npx vibe-engineering-framework init` creates VISION/ARCHITECTURE/ROADMAP/TASKS/DECISIONS + skills
 - **phase:** Phase 3
 - **status:** Deferred
 - **priority:** P3

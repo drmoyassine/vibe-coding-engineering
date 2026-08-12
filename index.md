@@ -1,11 +1,11 @@
 ---
 okf_version: "0.2"
 type: documentation-framework
-title: "vibe-coding-engineering"
+title: "vibe-engineering-framework"
 description: "Structured product documentation framework for AI-assisted engineering — an OKF v0.2 implementation with product-doc extensions"
 ---
 
-# vibe-coding-engineering
+# vibe-engineering-framework
 
 A structured documentation framework for AI-assisted product development. This is an **implementation and extension** of the [Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) pattern, specialized for product documentation (ROADMAP, TASKS, DECISIONS, BUGS).
 
@@ -36,7 +36,7 @@ A structured documentation framework for AI-assisted product development. This i
 
 ## Relationship to OKF
 
-vibe-coding-engineering conforms to OKF v0.2 and extends it for product documentation. See [DEC-002](DECISIONS.md#DEC-002) for the full adoption decision. Key extensions: structured `id + name + url` cross-linking, bidirectional relationships, four management skills, and multi-repo canonical/consumer support.
+vibe-engineering-framework conforms to OKF v0.2 and extends it for product documentation. See [DEC-002](DECISIONS.md#DEC-002) for the full adoption decision. Key extensions: structured `id + name + url` cross-linking, bidirectional relationships, four management skills, and multi-repo canonical/consumer support.
 
 ## Consumers
 
