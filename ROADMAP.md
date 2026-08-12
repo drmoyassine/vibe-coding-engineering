@@ -45,6 +45,10 @@ description: "VISION.md, CLAUDE.md, AGENTS.md, README.md created"
 phase: "Phase 0 — Foundation"
 status: "Completed"
 priority: "P0"
+related_tasks:
+  - id: TASK-002
+    name: "Write framework ARCHITECTURE.md"
+    url: /TASKS.md#TASK-002
 related_decisions:
   - id: DEC-001
     name: "Use markdown as source of truth for docs"
@@ -69,6 +73,10 @@ description: "/tasks, /roadmap, /bugs, /decisions schemas and invocation pattern
 phase: "Phase 0 — Foundation"
 status: "Completed"
 priority: "P0"
+related_tasks:
+  - id: TASK-003
+    name: "Install the four management skills in the framework repo (dogfood)"
+    url: /TASKS.md#TASK-003
 last_updated: 2026-08-12
 ---
 
@@ -185,6 +193,10 @@ description: "GitHub Actions that watch doc files and auto-run the relevant /rec
 phase: "Phase 2 — Automation"
 status: "Deferred"
 priority: "P1"
+related_tasks:
+  - id: TASK-005
+    name: "Add vef validate to CI (GitHub Actions)"
+    url: /TASKS.md#TASK-005
 last_updated: 2026-08-12
 ---
 
@@ -241,6 +253,10 @@ description: "Extract the skill definitions into reusable templates that any rep
 phase: "Phase 3 — Generalization"
 status: "Completed"
 priority: "P2"
+related_tasks:
+  - id: TASK-001
+    name: "Publish vibe-engineering-framework to npm"
+    url: /TASKS.md#TASK-001
 last_updated: 2026-08-12
 ---
 
