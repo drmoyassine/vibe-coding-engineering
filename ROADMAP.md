@@ -255,7 +255,7 @@ status: "Completed"
 priority: "P2"
 related_tasks:
   - id: TASK-001
-    name: "Publish vibe-engineering-framework to npm"
+    name: "Publish to npm + rename local repo dir (low priority)"
     url: /TASKS.md#TASK-001
 last_updated: 2026-08-12
 ---

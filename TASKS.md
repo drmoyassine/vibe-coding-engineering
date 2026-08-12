@@ -34,14 +34,14 @@ Full description, acceptance criteria, implementation notes.
 
 ---
 
-## TASK-001 — Publish vibe-engineering-framework to npm
+## TASK-001 — Publish to npm + rename local repo dir (low priority)
 
 ---
 id: TASK-001
-title: "Publish vibe-engineering-framework to npm"
-description: "Publish the vef CLI package to the npm registry so `npx vibe-engineering-framework` works"
+title: "Publish to npm + rename local repo dir (low priority)"
+description: "Publish the vef CLI to npm AND rename the on-disk vibe-coding-engineering dir to vibe-engineering-framework — both cosmetic/optional, bundled as one low-priority task"
 status: pending
-priority: P1
+priority: P3
 roadmap_item:
   id: FRAMEWORK-011
   name: "Make skills portable across repos"
@@ -52,12 +52,12 @@ related_decisions: []
 last_updated: 2026-08-12
 ---
 
-The CLI works locally today via `npm link` / `node bin/vef.mjs`. Publishing to the registry makes `npx vibe-engineering-framework init|validate|doctor` available to any repo without a local clone.
+Two low-priority, optional cleanups bundled into a single task. **Do not treat as in-flight.**
 
-**Acceptance:**
-- `npm publish` succeeds (needs `npm login` — same gate as liteparse).
-- `npx vibe-engineering-framework@latest --help` runs from a clean checkout.
-- Bump version per release; keep `files: [bin/, src/, templates/]` so only the runtime ships.
+1. **npm publish** — The CLI works locally today via `npm link` / `node bin/vef.mjs`. Publishing makes `npx vibe-engineering-framework init|validate|doctor` available to any repo without a local clone. Gated on `npm login` (same gate as liteparse). Acceptance: `npx vibe-engineering-framework@latest --help` runs from a clean checkout; keep `files: [bin/, src/, templates/]`.
+2. **Rename local repo dir** — The on-disk directory is still `vibe-coding-engineering` while the GitHub remote is already `vibe-engineering-framework`. Purely cosmetic — the git remote, package name, and all references are already correct. Rename when convenient (update any local shortcuts / IDE workspace paths).
+
+Neither blocks anything.
 
 ## TASK-002 — Write framework ARCHITECTURE.md
 
@@ -153,10 +153,10 @@ A lightweight GitHub Action that runs `node bin/vef.mjs validate --strict` on PR
 
 | ID | Title | Status | Priority |
 |---|---|---|---|
-| TASK-001 | Publish to npm | pending | P1 |
+| TASK-001 | Publish to npm + rename local dir | pending | P3 |
 | TASK-002 | Write ARCHITECTURE.md | ✅ completed | P2 |
 | TASK-003 | Install 4 management skills (dogfood) | ✅ completed | P2 |
 | TASK-004 | Add CLI unit tests | pending | P2 |
 | TASK-005 | vef validate in CI | pending | P2 |
 
-**Next priority:** TASK-001 (npm publish — gated on login) and TASK-004 (CLI tests — unblocks a confident CI gate).
+**Next priority:** TASK-004 (CLI tests — unblocks a confident CI gate). TASK-001 (npm publish + local rename) is low-priority / cosmetic — deferred until convenient.
