@@ -1,0 +1,38 @@
+# AGENTS.md
+
+Detailed working conventions for AI agents in this repo. Companion to `CLAUDE.md` (which covers identity + doc framework). This file covers *how to work*.
+
+## Doc framework
+
+This repo uses the [vibe-engineering-framework](https://github.com/drmoyassine/vibe-coding-engineering) documentation system. See `CLAUDE.md` for the skills table and doc-framework overview.
+
+## Editing workflow
+
+1. **Read before you write** — never patch a file you haven't seen this session.
+2. **Batch independent edits** into one response.
+3. **Run the build + tests** after non-trivial changes; read the whole output.
+4. **Migrations are forward-only.** Destructive changes (drops, mass updates) need explicit owner approval.
+
+<!-- PROJECT: Add your build/test commands here, e.g.: -->
+<!--
+```bash
+npm run type-check
+npm test
+```
+-->
+
+## Decision discipline
+
+- Before making or reversing an architectural/product decision, check `DECISIONS.md` (`/decisions list`).
+- Don't re-litigate settled decisions; record new or reversed ones via `/decisions add` / `supersede`.
+- All decisions — including those made by AI agents — go in DECISIONS.md, never in memory files.
+
+## Doc maintenance
+
+- After completing direction-changing work, run the relevant skill:
+  - `/tasks reconcile` — validate task schemas, detect orphans
+  - `/roadmap reconcile` — validate roadmap schemas
+  - `/decisions reconcile` — validate decision schemas + cross-links
+- Run `/apply` to migrate scattered content into the canonical schema.
+
+<!-- PROJECT: Add your project-specific conventions here. -->

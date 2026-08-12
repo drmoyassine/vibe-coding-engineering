@@ -130,19 +130,56 @@ last_updated: 2026-08-12
 
 ## How to use it
 
-### Adopt the framework in your repo
+### Install
 
-1. **Copy the core documents** — `VISION.md`, `ROADMAP.md`, `TASKS.md`, `DECISIONS.md`, `LOG.md`, `INDEX.md`, `CLAUDE.md`, `AGENTS.md` from this repo as templates.
-2. **Copy the skills** — `.claude/skills/` (the `/tasks`, `/roadmap`, `/decisions`, `/bugs`, `/apply` skills).
-3. **Add the trigger hook** to your `CLAUDE.md`:
-   ```markdown
-   When you complete direction-changing work, run the relevant skill
-   (`/tasks`, `/roadmap`, `/bugs`, `/decisions`) to reconcile the affected doc.
-   Before making or reversing a decision, check DECISIONS.md (`/decisions list`).
-   ```
-4. **Migrate existing docs** — run `/apply` to discover, extract, and migrate scattered content into the canonical schema.
+```bash
+npm install -g vibe-engineering-framework
+```
 
-### Migrate an existing repo (`/apply`)
+Or use directly with `npx` (no global install needed).
+
+### Scaffold a new project (`vef init`)
+
+```bash
+vef init                                    # scaffold into the current directory
+vef --new --dir ./my-project                # scaffold into a specific directory
+vef init --name "My App" --github owner/repo   # with project name + GitHub URLs for bugs
+```
+
+Creates `VISION.md`, `ROADMAP.md`, `TASKS.md`, `DECISIONS.md`, `LOG.md`, `INDEX.md`, `CLAUDE.md`, `AGENTS.md`, and the five Claude Code skills (`.claude/skills/`). Non-destructive — existing files are skipped unless `--force`.
+
+### Adopt an existing repo (`vef migrate`)
+
+```bash
+vef --migrate                               # dry-run: detect docs, report findings
+vef migrate --apply                         # install skills + apply structural fixes
+```
+
+Detects existing docs, installs the skills, flags items missing canonical frontmatter, and recommends running Claude Code's `/apply` for AI-powered discovery.
+
+### Validate your docs (`vef validate`)
+
+```bash
+vef --validate                              # schema + cross-link check
+vef validate --strict                       # exit 1 on warnings too (for CI)
+```
+
+Schema validation, orphan/cross-link detection, bidirectionality checks. Exits non-zero on errors — add to CI:
+
+```yaml
+# .github/workflows/docs.yml
+- run: npx vibe-engineering-framework validate
+```
+
+### Health check (`vef doctor`)
+
+```bash
+vef --doctor                                # are all docs + skills installed?
+```
+
+### AI-powered migration (`/apply`)
+
+After scaffolding or migrating, run Claude Code's `/apply` skill for AI-powered discovery — extracting decisions, tasks, and roadmap items from scattered sources (git history, memory files, prose) into canonical frontmatter.
 
 If your repo has docs that predate the framework (bare IDs, missing frontmatter, decisions in memory files), run:
 
@@ -242,7 +279,14 @@ vibe-coding-engineering is an **implementation and extension** of the [Open Know
 
 ## Status
 
-🚧 **Early framework.** Core docs + five management skills (`/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`) built and proven in [`studygram-app`](https://github.com/drmoyassine/studygram-app). ROADMAP intake tool (Fider/GitHub Discussions) TBD.
+🚧 **Early framework.** Core docs + five management skills (`/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`) + the `vef` CLI (init, migrate, validate, doctor) built and proven in [`studygram-app`](https://github.com/drmoyassine/studygram-app). ROADMAP intake tool (Fider/GitHub Discussions) TBD.
+
+> **npm publish pending.** Until the package is on the npm registry, use it locally:
+> ```bash
+> git clone https://github.com/drmoyassine/vibe-coding-engineering.git
+> cd vibe-coding-engineering && npm install && npm link
+> vef --help   # now available globally
+> ```
 
 ## Roadmap
 

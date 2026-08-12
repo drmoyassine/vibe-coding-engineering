@@ -1,0 +1,37 @@
+{
+  "name": "vibe-engineering-framework",
+  "version": "0.1.0",
+  "description": "Structured documentation framework for AI-assisted product engineering — markdown docs, Claude Code skills, and a CLI.",
+  "type": "module",
+  "bin": {
+    "vef": "./bin/vef.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "js-yaml": "^4.1.0"
+  },
+  "keywords": [
+    "documentation",
+    "framework",
+    "ai",
+    "claude",
+    "product-engineering",
+    "frontmatter",
+    "yaml",
+    "okf"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drmoyassine/vibe-coding-engineering.git"
+  },
+  "author": "drmoyassine",
+  "license": "MIT"
+}
