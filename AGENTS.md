@@ -337,18 +337,17 @@ Only surfaces where a doc target exists; silent on list/dashboard routes.
 - ✅ Frontmatter per item (not separate fragment files)
 - ✅ Bidirectional linking via URLs
 
-**Known gaps (future work):**
-- Tasks need `description` field in YAML (currently in prose only)
-- Roadmap items need `description` field in YAML
-- All related_ fields should use URLs (some still use IDs)
-- VISION.md needs frontmatter per theme (TASK-006)
+**Schema status (2026-08-12):**
+- ✅ `description` present on Task + Roadmap schemas
+- ✅ All related_ fields use the `id + name + url` pattern (relative same-repo, absolute cross-repo)
+- ✅ `roadmap_item` / `vision_theme` / `superseded_by` are singular objects; `depends_on` / `related_*` are arrays
+- ⬜ VISION.md needs frontmatter per theme (TASK-006 — deferred)
 
 ## Next steps for the framework
 
-1. **Schema refinement** — Add `description` to all schemas, migrate IDs → URLs
-2. **VISION.md frontmatter** — Add frontmatter per theme with cross-links to ROADMAP
-3. **External tool integrations** — Wire Fider or GitHub Discussions for ROADMAP proposals
-4. **GitHub Actions** — Auto-reconcile on doc changes
-5. **Generalize to other repos** — Package framework for reuse
+1. **VISION.md frontmatter** — Add frontmatter per theme with cross-links to ROADMAP (TASK-006)
+2. **External tool integrations** — Wire Fider or GitHub Discussions for ROADMAP proposals
+3. **GitHub Actions** — Auto-reconcile on doc changes
+4. **Generalize to other repos** — Package framework for reuse
 
 This AGENTS.md is the **manual** for your agent workforce. When you add a new tool or skill, document it here. When you change a gating rule, update it here. When you debug an agent behavior, start here.

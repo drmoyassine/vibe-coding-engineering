@@ -77,7 +77,7 @@ When working with docs in a repo that adopts this framework, invoke skills direc
 - All docs use YAML frontmatter for machine-readable metadata (id, status, links, etc.)
 - Prose lives in the markdown body below the frontmatter
 - Items live directly in the doc (not separate fragment files) — one ROADMAP.md, one TASKS.md, one DECISIONS.md
-- Cross-linking uses GitHub blob URLs: `https://github.com/user/repo/blob/main/FILE.md#ID`
+- Cross-linking uses the `id + name + url` pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`)
 
 ### Frontmatter schemas
 
