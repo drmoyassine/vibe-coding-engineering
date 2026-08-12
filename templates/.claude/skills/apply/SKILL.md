@@ -33,7 +33,7 @@ Run `/apply` when:
 **Not per-docType. Per document.**
 
 Spawns N discovery agents where N = every framework-relevant markdown file in the repo:
-- **Framework docs**: `VISION.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `TASKS.md`, `DECISIONS.md`, `LOG.md`, `INDEX.md`, `CLAUDE.md`, `AGENTS.md`
+- **Framework docs**: `VISION.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `TASKS.md`, `DECISIONS.md`, `log.md`, `index.md`, `CLAUDE.md`, `AGENTS.md`
 - **Technical docs**: `docs/AGENT_PLATFORM.md`, `docs/MCP_SERVER.md`, `docs/PERMISSIONS.md`, `docs/TABLE_UI_TEMPLATE.md`, `docs/CHAT_FLOW.md`, `docs/AGENT_TOOL_AUDIT.md`
 - **Skill definitions**: `.claude/skills/*/SKILL.md`
 - **Memory files**: `memory/*.md` (transitional — should consolidate into LOG.md or DECISIONS.md)
@@ -134,12 +134,12 @@ provenance:
 
 This ensures traceability — you can always see WHERE each item came from.
 
-## OKF-style docs (LOG.md, INDEX.md)
+## OKF-style docs (log.md, index.md)
 
 This workflow supports the [Open Knowledge Framework v0.2](https://github.com/drmoyassine/vibe-engineering-framework/blob/main/DECISIONS.md#DEC-002) pattern:
 
-- **`LOG.md`** (reserved filename) — Chronological change log + session learnings. Durable session learnings live here — NOT in private Claude auto-memory (gitignored, drifts).
-- **`INDEX.md`** (reserved filename) — Doc index/table of contents.
+- **`log.md`** (reserved filename) — Chronological change log + session learnings. Durable session learnings live here — NOT in private Claude auto-memory (gitignored, drifts).
+- **`index.md`** (reserved filename) — Doc index/table of contents.
 
 **Phase 6 audits these**: Are decisions leaking into auto-memory? Is LOG.md being used? Is vision/description scattered?
 

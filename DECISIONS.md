@@ -2,7 +2,7 @@
 
 **vibe-engineering-framework Decisions** — Architectural, product, and technical decisions with context and rationale.
 
-Last updated: 2026-08-12
+Last updated: 2026-08-13
 
 ---
 
@@ -56,9 +56,9 @@ id: DEC-001
 title: "Use markdown as source of truth for docs"
 status: accepted
 context: "Need a way to maintain product documentation that's version-controlled, queryable, and AI-readable."
-decision: "Use plain markdown files (VISION.md, ARCHITECTURE.md, ROADMAP.md, TASKS.md, DECISIONS.md) as canonical sources. Interactive docs (ROADMAP, BUGS) have paired intake tools (Fider/GitHub Discussions, GitHub Issues) but the canonical doc remains read-only markdown."
-rationale: "Markdown is git-native (diffable, mergeable), human-readable, AI-readable, and requires zero infrastructure. SQLite-as-source breaks git history; external tools (GitHub Issues, Fider) are intake mechanisms, not the source."
-consequences: "Positive — clean git history, easy to review, AI can read/edit directly. Negative — no native voting/commenting on markdown (hence the paired intake tools)."
+decision: "Use plain markdown files (VISION.md, ARCHITECTURE.md, ROADMAP.md, TASKS.md, DECISIONS.md, and LOG.md) as canonical sources for VEF-managed project state. External systems remain canonical for their native records: GitHub Issues are the canonical bug tracker and may be referenced by structured VEF records rather than duplicated into a markdown bug ledger."
+rationale: "Markdown is git-native (diffable, mergeable), human-readable, AI-readable, and requires zero infrastructure. GitHub Issues remain better for public bug discussion and status; VEF's role is to connect relevant issues to the curated project model, not replace the issue tracker."
+consequences: "Positive — clean Git history for product knowledge, easy review, AI-readable state, and no duplicate bug source of truth. Negative — roadmap proposal intake and issue integration require explicit adapters where a project needs them."
 generated:
   by: "human:drmoy"
   at: "2026-08-12T00:00:00Z"
@@ -74,7 +74,7 @@ This is the foundational decision of the framework. All structured items across 
 
 ---
 
-## DEC-002 — Adopt the Open Knowledge Format (OKF) pattern with product-doc extensions
+## DEC-002 — Adopt the OKF v0.2 pattern (index.md, log.md, actor convention, trust signals) with product-doc extensions
 
 ---
 id: DEC-002
@@ -113,6 +113,53 @@ last_updated: 2026-08-12
 **What we do NOT adopt:** Attested Computation (`runtime`/`executor`/`attester`) — data-pipeline scope, not product docs. `sources` provenance family — deferred until decisions commonly cite external standards.
 
 **Our extensions beyond OKF:** structured `id + name + url` relationship types (`depends_on`, `related_tasks`, `related_decisions`, `roadmap_item`), bidirectional cross-linking, four management skills (`/tasks` `/roadmap` `/bugs` `/decisions`) + `/apply` migration, multi-repo canonical/consumer split.
+
+---
+
+## DEC-003 — Make the Integrity Core authoritative and keep agent adapters portable
+
+---
+id: DEC-003
+title: "Make the Integrity Core authoritative and keep agent adapters portable"
+status: accepted
+context: "VEF's product promise is a trustworthy, typed project model, but the current implementation contains several competing schema descriptions, partial backlink checks, permissive validation paths, and a Claude-specific workflow layer. Agent judgment is useful for migration and interpretation but cannot prove deterministic invariants."
+decision: "Adopt a portable VEF Core composed of one machine-readable schema, a typed relationship model, deterministic validation, provenance/lifecycle rules, and a CLI/query interface. Agent integrations are adapters over that core. The Integrity Core is authoritative for mechanical validity; agents may discover, classify, propose, and explain but cannot approve invalid structure. Use lowercase `index.md` and `log.md` as the canonical OKF filename spelling; align the repository and tooling through a safe migration task."
+rationale: "A single executable contract prevents schema drift across code, templates, documentation, and prompts. Typed relationship declarations can validate targets, cardinality, cycles, and both sides of denormalized links. Separating agent semantics from deterministic enforcement creates a clear trust boundary, makes CI meaningful, and lets additional agent ecosystems adopt the same project model."
+consequences: "Positive — stronger guarantees, credible dogfooding, safer adoption, portable foundations, and a graph useful without an LLM. Negative — near-term roadmap capacity moves from integrations and UI work to foundation work; existing templates, commands, filenames, and prompts require coordinated migration; explicit graph mutation APIs may be needed to preserve backlinks safely."
+related_tasks:
+  - id: TASK-004
+    name: "Add Integrity Core test suite"
+    url: /TASKS.md#TASK-004
+  - id: TASK-005
+    name: "Gate the Integrity Core in CI"
+    url: /TASKS.md#TASK-005
+  - id: TASK-006
+    name: "Define canonical schema and typed relationship model"
+    url: /TASKS.md#TASK-006
+  - id: TASK-007
+    name: "Align filename conventions and provenance"
+    url: /TASKS.md#TASK-007
+  - id: TASK-008
+    name: "Harden /apply migration trust boundaries"
+    url: /TASKS.md#TASK-008
+  - id: TASK-009
+    name: "Design and implement deterministic query commands"
+    url: /TASKS.md#TASK-009
+related_roadmap_items:
+  - id: FRAMEWORK-017
+    name: "Build the VEF Integrity Core"
+    url: /ROADMAP.md#FRAMEWORK-017
+  - id: FRAMEWORK-018
+    name: "Expose deterministic project queries"
+    url: /ROADMAP.md#FRAMEWORK-018
+tags: [integrity, architecture, agent-adapters]
+generated:
+  by: "process:codex"
+  at: "2026-08-13T00:00:00Z"
+last_updated: 2026-08-13
+---
+
+This decision deliberately separates a completed product claim from an intended capability. Until the Integrity Core is shipped, VEF documents and adapters should describe implemented checks precisely and point to FRAMEWORK-017 for the stronger guarantee.
 
 ---
 

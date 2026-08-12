@@ -2,13 +2,13 @@
 
 **vibe-engineering-framework Roadmap** — Directional themes for the documentation framework.
 
-Last updated: 2026-08-12
+Last updated: 2026-08-13
 
 ---
 
 ## Roadmap item schema
 
-Each roadmap item uses YAML frontmatter (canonical source: `CLAUDE.md`). Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
+Each roadmap item uses YAML frontmatter. The current field contract is implemented in `src/lib/schemas.mjs`; FRAMEWORK-017 will consolidate it into the canonical machine-readable schema. Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
 
 ```yaml
 ---
@@ -193,10 +193,6 @@ description: "GitHub Actions that watch doc files and auto-run the relevant /rec
 phase: "Phase 2 — Automation"
 status: "Deferred"
 priority: "P1"
-related_tasks:
-  - id: TASK-005
-    name: "Add vef validate to CI (GitHub Actions)"
-    url: /TASKS.md#TASK-005
 last_updated: 2026-08-12
 ---
 
@@ -227,22 +223,19 @@ last_updated: 2026-08-12
 
 **Open decision:** Which tool? (Lean: GitHub Discussions for zero infra initially)
 
-## FRAMEWORK-010 — Auto-sync GitHub Issues ↔ product_failures
+## FRAMEWORK-010 — Adapter-specific external issue sync
 
 ---
 id: FRAMEWORK-010
-title: "Auto-sync GitHub Issues ↔ product_failures"
-description: "Webhook or cron that keeps product_failures table in sync with GitHub Issues"
+title: "Adapter-specific external issue sync"
+description: "Optional integration that mirrors GitHub Issues into a consumer product's operational datastore; not part of the VEF Core."
 phase: "Phase 2 — Automation"
 status: "Deferred"
-priority: "P2"
-last_updated: 2026-08-12
+priority: "P3"
+last_updated: 2026-08-13
 ---
 
-**Flow:**
-- GitHub Issue created with `bug` label → webhook → insert product_failures row
-- GitHub Issue closed → webhook → update product_failures status
-- product_failures row resolved manually → (optional) close GitHub Issue
+GitHub Issues are VEF's canonical external bug reference. A consumer may mirror issues into its own operational datastore, but that adapter belongs to the consumer and must not be represented as a VEF requirement or a second canonical bug ledger.
 
 ## FRAMEWORK-011 — Make skills portable across repos
 
@@ -319,7 +312,7 @@ priority: "P3"
 last_updated: 2026-08-12
 ---
 
-## FRAMEWORK-016 — Obsidian plugin for framework UI
+## FRAMEWORK-016 — Obsidian plugin to view and interact with framework docs
 
 ---
 id: FRAMEWORK-016
@@ -345,14 +338,77 @@ A local-first UI head for the framework, building on Obsidian's graph view + wik
 
 ---
 
+## FRAMEWORK-017 — Build the VEF Integrity Core
+
+---
+id: FRAMEWORK-017
+title: "Build the VEF Integrity Core"
+description: "Make VEF's documented project model deterministically coherent through one schema, typed graph validation, safe mutations, tests, and CI dogfooding."
+phase: "Phase 0 — Integrity Core"
+status: "In Progress"
+priority: "P0"
+related_tasks:
+  - id: TASK-004
+    name: "Add Integrity Core test suite"
+    url: /TASKS.md#TASK-004
+  - id: TASK-005
+    name: "Gate the Integrity Core in CI"
+    url: /TASKS.md#TASK-005
+  - id: TASK-006
+    name: "Define canonical schema and typed relationship model"
+    url: /TASKS.md#TASK-006
+  - id: TASK-007
+    name: "Align filename conventions and provenance"
+    url: /TASKS.md#TASK-007
+  - id: TASK-008
+    name: "Harden /apply migration trust boundaries"
+    url: /TASKS.md#TASK-008
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+This is the foundational milestone ahead of additional integrations and interfaces. Its first slice is complete: validation now knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, and heading/frontmatter agreement. Remaining P0 work is CI enforcement and migration trust boundaries.
+
+The work also resolves dogfooding drift (filenames, stale claims, templates, provenance), makes strict validation a complete CI contract, and makes migration conservative when evidence is uncertain.
+
+---
+
+## FRAMEWORK-018 — Expose deterministic project queries
+
+---
+id: FRAMEWORK-018
+title: "Expose deterministic project queries"
+description: "Make the project graph useful without an LLM through CLI list, show, reference, rationale, graph, and search commands."
+phase: "Phase 1 — Queryable Project Memory"
+status: "Deferred"
+priority: "P1"
+related_tasks:
+  - id: TASK-009
+    name: "Design and implement deterministic query commands"
+    url: /TASKS.md#TASK-009
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+After structural trust is established, expose the graph through `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and search. This makes VEF useful to a human or CI environment even where no agent is available.
+
+---
+
 ## Summary
 
 | Phase | Status | Items |
 |---|---|---|
+| Phase 0 — Integrity Core | 🔄 In Progress | FRAMEWORK-017 |
 | Phase 0 — Foundation | ✅ Completed | FRAMEWORK-001, -002, -003 |
 | Phase 1 — Proven in studygram-app | 🔄 In Progress | FRAMEWORK-004, -005 (done); FRAMEWORK-006 (in progress); FRAMEWORK-007 (deferred) |
-| Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 |
+| Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -015, -016 |
 
-**Next priority:** FRAMEWORK-006 (migrate studygram-app docs to id+name+url pattern)
+**Next priority:** FRAMEWORK-017 (make the Integrity Core authoritative). FRAMEWORK-006 remains active but no longer outranks framework correctness.

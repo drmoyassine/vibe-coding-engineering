@@ -14,7 +14,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseDoc } from '../lib/frontmatter.mjs';
 import { getDocType, validateItem, ALL_DOC_FILES } from '../lib/schemas.mjs';
-import { findOrphans, checkBidirectional } from '../lib/crosslinks.mjs';
+import { findOrphans, findDuplicateIds, findDependencyCycles, checkBidirectional } from '../lib/crosslinks.mjs';
 
 /**
  * @param {{ dir: string, strict: boolean }} opts
@@ -55,7 +55,7 @@ export async function validateCommand(opts) {
         continue;
       }
 
-      const { errors, warnings } = validateItem(docType, item.data);
+      const { errors, warnings } = validateItem(docType, item.data, item);
 
       if (errors.length === 0 && warnings.length === 0) {
         totalValid++;
@@ -80,7 +80,19 @@ export async function validateCommand(opts) {
 
     const orphans = findOrphans(parsedDocs);
     for (const orphan of orphans) {
-      console.log(`  ✗  ${orphan.fromItem} → ${orphan.refId} (dangling ref in ${orphan.field})`);
+      console.log(`  ✗  ${orphan.fromItem} → ${orphan.refId} (missing ${orphan.expectedType} target in ${orphan.field})`);
+      totalErrors++;
+    }
+
+    const duplicates = findDuplicateIds(parsedDocs);
+    for (const duplicate of duplicates) {
+      console.log(`  ✗  Duplicate ID ${duplicate.id} in ${duplicate.docType}`);
+      totalErrors++;
+    }
+
+    const cycles = findDependencyCycles(parsedDocs);
+    for (const cycle of cycles) {
+      console.log(`  ✗  Task dependency cycle: ${cycle.join(' → ')}`);
       totalErrors++;
     }
 
@@ -90,7 +102,7 @@ export async function validateCommand(opts) {
       totalWarnings++;
     }
 
-    if (orphans.length === 0 && bidiIssues.length === 0) {
+    if (orphans.length === 0 && duplicates.length === 0 && cycles.length === 0 && bidiIssues.length === 0) {
       console.log('  ✓  All cross-links resolve');
     }
   }

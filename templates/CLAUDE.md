@@ -28,8 +28,8 @@ Skills are **manual invoke only**. No auto-trigger.
 | **ROADMAP.md** | Directional roadmap — quarters, themes, priorities |
 | **TASKS.md** | Work breakdown — tasks with status, owners, dependencies |
 | **DECISIONS.md** | Architectural/product/technical decisions with context + rationale |
-| **LOG.md** | Single-source memory — chronological log + session learnings (OKF) |
-| **INDEX.md** | Navigation hub / table of contents (OKF) |
+| **log.md** | Single-source memory — chronological log + session learnings (OKF) |
+| **index.md** | Navigation hub / table of contents (OKF) |
 | **BUGS** | Bug tracker — **GitHub Issues** (no markdown file — the Issues *are* the source) |
 
 **Before making or reversing an architectural/product decision, check DECISIONS.md** (`/decisions list`) — don't re-litigate settled decisions; record new or reversed ones via `/decisions add` / `supersede`.
@@ -45,7 +45,7 @@ related_tasks:
 ### Cross-linking topology
 
 ```
-LOG.md (narrative memory)
+log.md (narrative memory)
     ↓ links to (via log_ref)
 DECISIONS.md (central decision ledger)
     ↓ bidirectional links (via related_*)
@@ -56,7 +56,7 @@ BUGS (GitHub Issues)
 TASKS.md
 ```
 
-Tasks/Roadmap/Vision link to **DECISIONS.md**, not to LOG.md. The decision is the source of truth for *"what we decided"*; the log is the narrative history of *how we got there*.
+Tasks/Roadmap/Vision link to **DECISIONS.md**, not to log.md. The decision is the source of truth for *"what we decided"*; the log is the narrative history of *how we got there*.
 
 ## Critical constraints
 

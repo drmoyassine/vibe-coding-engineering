@@ -29,13 +29,13 @@ related_tasks:                # array of task refs (empty: [])
   - id: TASK-001
     name: "Task title"
     url: /TASKS.md#TASK-001
-related_decisions:            # array of decision refs (empty: []) — link to DECISIONS, not LOG.md
+related_decisions:            # array of decision refs (empty: []) — link to DECISIONS, not log.md
   - id: DEC-001
     name: "Decision title"
     url: /DECISIONS.md#DEC-001
 tags: []                      # OPTIONAL (OKF) — cross-cutting labels
 resource:                     # OPTIONAL (OKF) — canonical URI to the artifact
-log_ref:                      # OPTIONAL — ref to LOG.md section (narrative history)
+log_ref:                      # OPTIONAL — ref to log.md section (narrative history)
   date: 2026-01-01
   section: "### Q2 planning"
 generated:                    # OPTIONAL (OKF trust signal)
@@ -53,14 +53,14 @@ Problem, solution, dependencies, open decisions.
 **Field rules:**
 - `vision_theme` is **singular** and **optional** (until VISION.md themes exist). Links to VISION.md when it exists.
 - `related_tasks`, `related_decisions` are **arrays**. Empty array = `[]`.
-- `related_decisions` links to DECISIONS.md (the canonical decision record), NOT to LOG.md.
-- `log_ref` points to LOG.md (narrative history) but is optional.
+- `related_decisions` links to DECISIONS.md (the canonical decision record), NOT to log.md.
+- `log_ref` points to log.md (narrative history) but is optional.
 - Same-repo URLs are **relative** (`/TASKS.md#TASK-001`); cross-repo/external are **absolute**.
 - **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. Omit when unused; unknown keys are preserved.
 
 ## Cross-linking philosophy
 
-Roadmap items link to **VISION** (via `vision_theme`) and **DECISIONS** (via `related_decisions`), NOT to LOG.md. Tasks link back via `roadmap_item`. Vision/roadmap/tasks all link bidirectionally to decisions.
+Roadmap items link to **VISION** (via `vision_theme`) and **DECISIONS** (via `related_decisions`), NOT to log.md. Tasks link back via `roadmap_item`. Vision/roadmap/tasks all link bidirectionally to decisions.
 
 ## How to use
 

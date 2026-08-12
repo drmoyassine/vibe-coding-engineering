@@ -3,7 +3,7 @@
  *
  * Health check — is the framework properly installed?
  *
- *  ✓/✗ for: all 7 expected docs present, all 5 skills installed,
+ *  ✓/✗ for: all expected docs present, all 5 skills installed,
  *  CLAUDE.md references the framework, zero needsReview items.
  */
 
@@ -11,7 +11,7 @@ import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseDoc } from '../lib/frontmatter.mjs';
 
-const EXPECTED_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'LOG.md', 'INDEX.md', 'CLAUDE.md'];
+const EXPECTED_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md', 'CLAUDE.md'];
 const EXPECTED_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
 const VALIDATABLE_DOCS = ['TASKS.md', 'ROADMAP.md', 'DECISIONS.md', 'VISION.md'];
 

@@ -25,7 +25,7 @@ related_tasks: []            # array of task refs
 related_decisions: []        # array of decision refs
 tags: []                     # OPTIONAL (OKF)
 resource:                    # OPTIONAL (OKF)
-log_ref:                     # OPTIONAL — ref to LOG.md section
+log_ref:                     # OPTIONAL — ref to log.md section
   date: 2026-01-01
   section: "### ..."
 generated:                   # OPTIONAL (OKF trust signal)
@@ -40,7 +40,7 @@ last_updated: 2026-01-01
 Full prose expansion of the decision, discussion, alternatives considered.
 ```
 
-**Field rules:** `superseded_by` is singular (omit unless `status: superseded`). `related_vision`, `related_roadmap_items`, `related_tasks`, `related_decisions` are arrays (empty = `[]`). Decisions link **bidirectionally** to/from vision/roadmap/tasks. `log_ref` points to LOG.md but LOG.md does NOT link back.
+**Field rules:** `superseded_by` is singular (omit unless `status: superseded`). `related_vision`, `related_roadmap_items`, `related_tasks`, `related_decisions` are arrays (empty = `[]`). Decisions link **bidirectionally** to/from vision/roadmap/tasks. `log_ref` points to log.md but log.md does NOT link back.
 
 ---
 

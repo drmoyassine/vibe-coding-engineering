@@ -2,13 +2,13 @@
 
 **vibe-engineering-framework Tasks** — Concrete work breakdown for the framework itself. Directional themes live in ROADMAP.md (FRAMEWORK-XXX); decisions live in DECISIONS.md.
 
-Last updated: 2026-08-12
+Last updated: 2026-08-13
 
 ---
 
 ## Task schema
 
-Each task uses YAML frontmatter (canonical source: `CLAUDE.md`). Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
+Each task uses YAML frontmatter. The current field contract is implemented in `src/lib/schemas.mjs`; FRAMEWORK-017 will consolidate it into the canonical machine-readable schema. Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
 
 ```yaml
 ---
@@ -99,53 +99,164 @@ last_updated: 2026-08-12
 
 Done — concrete (de-placeholderized) copies of `/tasks`, `/roadmap`, `/decisions`, `/bugs` installed in `.claude/skills/` alongside the existing `/apply`. The framework now manages its own ROADMAP/TASKS/DECISIONS via its own skills, matching the consumer install and clearing the `vef doctor` skill gaps.
 
-## TASK-004 — Add CLI unit tests
+## TASK-004 — Add Integrity Core test suite
 
 ---
 id: TASK-004
-title: "Add CLI unit tests"
-description: "Cover frontmatter parsing, schema validation, cross-link orphan/bidirectional detection, and the four commands"
-status: pending
-priority: P2
+title: "Add Integrity Core test suite"
+description: "Cover parsing, canonical schema validation, typed graph integrity, CLI behavior, and migration safety fixtures."
+status: completed
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
 assignee:
 depends_on: []
-related_decisions: []
-last_updated: 2026-08-12
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
 ---
 
-The `vef` CLI currently ships with no automated tests — `validate`/`doctor` are exercised only by smoke-testing against real repos.
+Completed 2026-08-13. `node --test` now covers field/reference validation, target typing, duplicate IDs, both directions of inverse-link checks, dependency cycles, and fresh scaffold casing/provenance.
 
-**Acceptance:**
-- A test runner (e.g. `node --test`) wired into `package.json` (`npm test`).
-- Fixtures: a clean repo (all green) and a broken repo (orphan ref, missing required field, bad status enum, missing back-ref).
-- Covers: `parseDoc` / `stringifyItem`, `validateItem` per doc type, `findOrphans`, `checkBidirectional`, and each command's exit code on the fixtures.
+**Completed scope:**
+- `node --test` is wired into `package.json`.
+- Fixtures cover valid/invalid schema data, malformed references, wrong target types, duplicate IDs, bidirectional links, cycles, and scaffold output.
+- CLI command-specific integration coverage remains desirable as the command surface grows.
 
-## TASK-005 — Add vef validate to CI (GitHub Actions)
+## TASK-005 — Gate the Integrity Core in CI
 
 ---
 id: TASK-005
-title: "Add vef validate to CI (GitHub Actions)"
-description: "Run `vef validate` on PRs that touch framework docs so broken cross-links fail the build"
+title: "Gate the Integrity Core in CI"
+description: "Run tests, strict validation, doctor, and package checks on supported platforms."
 status: pending
-priority: P2
+priority: P0
 roadmap_item:
-  id: FRAMEWORK-008
-  name: "Auto-run reconcile skills on doc changes"
-  url: /ROADMAP.md#FRAMEWORK-008
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
 assignee:
 depends_on:
   - id: TASK-004
-    name: "Add CLI unit tests"
+    name: "Add Integrity Core test suite"
     url: /TASKS.md#TASK-004
-related_decisions: []
-last_updated: 2026-08-12
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
 ---
 
-A lightweight GitHub Action that runs `node bin/vef.mjs validate --strict` on PRs touching `*.md` (schema docs). This is the deterministic half of FRAMEWORK-008 (the agentic `/reconcile`-on-PR half is blocked on Claude-in-CI; `vef validate` needs only Node).
+A lightweight GitHub Action must run `npm test`, `node bin/vef.mjs doctor`, `node bin/vef.mjs validate --strict`, and `npm pack --dry-run`. This is foundational product behavior, not a later agent-automation feature.
 
 **Acceptance:**
-- `.github/workflows/validate.yml` triggers on PRs touching `TASKS.md`/`ROADMAP.md`/`DECISIONS.md`/`VISION.md`.
-- Fails the check on schema errors or (with `--strict`) dangling/bidirectional warnings.
+- `.github/workflows/validate.yml` runs on pull requests and pushes.
+- Linux at minimum; add Windows coverage for filename-case behavior.
+- Fails on schema/graph errors, warnings in strict mode, test failures, or an invalid package manifest.
+
+---
+
+## TASK-006 — Define canonical schema and typed relationship model
+
+---
+id: TASK-006
+title: "Define canonical schema and typed relationship model"
+description: "Replace duplicated schema descriptions with one machine-readable model that defines fields, references, inverse links, cardinality, and lifecycle constraints."
+status: completed
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
+assignee:
+depends_on: []
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+Completed 2026-08-13. `src/lib/schemas.mjs` is the executable schema/relationship definition used by validation and graph traversal. It defines reference targets, cardinality, inverse fields, scalar constraints, and provenance shape; validation now enforces the associated invariants.
+
+## TASK-007 — Align filename conventions and provenance
+
+---
+id: TASK-007
+title: "Align filename conventions and provenance"
+description: "Adopt lowercase OKF index.md/log.md consistently and remove stale or fabricated scaffold provenance."
+status: completed
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
+assignee:
+depends_on: []
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+Completed 2026-08-13. The canonical files are `index.md` and `log.md`; templates, `init`, `doctor`, migration detection, and primary adapter discovery use those names. `init` now stamps process-generated records with the actual timestamp rather than a fabricated human actor/date. Tests verify the exact scaffold filenames.
+
+## TASK-008 — Harden /apply migration trust boundaries
+
+---
+id: TASK-008
+title: "Harden /apply migration trust boundaries"
+description: "Treat discovered repository content as untrusted data, make memory import opt-in, and require deterministic validation before a migration is accepted."
+status: pending
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
+assignee:
+depends_on:
+  - id: TASK-006
+    name: "Define canonical schema and typed relationship model"
+    url: /TASKS.md#TASK-006
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+Separate evidence from instructions in prompts, use read-only discovery/reconciliation, classify memory before import, and mark unresolved references `needsReview`. Never invent a missing canonical entity merely to satisfy a dangling link.
+
+## TASK-009 — Design and implement deterministic query commands
+
+---
+id: TASK-009
+title: "Design and implement deterministic query commands"
+description: "Expose project-memory retrieval without an LLM through list, show, refs, why, graph, and search commands."
+status: pending
+priority: P1
+roadmap_item:
+  id: FRAMEWORK-018
+  name: "Expose deterministic project queries"
+  url: /ROADMAP.md#FRAMEWORK-018
+assignee:
+depends_on:
+  - id: TASK-006
+    name: "Define canonical schema and typed relationship model"
+    url: /TASKS.md#TASK-006
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+Design stable text and JSON output around the canonical graph. `vef why TASK-XXX` should traverse task → roadmap → vision and relevant decisions without agent interpretation.
 
 ---
 
@@ -156,7 +267,11 @@ A lightweight GitHub Action that runs `node bin/vef.mjs validate --strict` on PR
 | TASK-001 | Publish to npm + rename local dir | pending | P3 |
 | TASK-002 | Write ARCHITECTURE.md | ✅ completed | P2 |
 | TASK-003 | Install 4 management skills (dogfood) | ✅ completed | P2 |
-| TASK-004 | Add CLI unit tests | pending | P2 |
-| TASK-005 | vef validate in CI | pending | P2 |
+| TASK-004 | Integrity Core test suite | completed | P0 |
+| TASK-005 | Integrity Core CI gate | pending | P0 |
+| TASK-006 | Canonical schema and typed relationship model | completed | P0 |
+| TASK-007 | Filename conventions and provenance | completed | P0 |
+| TASK-008 | /apply migration trust boundaries | pending | P0 |
+| TASK-009 | Deterministic query commands | pending | P1 |
 
-**Next priority:** TASK-004 (CLI tests — unblocks a confident CI gate). TASK-001 (npm publish + local rename) is low-priority / cosmetic — deferred until convenient.
+**Next priority:** TASK-005 and TASK-008. The core now has an executable schema and test suite; CI enforcement and migration trust boundaries are the remaining P0 work. TASK-001 remains low-priority and cosmetic.

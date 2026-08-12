@@ -64,6 +64,9 @@ export async function initCommand(opts) {
     PROJECT_NAME: projectName,
     GITHUB_OWNER: githubOwner,
     REPO_NAME: repoName,
+    GENERATED_AT: new Date().toISOString(),
+    GENERATED_BY: 'process:vef-init',
+    TODAY: new Date().toISOString().slice(0, 10),
   };
 
   console.log(`\n  Scaffolding vibe-engineering-framework into: ${targetDir}`);

@@ -20,10 +20,10 @@ roadmap_item:               # singular — links to one roadmap item
 assignee:                   # name, or empty
 depends_on: []              # array of task refs (empty: [])
 related_bugs: []            # array of GitHub Issue refs (id = issue number, int)
-related_decisions: []       # array of decision refs — link to DECISIONS, not LOG.md
+related_decisions: []       # array of decision refs — link to DECISIONS, not log.md
 tags: []                    # OPTIONAL (OKF)
 resource:                   # OPTIONAL (OKF) — canonical URI to the artifact
-log_ref:                    # OPTIONAL — ref to LOG.md section
+log_ref:                    # OPTIONAL — ref to log.md section
   date: 2026-01-01
   section: "### ..."
 generated:                  # OPTIONAL (OKF trust signal)
@@ -38,7 +38,7 @@ last_updated: 2026-01-01
 Full description, acceptance criteria, implementation notes.
 ```
 
-**Field rules:** `roadmap_item` is singular. `depends_on`, `related_bugs`, `related_decisions` are arrays (empty = `[]`). `related_decisions` links to DECISIONS.md, NOT to LOG.md. `log_ref` points to LOG.md (narrative history) but is optional.
+**Field rules:** `roadmap_item` is singular. `depends_on`, `related_bugs`, `related_decisions` are arrays (empty = `[]`). `related_decisions` links to DECISIONS.md, NOT to log.md. `log_ref` points to log.md (narrative history) but is optional.
 
 ---
 

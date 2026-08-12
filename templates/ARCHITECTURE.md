@@ -2,8 +2,8 @@
 okf_version: "0.2"
 title: "{{PROJECT_NAME}} Architecture"
 generated:
-  by: "human:owner"
-  at: "2026-01-01T00:00:00Z"
+  by: "{{GENERATED_BY}}"
+  at: "{{GENERATED_AT}}"
 ---
 
 # Architecture

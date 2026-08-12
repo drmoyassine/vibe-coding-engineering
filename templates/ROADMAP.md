@@ -19,10 +19,10 @@ vision_theme:               # singular, OPTIONAL — links to a VISION.md theme
   name: "Vision theme title"
   url: /VISION.md#document-intelligence
 related_tasks: []           # array of task refs (empty: [])
-related_decisions: []       # array of decision refs — link to DECISIONS, not LOG.md
+related_decisions: []       # array of decision refs — link to DECISIONS, not log.md
 tags: []                    # OPTIONAL (OKF)
 resource:                   # OPTIONAL (OKF)
-log_ref:                    # OPTIONAL — ref to LOG.md section
+log_ref:                    # OPTIONAL — ref to log.md section
   date: 2026-01-01
   section: "### ..."
 generated:                  # OPTIONAL (OKF trust signal)
@@ -37,7 +37,7 @@ last_updated: 2026-01-01
 Problem, solution, dependencies, open decisions.
 ```
 
-**Field rules:** `vision_theme` is singular and optional (omit until VISION.md themes exist). `related_tasks`, `related_decisions` are arrays (empty = `[]`). `related_decisions` links to DECISIONS.md, NOT to LOG.md.
+**Field rules:** `vision_theme` is singular and optional (omit until VISION.md themes exist). `related_tasks`, `related_decisions` are arrays (empty = `[]`). `related_decisions` links to DECISIONS.md, NOT to log.md.
 
 ---
 
@@ -63,5 +63,5 @@ tags: [docs, framework]
 last_updated: 2026-01-01
 ---
 
-Adopt the framework via `vef init`. Scaffolds VISION.md, ROADMAP.md, TASKS.md, DECISIONS.md, LOG.md, INDEX.md, CLAUDE.md, AGENTS.md + 5 Claude Code skills.
+Adopt the framework via `vef init`. Scaffolds VISION.md, ROADMAP.md, TASKS.md, DECISIONS.md, log.md, index.md, CLAUDE.md, AGENTS.md + 5 Claude Code skills.
 -->

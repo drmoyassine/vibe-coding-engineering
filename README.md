@@ -1,300 +1,180 @@
-# vibe-engineering-framework
+# Vibe Engineering Framework
 
-**A structured documentation framework for AI-assisted product engineering.**
+**Git-native project memory and integrity for AI-assisted engineering.**
 
-Decisions, tasks, roadmap, and bugs are scattered across Slack threads, Claude transcripts, code comments, and memory files that vanish after context compaction. This framework gives them a permanent, structured, queryable home — in version-controlled markdown that humans and AI agents can both read and maintain.
+AI can build quickly. The harder problem is remembering why the system is shaped the way it is: the decision made three chats ago, the roadmap item a task serves, the assumption behind a migration, and the work that remains after context is gone.
 
----
+Vibe Engineering Framework (VEF) turns that fragile context into a durable, human-readable project model. It stores vision, roadmap, tasks, decisions, and engineering learnings in version-controlled Markdown; gives each item a stable identity and typed links; and progressively validates that the model still makes sense.
+
+```text
+conversation, code, issues, git history
+                 │
+                 ▼
+     VEF canonical project memory
+  Vision ─ Roadmap ─ Tasks ─ Decisions ─ Log
+                 │
+                 ▼
+       humans, agents, CLI, future views
+```
+
+VEF is for teams that want an AI agent to inherit a project, not merely a prompt.
+
+> **Status:** early and actively hardening. The Markdown model, CLI, templates, and first agent adapter exist today. The next milestone, the **Integrity Core**, makes the graph's guarantees fully deterministic. See [ROADMAP.md](ROADMAP.md).
 
 ## Why this exists
 
-**Documentation rot is the silent killer of velocity.** The pattern repeats in every solo-founder and small-team project:
+Without durable project memory, AI-assisted work repeatedly loses its own context:
 
-1. **Decisions live in ephemeral spaces** — Slack, Discord, ad-hoc calls, AI chat transcripts that disappear when context is compacted.
-2. **No canonical source of truth** — *"What did we decide about X?"* requires a memory search, a git archaeology session, or a re-argument.
-3. **No path from idea to executed work** — Roadmap discussions never become tasks. Bug reports don't surface in planning. Decisions aren't discoverable by the AI doing half the work.
-4. **No queryability without a database** — *"What's blocking Q2?"*, *"Show all P1 tasks"*, *"What depended on that decision?"* are manual grep exercises or impossible.
+- Decisions end up in chats, calls, issue comments, and private memory.
+- Roadmap intent disconnects from the tasks and code that implement it.
+- A new session re-discovers architecture instead of building on it.
+- Documentation looks plausible while links, ownership, and assumptions silently drift.
 
-The cost isn't inconvenience — it's **repeated work**. Re-litigating decisions. Re-discovering dependencies. Re-explaining context to your AI pair every session because there's no persistent, structured place for it to read.
+That is not a writing problem. It is a project-state problem.
 
-**vibe-engineering-framework solves this** by making product context a first-class, structured artifact — not a side effect of chat logs.
+VEF makes the important state explicit, reviewable in Git, and available to both people and agents. Markdown is deliberately the storage format: it is portable, diffable, readable without a platform, and easy to keep beside the code it describes.
 
----
+## What VEF is
 
-## What it is
+VEF has a vendor-neutral core and agent-specific adapters.
 
-A **meta-framework** — patterns, schemas, and a Claude Code skill suite that keep product documentation in sync, queryable, and discoverable. This repo is the **canonical definition**; consumer repos (like [`studygram-app`](https://github.com/drmoyassine/studygram-app)) adopt it.
+| Layer | Responsibility | Current form |
+|---|---|---|
+| **Canonical project model** | Durable records for intent, work, decisions, and learnings | Markdown + YAML frontmatter |
+| **Integrity Core** | Schemas, typed relationships, validation, provenance, lifecycle rules | `vef` CLI (expanding) |
+| **Interfaces** | Create, inspect, migrate, and render the model | CLI, Markdown, future query/UI layers |
+| **Agent adapters** | Help an AI interpret and maintain project state | Claude Code skills today; other agents are a core design goal |
 
-### The three layers
+It is not a replacement for Linear, Jira, GitHub Issues, or a chat tool. Those can remain excellent intake and collaboration systems. VEF is the durable, curated model that explains how their important facts relate to the product.
 
-| Layer | What | Examples |
-|-------|------|----------|
-| **1. Content** | Version-controlled markdown documents, each with a clear purpose, privacy boundary, and YAML frontmatter schema | `VISION.md`, `ROADMAP.md`, `TASKS.md`, `DECISIONS.md`, `LOG.md`, `INDEX.md` |
-| **2. Discipline** | Claude Code skills that enforce structure, handle validated editing, and prevent drift | `/tasks`, `/roadmap`, `/decisions`, `/bugs`, `/apply` |
-| **3. Trigger** | A thin hook in `CLAUDE.md` that fires the skills when direction-changing work lands | *"After completing a feature, run `/tasks reconcile`"* |
+## The knowledge graph
 
-### The core documents
-
-| Document | Purpose | Source of truth |
-|----------|---------|-----------------|
-| **VISION.md** | Why we exist, north-star direction, problem/solution framing | Markdown with frontmatter per theme |
-| **ARCHITECTURE.md** | How the system works — data model, key patterns, design decisions | Markdown + ADR-style records |
-| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities | Markdown with frontmatter per item |
-| **TASKS.md** | Work breakdown — tasks with status, owners, dependencies | Markdown with frontmatter per task |
-| **DECISIONS.md** | Architectural/product/technical decisions with context & rationale | Markdown with frontmatter per decision |
-| **LOG.md** | Chronological change log + session learnings (OKF reserved filename) | Date-grouped entries, newest first |
-| **INDEX.md** | Navigation hub / table of contents (OKF reserved filename) | Doc index with links |
-| **BUGS** | Bug tracker, platform health | **GitHub Issues** (no markdown file — the Issues *are* the source) |
-
-**Key pattern:** interactive documents (ROADMAP, BUGS) have a **canonical markdown source** (read-only, version-controlled) AND a **paired intake tool**. Users never write the canonical doc directly; they interact with the intake tool (Fider, GitHub Discussions, GitHub Issues). Promotion into the curated doc is a privileged act enforced by the skill's permissions.
-
----
-
-## How it works
-
-### Cross-linking philosophy
-
-Every document links to every other via the **`id + name + url`** pattern (relative URLs for same-repo, absolute for cross-repo/external). The links follow a deliberate topology:
-
-```
-LOG.md (narrative memory)
-    ↓ links to (via log_ref)
-DECISIONS.md (central decision ledger)
-    ↓ bidirectional links (via related_*)
-VISION.md ← ROADMAP.md ← TASKS.md
-
-BUGS (GitHub Issues)
-    ↓ links to (via related_tasks)
-TASKS.md
-```
-
-**The workflow in practice:**
-
-```
-We talk, discuss, analyze, plan
-        ↓
-captured in LOG.md (single-source memory)
-        ↓
-we make a decision
-        ↓
-logged to DECISIONS.md (canonical record)
-        ↓
-tasks / roadmap items / vision items that result
-        ↓
-linked to the DECISION (not to the log)
-```
-
-Tasks/Roadmap/Vision link to **DECISIONS.md**, not to LOG.md. The decision is the source of truth for *"what we decided"*; the log is the narrative history of *how we got there*.
-
-### Bidirectional relationships
-
-All cross-links are traversable both ways:
-
-- `TASK.roadmap_item` ↔ `ROADMAP.related_tasks`
-- `ROADMAP.vision_theme` ↔ `VISION.related_roadmap_items`
-- `TASK.related_decisions` ↔ `DECISION.related_tasks`
-- `ROADMAP.related_decisions` ↔ `DECISION.related_roadmap_items`
-- `TASK.related_bugs` ↔ `BUG.related_tasks`
-
-The `/reconcile` commands validate that every link is bidirectional and that no references dangle.
-
-### Frontmatter schemas
-
-Every item uses YAML frontmatter with a canonical field set. Example (a decision):
+Every structured item has a stable ID and relationships use an explicit, readable shape:
 
 ```yaml
----
-id: DEC-001
-title: Use markdown as source of truth for docs
-status: accepted
-context: Decisions were scattered across memory files and chat logs
-decision: All product docs live in version-controlled markdown with frontmatter
-rationale: Queryable, diffable, AI-readable — no proprietary lock-in
-consequences: Requires discipline; skills enforce structure
-related_tasks:
-  - id: TASK-006
-    name: "Write VISION.md"
-    url: /TASKS.md#TASK-006
-related_roadmap_items:
-  - id: ROADMAP-001
-    name: "PowerPoint support"
-    url: /ROADMAP.md#ROADMAP-001
-tags: [schema, docs]
-last_updated: 2026-08-12
----
+roadmap_item:
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
 ```
 
-**OKF v0.2 optional fields** (may appear on any item): `tags`, `resource`, `generated {by, at}`, `verified [{by, at}]`, `log_ref`. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`.
+The intended topology is:
 
----
+```text
+VISION themes
+     ▲       │
+     │       ▼
+ROADMAP items ◀────► DECISIONS
+     ▲                    ▲
+     │                    │
+   TASKS ─────────────────┘
+     ▲
+     │
+external bugs / issues
+```
 
-## How to use it
+This creates useful answers that a plain document pile cannot reliably provide:
 
-### Install
+- Why are we doing this task?
+- What decision does this roadmap item implement?
+- Which work will be affected if a decision changes?
+- What is still unverified or needs human review?
+
+The model is deliberately denormalized for local readability: backlinks live near the thing they describe. The Integrity Core is being strengthened so that convenience never becomes silent graph drift.
+
+## Core documents
+
+| Document | Role |
+|---|---|
+| [VISION.md](VISION.md) | The enduring problem, principles, audience, and success definition |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | How VEF is composed and where trust boundaries sit |
+| [ROADMAP.md](ROADMAP.md) | Directional product commitments and sequencing |
+| [TASKS.md](TASKS.md) | Concrete, traceable work |
+| [DECISIONS.md](DECISIONS.md) | Context, decision, rationale, and consequences |
+| [LOG.md](LOG.md) | Chronological learning and material changes |
+| [index.md](index.md) | Navigation and OKF metadata |
+
+GitHub Issues remain the canonical bug tracker. A task can reference an external issue; VEF does not create a competing `BUGS.md` ledger.
+
+## What works today
+
+- `vef init` scaffolds a project with the docs, templates, and current agent skills.
+- `vef migrate` detects existing structure and prepares a repository for adoption.
+- `vef validate` checks the current schemas, dangling links, and the implemented task-to-roadmap backlink.
+- `vef doctor` checks that a project has the expected docs and skills.
+- Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
+- The framework is dogfooded in this repository and first adopted by [studygram-app](https://github.com/drmoyassine/studygram-app).
+
+## What VEF will guarantee next
+
+The roadmap deliberately distinguishes the product's current capability from its intended guarantee. The Integrity Core will make deterministic code authoritative for:
+
+- one machine-readable canonical schema;
+- reference shape, target type, cardinality, duplicate IDs, and cycles;
+- every direction of every declared inverse relationship;
+- heading/frontmatter agreement, dates, enums, URLs, and provenance structure;
+- strict CI checks that establish a complete framework contract;
+- safe mutation paths so agents do not have to remember every backlink themselves.
+
+LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence, and explaining conflicts. They should not be the authority for mechanical invariants. That boundary is a product principle, not an implementation detail.
+
+## Getting started
+
+The package is not published to npm yet. Use the repository locally:
 
 ```bash
-npm install -g vibe-engineering-framework
+git clone https://github.com/drmoyassine/vibe-engineering-framework.git
+cd vibe-engineering-framework
+npm install
+npm link
+
+vef init --name "My project"
+vef doctor
+vef validate --strict
 ```
 
-Or use directly with `npx` (no global install needed).
-
-### Scaffold a new project (`vef init`)
+For an existing repository:
 
 ```bash
-vef init                                    # scaffold into the current directory
-vef --new --dir ./my-project                # scaffold into a specific directory
-vef init --name "My App" --github owner/repo   # with project name + GitHub URLs for bugs
+vef migrate                 # inspect; does not rewrite docs
+vef migrate --apply         # install the adapter/templates and structural fixes
 ```
 
-Creates `VISION.md`, `ROADMAP.md`, `TASKS.md`, `DECISIONS.md`, `LOG.md`, `INDEX.md`, `CLAUDE.md`, `AGENTS.md`, and the five Claude Code skills (`.claude/skills/`). Non-destructive — existing files are skipped unless `--force`.
+Then use the installed agent adapter to maintain the model. In Claude Code, for example:
 
-### Adopt an existing repo (`vef migrate`)
-
-```bash
-vef --migrate                               # dry-run: detect docs, report findings
-vef migrate --apply                         # install skills + apply structural fixes
+```text
+/tasks add
+/roadmap graduate FRAMEWORK-017
+/decisions add
+/apply --dry-run
 ```
 
-Detects existing docs, installs the skills, flags items missing canonical frontmatter, and recommends running Claude Code's `/apply` for AI-powered discovery.
+`/apply` is an adoption assistant, not a source of truth. It discovers and reconciles material from Git history and prose, then renders proposed canonical records. Its safety model is being hardened so untrusted repository text is classified as data, memory import is opt-in, and deterministic validation can veto an invalid migration.
 
-### Validate your docs (`vef validate`)
+## Design principles
 
-```bash
-vef --validate                              # schema + cross-link check
-vef validate --strict                       # exit 1 on warnings too (for CI)
-```
-
-Schema validation, orphan/cross-link detection, bidirectionality checks. Exits non-zero on errors — add to CI:
-
-```yaml
-# .github/workflows/docs.yml
-- run: npx vibe-engineering-framework validate
-```
-
-### Health check (`vef doctor`)
-
-```bash
-vef --doctor                                # are all docs + skills installed?
-```
-
-### AI-powered migration (`/apply`)
-
-After scaffolding or migrating, run Claude Code's `/apply` skill for AI-powered discovery — extracting decisions, tasks, and roadmap items from scattered sources (git history, memory files, prose) into canonical frontmatter.
-
-If your repo has docs that predate the framework (bare IDs, missing frontmatter, decisions in memory files), run:
-
-```
-/apply                          # Full migration — all doc types
-/apply --decisions              # Only DECISIONS.md
-/apply --dry-run                # Report what would change, write nothing
-/apply --source memory --source git   # Also scan memory files + git history
-```
-
-`/apply` runs a **6-phase multi-agent workflow**:
-
-| Phase | What happens |
-|-------|-------------|
-| **1. Discover** | One agent per artifact document (ROADMAP.md, TASKS.md, DECISIONS.md, memory files, git history, etc.) — exhaustively extracts every item |
-| **2. Reconcile** | Orchestrator analyzes all discoveries — identifies duplicates, orphans, drift, and cross-link gaps; drafts a reconciliation plan (structured actions + narrative) |
-| **3. Extract** | Re-invokes the discovery agents with the plan — transforms items into canonical frontmatter, executes merges and cross-links |
-| **4. Validate** | Parallel validators per doc type — schema check, bidirectional cross-link verification, orphan detection |
-| **5. Render** | Pure-JS rendering — assembles `entryMarkdown` for the caller to write into each doc |
-| **6. Align** | Framework audit — proposes edits to `CLAUDE.md`, `AGENTS.md`, and skill definitions to keep them aligned with the doc reality |
-
-### Manage docs day-to-day
-
-**Tasks:**
-```
-/tasks list                     # Show all tasks
-/tasks list status:pending      # Filter by status
-/tasks add                      # Add a new task (prompts for fields)
-/tasks complete TASK-001        # Mark complete
-/tasks reconcile                # Validate schemas, detect orphans
-```
-
-**Roadmap:**
-```
-/roadmap list                   # Show all roadmap items
-/roadmap list quarter:Q1        # Filter by quarter
-/roadmap add                    # Add a roadmap item
-/roadmap graduate ROADMAP-001   # Break down into tasks
-/roadmap reconcile              # Validate schemas, detect orphans
-```
-
-**Decisions:**
-```
-/decisions list                 # Show all decisions
-/decisions list status:accepted # Filter by status
-/decisions add                  # Add a decision
-/decisions supersede DEC-001    # Mark as superseded
-/decisions reconcile            # Validate schemas, cross-links
-```
-
-**Bugs:**
-```
-/bugs list                      # Show all bugs (GitHub Issues)
-/bugs create                    # Create a bug report
-/bugs resolve 42                # Resolve a bug
-/bugs sync                      # Cross-reference Issues ↔ product_failures
-```
-
-### Single-source-of-truth rules
-
-| Rule | Detail |
-|------|--------|
-| **Decisions** | `DECISIONS.md` is the ONLY decision ledger — including decisions made by your AI agent. Never in memory files. |
-| **Memory** | `LOG.md` is the single-source memory system. Durable session learnings live here — NOT in gitignored auto-memory (which drifts). |
-| **Auto-memory** | Claude's internal memory (`~/.claude/projects/*/memory/*.md`) is for feedback, pointers, and user context ONLY — never product-structural content. |
-| **Bugs** | GitHub Issues are the source. No markdown bug file. `/bugs sync` mirrors to `product_failures` for in-app querying. |
-| **Each item type** | Lives in ONE canonical place. No duplicates across files. |
-
----
+1. **Project state belongs beside the code.** Git history and review should apply to decisions and plans, not only source files.
+2. **Humans and agents read the same model.** No proprietary database or hidden agent memory is required to understand the important state.
+3. **Semantic judgment and structural proof are different jobs.** Agents interpret; the Integrity Core verifies.
+4. **Relationships are first-class.** Stable IDs and typed references make intent traversable and explainable.
+5. **Provenance is visible.** Optional OKF-aligned metadata records who or what generated and verified a record.
+6. **Every material action leaves memory coherent.** Work is not complete when code or prose changes; its durable project-state consequences must be reconciled too.
 
 ## Relationship to OKF
 
-vibe-engineering-framework is an **implementation and extension** of the [Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md), specialized for product documentation. See [DEC-002](DECISIONS.md#DEC-002) for the adoption decision.
-
-| OKF concept | Our implementation |
-|-------------|--------------------|
-| Markdown + YAML frontmatter | ✅ All core docs |
-| Reserved filenames (`index.md`, `log.md`) | ✅ `INDEX.md` (navigation) + `LOG.md` (changelog) |
-| `okf_version` field | ✅ declared in root `INDEX.md` frontmatter |
-| Actor convention (§7) | ✅ `human:<id>` / `<producer>/<version>` / `process:<id>` |
-| Trust signals (`generated`, `verified`) | ✅ optional fields |
-| `resource` + `tags` fields | ✅ optional fields |
-| Producer/consumer independence | ✅ humans produce; skills consume; `/apply` migrates |
-| Format, not platform | ✅ git-native, no proprietary lock-in |
-
-**Extensions beyond OKF** (the differentiated value — "OKF for product docs"):
-- **Structured cross-linking** — `id + name + url` with explicit relationship types (`depends_on`, `related_tasks`, `related_decisions`, `roadmap_item`, `vision_theme`)
-- **Bidirectional relationships** — the VISION ↔ ROADMAP ↔ TASK ↔ DECISION topology is traversable both ways
-- **Management skills** — `/tasks`, `/roadmap`, `/bugs`, `/decisions` for interactive, validated editing
-- **Migration engine** — `/apply` with 6-phase multi-agent discovery + reconciliation
-- **GitHub Issues integration** — `related_bugs` links to an external issue tracker (bugs have no markdown file)
-- **Multi-repo support** — canonical definition (this repo) + consumer repos
-
-**Comparison to [OpenKB](https://github.com/VectifyAI/OpenKB) / [LLM-Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f):** those compile *raw documents* into a structured wiki using LLMs (LLM-authored links). vibe-engineering-framework inverts the model: **human-structured schemas** with skill-based management, where the LLM assists via the `/apply` migration skill rather than generating the graph. Different scope, complementary tools.
-
----
-
-## Status
-
-🚧 **Early framework.** Core docs + five management skills (`/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`) + the `vef` CLI (init, migrate, validate, doctor) built and proven in [`studygram-app`](https://github.com/drmoyassine/studygram-app). ROADMAP intake tool (Fider/GitHub Discussions) TBD.
-
-> **npm publish pending.** Until the package is on the npm registry, use it locally:
-> ```bash
-> git clone https://github.com/drmoyassine/vibe-engineering-framework.git
-> cd vibe-engineering-framework && npm install && npm link
-> vef --help   # now available globally
-> ```
+VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) conventions that fit project knowledge: Markdown, frontmatter, portable filenames, actor conventions, and trust signals. VEF adds the product-engineering layer: domain schemas, lifecycle rules, typed relationships, graph integrity, migration workflows, and agent adapters. See [DEC-002](DECISIONS.md#DEC-002).
 
 ## Roadmap
 
-*Roadmap section to be added.*
+The immediate priority is [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017): establish the Integrity Core before expanding integrations, visualizations, or more document types. The next user-facing layer after that is a deterministic query interface—commands such as `vef show`, `vef refs`, `vef why`, and `vef graph`—so the model is useful even without an LLM.
 
-## Consumers
+## Contributing and status
 
-- [`studygram-app`](https://github.com/drmoyassine/studygram-app) — Studygram CRM, the first product adopting this framework.
+This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks as the current contract and the documentation's Integrity Core sections as committed roadmap, not completed functionality.
+
+The most valuable contribution is helping make this statement literally true:
+
+> If `vef check` passes, the repository's documented project state is structurally coherent.
 
 ## License
 

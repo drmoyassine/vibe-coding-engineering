@@ -1,111 +1,68 @@
 # VISION.md
 
+## Purpose
+
+Vibe Engineering Framework exists to make AI-assisted software engineering cumulative. It gives a project durable memory: a shared, inspectable model of why the product exists, what it intends to do, what was decided, and what work follows.
+
 ## The problem
 
-Documentation rot is the silent killer of velocity. The typical solo-founder or small-team pattern:
+Modern engineering loses high-value context faster than it creates code. Decisions are made in chat, calls, issue comments, and transient agent memory; plans drift away from implementation; and every new contributor or agent must reconstruct the same reasoning from fragments.
 
-1. **Decisions live in ephemeral spaces** — Slack threads, Discord, ad-hoc calls, or Claude transcripts that vanish after context compaction.
-2. **No canonical source of truth** — "What did we decide about X?" requires a memory search or a re-argument.
-3. **No path from idea to executed work** — Roadmap discussions don't automatically become tasks; bug reports don't automatically surface in planning; decisions aren't discoverable by the AI that's doing half the work.
-4. **No queryability without a DB** — "What's blocking Q2?", "Show all P1 tasks", "What decisions depended on ARCH-0042?" are manual grep exercises or impossible.
+The result is repeated work, not merely weak documentation: teams re-litigate decisions, agents receive incomplete context, and a repository can look well documented while its roadmap, tasks, and architecture no longer agree.
 
-The cost isn't just inconvenience — it's **repeated work**. Re-litigating decisions. Re-discovering dependencies. Re-explaining context to your AI pair every session because there's no persistent, structured place for it to read.
+## The vision
 
-## The solution
+VEF is a **git-native project-memory and integrity layer for AI-assisted engineering**.
 
-**vibe-engineering-framework** is a structured documentation framework for AI-assisted product development. Three layers:
+It treats product knowledge as a portable, typed model stored beside the code. Humans and agents share the same canonical records. Git provides history and review. A deterministic integrity layer makes the model safe to depend on.
 
-### Layer 1 — Content (the artifacts)
+### Durable project memory
 
-Six core documents, each with a clear purpose and privacy boundary:
+The core record types capture a project's enduring state:
 
-| Document | Purpose | Public? | Source of truth |
-|---|---|---|---|
-| **VISION.md** | Why we exist, north-star direction, problem/solution framing | ✅ Public | Markdown with frontmatter per theme |
-| **ARCHITECTURE.md** | How the system works — data model, key patterns, design decisions | ❌ Private | Markdown + ADR-style records |
-| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities | ✅ Public | Markdown with frontmatter per item |
-| **TASKS.md** | WBS of roadmap — tasks with status, owners, dependencies | ❌ Private | Markdown with frontmatter per task |
-| **DECISIONS.md** | Architectural/product/technical decisions with context & rationale | ❌ Private | Markdown with frontmatter per decision |
-| **BUGS** | Bug tracker, platform health | ✅ Public | **GitHub Issues** (no markdown file — the Issues *are* the source) |
+| Record | Question it answers |
+|---|---|
+| Vision | Why does this project exist? |
+| Roadmap | Where are we going next? |
+| Tasks | What concrete work remains? |
+| Decisions | What did we choose, and why? |
+| Log | What materially changed or was learned? |
+| External issues | What problems have been reported? |
 
-Plus:
-- **AGENTS.md** — Agent profiles, tool/skill catalogs, context-gating rules (private)
-- **CLAUDE.md** — Repo-level instructions for Claude (public, checked-in)
+Stable IDs and typed links turn these records into an explainable graph rather than a collection of prose files.
 
-**Key pattern:** interactive documents (ROADMAP, BUGS) have a **canonical markdown source** (read-only, version-controlled) AND a **paired intake tool**. Users never write the canonical doc; they interact with the intake tool (Fider, GitHub Discussions, GitHub Issues). Promotion into the curated doc is a privileged act enforced by the tool's permissions.
+### Trustworthy structure
 
-### Layer 2 — Discipline (the skills)
+The framework must earn trust by making its promises executable. Agents can interpret ambiguous source material and propose changes; deterministic code is responsible for proving mechanical facts such as schema validity, target type, inverse links, cardinality, uniqueness, and cycles.
 
-Four Claude skills that enforce structure, handle updates, and prevent drift:
+The long-term standard is simple:
 
-- **`/tasks`** — Add, update, complete, list, and reconcile tasks in TASKS.md
-- **`/roadmap`** — Add, update, graduate (→ tasks), list, and reconcile roadmap items in ROADMAP.md
-- **`/bugs`** — Create, resolve, list, and sync bugs between GitHub Issues and product_failures table
-- **`/decisions`** — Add, update, supersede, list, and reconcile decisions in DECISIONS.md
+> When VEF's integrity check passes, the documented project state is structurally coherent.
 
-Each skill:
-- Validates frontmatter schemas on add/update
-- Handles list filtering (by status, priority, etc.)
-- Provides reconciliation (detects orphans, validates cross-links)
-- Commits with structured messages ending with `Co-Authored-By: Claude <noreply@anthropic.com>`
+### Portable, agent-neutral foundations
 
-Skills are the carrier — not a system prompt (too expensive for 90% of sessions). Invoke when direction-changing work lands.
+The canonical model is Markdown, YAML frontmatter, Git, and open conventions—not an agent vendor's memory system. Agent adapters may offer different workflows, but none owns the project's knowledge. Claude Code is the first adapter; Codex, Cursor, Gemini, and generic `AGENTS.md` workflows should be able to participate without changing the underlying data model.
 
-### Layer 3 — Trigger (the thin hook)
+## Operating principle
 
-A one-line addition to `CLAUDE.md`:
+Every material action should leave durable project memory coherent with the action that just occurred.
 
-```markdown
-When you complete direction-changing work (features, refactorings, decisions),
-run the relevant product-docs skill (`/tasks`, `/roadmap`, `/bugs`, `/decisions`)
-to reconcile the affected doc, or `/apply` to migrate docs into the framework.
-```
+That means an agent completing direction-changing work must consider its project-state consequences: update links and status, record material decisions, log meaningful changes, and create or revise directly implied roadmap/task records. It does not authorize inventing requirements, erasing history, or silently resolving ambiguity.
 
-That's it. No always-on tax. The skills fire when *needed*, not every session.
+## Who this is for
 
-## Target user
-
-- **Solo founder + AI pair** — you ship with Claude as your co-engineer. You need decisions persisted across sessions, discoverable by the AI, and connected to the work queue.
-- **Small teams with agent workflows** — you use agents for multi-step tasks (code reviews, research, sweeps). You need the agents to read your product context, write to it in a structured way, and trigger updates when they make decisions.
+- Solo founders and small teams building with coding agents.
+- Maintainers adopting an existing repository whose product knowledge is scattered across Git, prose, and conversations.
+- Contributors who need to understand a project's reasoning without searching private chat history.
 
 ## What success looks like
 
-Six months from now, a contributor joins your project. They ask: *"What's the architecture? What are we building? What's blocking the next release?"*
+A new contributor or agent can ask “why are we building this?”, “what decision caused this work?”, or “what is blocked?” and follow stable references to an answer. A pull request that breaks the project model fails a deterministic check. A migration from legacy prose leaves uncertain evidence marked for review rather than inventing facts. The model remains useful without an LLM through deterministic query and graph interfaces.
 
-- They open `ARCHITECTURE.md` — key patterns, data model, design decisions are all there, with links to the specific items that motivated them.
-- They open `ROADMAP.md` — quarters are clearly scoped, priorities are visible, and every item links back to VISION themes and forward to tasks.
-- They open `TASKS.md` — tasks have owners, status, dependencies, and bidirectional links to roadmap items and decisions.
-- They open `DECISIONS.md` — architectural decisions are captured with context, rationale, and consequences.
-- They search GitHub Issues — bugs are public, commentable, and their status flows back into the planning view.
+## Boundaries
 
-And when they ship a feature, they run `/product-docs reconcile` — and VISION/ARCHITECTURE/ROADMAP/TASKS all update to reflect the new reality. No rot. No drift. No "I swear we discussed this somewhere."
+VEF is not a project-management SaaS, chat platform, issue tracker, or CI/CD system. It complements those systems by maintaining the curated, version-controlled project knowledge they do not provide.
 
-## Non-goals
+## Current strategic priority
 
-- This is **not** a project management tool (no Gantt charts, no burndown charts, no time-tracking). Jira, Linear, Asana exist.
-- This is **not** a team collaboration platform (no kanban boards, no real-time chat). Notion, Confluence exist.
-- This is **not** a CI/CD system (no pipelines, no deployments). GitHub Actions, CircleCI exist.
-
-It's a **documentation framework** optimized for AI-assisted engineering. One job: keep the canonical product context in sync, queryable, and discoverable — by humans and by AI.
-
-## Implementation pattern (from studygram-app)
-
-**Core docs (6):**
-- ROADMAP.md, TASKS.md, DECISIONS.md — created with markdown frontmatter per item
-- BUGS — GitHub Issues (no markdown file)
-- VISION.md, ARCHITECTURE.md — planned
-
-**Skills (4):**
-- /tasks, /roadmap, /bugs, /decisions — each handles list/add/update/reconcile
-
-**Schema patterns (URL-based cross-linking):**
-- Tasks → Roadmap via `roadmap_item` (URL)
-- Tasks → Bugs via `related_bugs` (URLs)
-- Tasks → Decisions via `related_decisions` (URLs)
-- Roadmap items → Vision via `vision_theme` (URL)
-- Roadmap items → Tasks via `related_tasks` (URLs)
-- Decisions → Tasks/Roadmap via `related_tasks`/`related_roadmap_items` (URLs)
-
-**Key insight:** URLs in frontmatter enable bidirectional navigation and make cross-doc dependencies machine-readable. Cross-linking uses the **`id + name + url`** pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`).
-
-This framework is the substrate for everything you ship. Start simple, evolve when you feel pain.
+The next milestone is the [VEF Integrity Core](ROADMAP.md#FRAMEWORK-017): one canonical schema, complete typed graph validation, safe migration boundaries, tests, and CI dogfooding. Expansion features come after the foundation can substantiate the product promise.

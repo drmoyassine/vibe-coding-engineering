@@ -6,6 +6,9 @@
   "bin": {
     "vef": "./bin/vef.mjs"
   },
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
     "bin/",
     "src/",

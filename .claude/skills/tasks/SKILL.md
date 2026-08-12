@@ -34,13 +34,13 @@ related_bugs:                 # array of GitHub Issue refs (id = issue number, i
   - id: 42
     name: "Bug title"
     url: https://github.com/drmoyassine/vibe-engineering-framework/issues/42
-related_decisions:            # array of decision refs (empty: []) — link to DECISIONS, not LOG.md
+related_decisions:            # array of decision refs (empty: []) — link to DECISIONS, not log.md
   - id: DEC-001
     name: "Decision title"
     url: /DECISIONS.md#DEC-001
 tags: []                      # OPTIONAL (OKF) — cross-cutting labels
 resource:                     # OPTIONAL (OKF) — canonical URI to the artifact
-log_ref:                      # OPTIONAL — ref to LOG.md section (narrative history)
+log_ref:                      # OPTIONAL — ref to log.md section (narrative history)
   date: 2026-01-01
   section: "### ..."
 generated:                    # OPTIONAL (OKF trust signal)
@@ -59,14 +59,14 @@ Full description, acceptance criteria, implementation notes.
 - `roadmap_item` is **singular** (one origin item). Use `roadmap_item:` with no value if unlinked.
 - `depends_on`, `related_bugs`, `related_decisions` are **arrays**. Empty array = `[]`.
 - `related_bugs.id` is the GitHub Issue **number** (integer, unquoted).
-- `related_decisions` links to DECISIONS.md (the canonical decision record), NOT to LOG.md.
-- `log_ref` points to LOG.md (narrative history) but is optional.
+- `related_decisions` links to DECISIONS.md (the canonical decision record), NOT to log.md.
+- `log_ref` points to log.md (narrative history) but is optional.
 - Same-repo URLs are **relative** (`/ROADMAP.md#ROADMAP-001`); cross-repo/external are **absolute**.
 - **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. Omit when unused; unknown keys are preserved.
 
 ## Cross-linking philosophy
 
-Tasks link to **ROADMAP** (via `roadmap_item`) and **DECISIONS** (via `related_decisions`), NOT to LOG.md. The decision is the canonical record for "what we decided"; LOG.md is the narrative history of "how we got there."
+Tasks link to **ROADMAP** (via `roadmap_item`) and **DECISIONS** (via `related_decisions`), NOT to log.md. The decision is the canonical record for "what we decided"; log.md is the narrative history of "how we got there."
 
 ## How to use
 
