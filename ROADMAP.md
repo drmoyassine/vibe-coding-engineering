@@ -370,7 +370,7 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-This is the foundational milestone ahead of additional integrations and interfaces. Its first slice is complete: validation now knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, and heading/frontmatter agreement. Remaining P0 work is CI enforcement and migration trust boundaries.
+This is the foundational milestone ahead of additional integrations and interfaces. Its first slices are complete: validation knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, and heading/frontmatter agreement; tests and CI enforce the contract on Ubuntu and Windows. Remaining P0 work is migration trust boundaries.
 
 The work also resolves dogfooding drift (filenames, stale claims, templates, provenance), makes strict validation a complete CI contract, and makes migration conservative when evidence is uncertain.
 

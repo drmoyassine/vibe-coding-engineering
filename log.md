@@ -13,6 +13,7 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 - The validator now checks field types, enums, dates, reference objects, target types, complete inverse links, duplicate IDs, dependency cycles, and heading/frontmatter agreement.
 - Aligned the canonical OKF filenames to lowercase `index.md` and `log.md`; init templates now generate truthful process/timestamp provenance instead of placeholder claims.
 - Completed TASK-004, TASK-006, and TASK-007. `npm test`, `vef validate --strict`, and `vef doctor` pass against the dogfooded repository.
+- Completed TASK-005. GitHub Actions now runs the Integrity Core contract on Ubuntu and Windows for every push and pull request, including package-content verification.
 
 ### Repositioned VEF around durable project memory
 - Rewrote [README.md](/README.md) as the framework's public front door: VEF is now described precisely as a git-native project-memory and integrity layer for AI-assisted engineering.

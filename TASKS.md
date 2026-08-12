@@ -133,7 +133,7 @@ Completed 2026-08-13. `node --test` now covers field/reference validation, targe
 id: TASK-005
 title: "Gate the Integrity Core in CI"
 description: "Run tests, strict validation, doctor, and package checks on supported platforms."
-status: pending
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-017
@@ -151,7 +151,7 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-A lightweight GitHub Action must run `npm test`, `node bin/vef.mjs doctor`, `node bin/vef.mjs validate --strict`, and `npm pack --dry-run`. This is foundational product behavior, not a later agent-automation feature.
+Completed 2026-08-13. `.github/workflows/validate.yml` runs on pushes and pull requests across Ubuntu and Windows with Node 20. It installs dependencies, runs `npm test`, strict validation, `doctor`, and `npm pack --dry-run`.
 
 **Acceptance:**
 - `.github/workflows/validate.yml` runs on pull requests and pushes.
@@ -268,10 +268,10 @@ Design stable text and JSON output around the canonical graph. `vef why TASK-XXX
 | TASK-002 | Write ARCHITECTURE.md | ✅ completed | P2 |
 | TASK-003 | Install 4 management skills (dogfood) | ✅ completed | P2 |
 | TASK-004 | Integrity Core test suite | completed | P0 |
-| TASK-005 | Integrity Core CI gate | pending | P0 |
+| TASK-005 | Integrity Core CI gate | completed | P0 |
 | TASK-006 | Canonical schema and typed relationship model | completed | P0 |
 | TASK-007 | Filename conventions and provenance | completed | P0 |
 | TASK-008 | /apply migration trust boundaries | pending | P0 |
 | TASK-009 | Deterministic query commands | pending | P1 |
 
-**Next priority:** TASK-005 and TASK-008. The core now has an executable schema and test suite; CI enforcement and migration trust boundaries are the remaining P0 work. TASK-001 remains low-priority and cosmetic.
+**Next priority:** TASK-008. The core now has an executable schema, test suite, and CI enforcement; migration trust boundaries are the remaining P0 work. TASK-001 remains low-priority and cosmetic.
