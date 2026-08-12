@@ -22,10 +22,12 @@ export const TASK_FIELDS = {
 
 export const ROADMAP_FIELDS = {
   docType: 'roadmap',
-  idPrefix: 'ROADMAP',
-  required: ['id', 'title', 'status', 'quarter', 'priority', 'last_updated'],
+  // Roadmap IDs are repo-specific (FRAMEWORK- for this repo, ROADMAP- for the
+  // scaffold template, etc.) — no single prefix to enforce.
+  idPrefix: null,
+  required: ['id', 'title', 'status', 'priority', 'last_updated'],
   optional: [
-    'description', 'vision_theme', 'related_tasks', 'related_decisions',
+    'description', 'phase', 'quarter', 'vision_theme', 'related_tasks', 'related_decisions',
     'tags', 'resource', 'log_ref', 'generated', 'verified',
     'needsReview',
   ],
