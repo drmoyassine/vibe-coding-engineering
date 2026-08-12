@@ -21,6 +21,55 @@ This repo is **not** an app. It's the definition of a system. The consumers are 
 | **AGENTS.md** | Agent profiles, tool/skill catalogs, context-gating rules | When agent tooling changes |
 | **CLAUDE.md** | This file — repo-level instructions for Claude | When the workflow changes |
 
+## How to use the skills
+
+When working with docs in a repo that adopts this framework, invoke skills directly:
+
+**`/tasks` — Manage TASKS.md**
+```
+/tasks list                              # Show all tasks
+/tasks list status:pending               # Filter by status
+/tasks list priority:P1                 # Filter by priority
+/tasks add                               # Add a new task
+/tasks update TASK-001                   # Update a task
+/tasks complete TASK-001                # Mark task complete
+/tasks reconcile                        # Validate schemas, detect orphans
+```
+
+**`/roadmap` — Manage ROADMAP.md**
+```
+/roadmap list                           # Show all roadmap items
+/roadmap list quarter:Q1                 # Filter by quarter
+/roadmap add                             # Add a roadmap item
+/roadmap graduate "Q1 — PowerPoint"     # Graduate item → tasks
+/roadmap reconcile                       # Validate schemas, detect orphans
+```
+
+**`/bugs` — Manage GitHub Issues + product_failures**
+```
+/bugs list                               # Show all bugs
+/bugs list status:open                   # Filter by status
+/bugs list label:platform-health         # Filter by label
+/bugs create                             # Create a bug report
+/bugs resolve 42                         # Resolve a bug
+/bugs sync                                # Cross-reference Issues ↔ product_failures
+```
+
+**`/decisions` — Manage DECISIONS.md**
+```
+/decisions list                          # Show all decisions
+/decisions list status:accepted          # Filter by status
+/decisions add                            # Add a decision
+/decisions update DEC-001                # Update a decision
+/decisions supersede DEC-001             # Mark as superseded by new decision
+/decisions reconcile                      # Validate schemas, detect orphans
+```
+
+**When to invoke:**
+- After adding/updating items manually in the docs
+- Before committing to validate schemas
+- When you need to filter/list items
+
 ## Key patterns
 
 ### Markdown is source of truth for prose, frontmatter for structure
@@ -40,14 +89,23 @@ title: Short description
 description: One-line summary
 status: pending | in-progress | completed | cancelled
 priority: P0 | P1 | P2 | P3
-roadmap_item: https://github.com/user/repo/blob/main/ROADMAP.md#ROADMAP-001
+roadmap_item:
+  id: ROADMAP-001
+  name: "PowerPoint support"
+  url: /ROADMAP.md#ROADMAP-001
 assignee:
 depends_on:
-  - https://github.com/user/repo/blob/main/TASKS.md#TASK-000
+  - id: TASK-000
+    name: "Prerequisite task"
+    url: /TASKS.md#TASK-000
 related_bugs:
-  - https://github.com/user/repo/issues/42
+  - id: 42
+    name: "Agent hallucination on tool errors"
+    url: https://github.com/user/repo/issues/42
 related_decisions:
-  - https://github.com/user/repo/blob/main/DECISIONS.md#DEC-001
+  - id: DEC-001
+    name: "Use markdown as source of truth"
+    url: /DECISIONS.md#DEC-001
 last_updated: 2026-08-12
 ---
 
@@ -63,11 +121,18 @@ description: Support pptx uploads and text extraction
 quarter: Q1
 status: Deferred | In Progress | Completed
 priority: P1
-vision_theme: https://github.com/user/repo/blob/main/VISION.md#document-intelligence
+vision_theme:
+  id: document-intelligence
+  name: "Support all document types"
+  url: /VISION.md#document-intelligence
 related_tasks:
-  - https://github.com/user/repo/blob/main/TASKS.md#TASK-006
+  - id: TASK-006
+    name: "Stub: sniff ppt/presentation.xml"
+    url: /TASKS.md#TASK-006
 related_decisions:
-  - https://github.com/user/repo/blob/main/DECISIONS.md#DEC-002
+  - id: DEC-002
+    name: "Markdown as source of truth"
+    url: /DECISIONS.md#DEC-002
 last_updated: 2026-08-12
 ---
 
@@ -84,11 +149,18 @@ context: What problem led to this decision
 decision: What we decided
 rationale: Why this option over alternatives
 consequences: Impact (positive + negative)
-superseded_by: https://github.com/user/repo/blob/main/DECISIONS.md#DEC-002
+superseded_by:
+  id: DEC-002
+  name: "Newer decision"
+  url: /DECISIONS.md#DEC-002
 related_tasks:
-  - https://github.com/user/repo/blob/main/TASKS.md#TASK-001
+  - id: TASK-001
+    name: "Implement activeWhen predicate"
+    url: /TASKS.md#TASK-001
 related_roadmap_items:
-  - https://github.com/user/repo/blob/main/ROADMAP.md#ROADMAP-001
+  - id: ROADMAP-001
+    name: "PowerPoint support"
+    url: /ROADMAP.md#ROADMAP-001
 last_updated: 2026-08-12
 ---
 

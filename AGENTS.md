@@ -2,6 +2,21 @@
 
 This document defines the agent profiles, tool catalogs, skill catalogs, and context-gating rules for the **vibe-coding-engineering** framework.
 
+## Skills — How to invoke
+
+When working with docs in a repo that adopts this framework, invoke these skills directly:
+
+| Skill | What it does | Invocation examples |
+|---|---|---|---|
+| **`/tasks`** | Manage TASKS.md | `/tasks list`<br>`/tasks list status:pending`<br>`/tasks add`<br>`/tasks complete TASK-001`<br>`/tasks reconcile` |
+| **`/roadmap`** | Manage ROADMAP.md | `/roadmap list`<br>`/roadmap list quarter:Q1`<br>`/roadmap add`<br>`/roadmap graduate "Q1 — PowerPoint"`<br>`/roadmap reconcile` |
+| **`/bugs`** | Manage GitHub Issues + product_failures | `/bugs list`<br>`/bugs list status:open`<br>`/bugs create`<br>`/bugs resolve 42`<br>`/bugs sync` |
+| **`/decisions`** | Manage DECISIONS.md | `/decisions list`<br>`/decisions list status:accepted`<br>`/decisions add`<br>`/decisions supersede DEC-001`<br>`/decisions reconcile` |
+
+**Skills are manual invoke only** — type `/skillname command` to run. No auto-trigger.
+
+---
+
 ## Conceptual model
 
 An **agent** is a Claude instance with a specific profile (system prompt, tools, skills, capabilities). Agents are the runtime workers that execute tasks — building features, reviewing code, researching questions, running workflows.
@@ -9,7 +24,7 @@ An **agent** is a Claude instance with a specific profile (system prompt, tools,
 The framework defines:
 1. **Agent profiles** — reusable agent configurations (system prompt, toolset, skillset)
 2. **Tool catalog** — tools agents can invoke (Supabase MCP, file operations, etc.)
-3. **Skill catalog** — skills agents can invoke (`/product-docs`, `/studygram-check-failures`, etc.)
+3. **Skill catalog** — skills agents can invoke (`/tasks`, `/roadmap`, `/bugs`, `/decisions`)
 4. **Context-gating rules** — which tools/skills activate in which contexts (routes, entities, channels)
 
 ## Agent profiles
@@ -117,11 +132,23 @@ title: Short description
 description: One-line summary (in YAML)
 status: pending | in-progress | completed | cancelled
 priority: P0 | P1 | P2 | P3
-roadmap_item: URL to ROADMAP.md item
+roadmap_item:
+  id: ROADMAP-XXX
+  name: "Item name"
+  url: /ROADMAP.md#ROADMAP-XXX
 assignee: name or empty
-depends_on: [URLs to tasks]
-related_bugs: [URLs to issues]
-related_decisions: [URLs to decisions]
+depends_on:
+  - id: TASK-YYY
+    name: "Prerequisite task"
+    url: /TASKS.md#TASK-YYY
+related_bugs:
+  - id: 42
+    name: "Bug title"
+    url: https://github.com/user/repo/issues/42
+related_decisions:
+  - id: DEC-XXX
+    name: "Decision title"
+    url: /DECISIONS.md#DEC-XXX
 last_updated: 2026-08-12
 ```
 
@@ -149,9 +176,18 @@ description: Full description (in YAML)
 quarter: Q1 | Q2 | Q3 | Q4
 status: Deferred | In Progress | Completed | Blocked
 priority: P0 | P1 | P2 | P3
-vision_theme: URL to VISION.md theme
-related_tasks: [URLs to tasks]
-related_decisions: [URLs to decisions]
+vision_theme:
+  id: theme-slug
+  name: "Vision theme name"
+  url: /VISION.md#theme-slug
+related_tasks:
+  - id: TASK-XXX
+    name: "Task title"
+    url: /TASKS.md#TASK-XXX
+related_decisions:
+  - id: DEC-XXX
+    name: "Decision title"
+    url: /DECISIONS.md#DEC-XXX
 last_updated: 2026-08-12
 ```
 
@@ -206,29 +242,20 @@ context: Problem situation
 decision: What was decided
 rationale: Why this option
 consequences: Impact (positive + negative)
-superseded_by: URL to new decision
-related_tasks: [URLs to tasks]
-related_roadmap_items: [URLs to roadmap items]
+superseded_by:
+  id: DEC-YYY
+  name: "Newer decision"
+  url: /DECISIONS.md#DEC-YYY
+related_tasks:
+  - id: TASK-XXX
+    name: "Task title"
+    url: /TASKS.md#TASK-XXX
+related_roadmap_items:
+  - id: ROADMAP-XXX
+    name: "Roadmap item"
+    url: /ROADMAP.md#ROADMAP-XXX
 last_updated: 2026-08-12
 ```
-
-### `/studygram-check-failures`
-
-**Purpose:** Triage the Studygram agent platform's failure log (`product_failures` table).
-
-**See:** `studygram-app/.claude/skills/studygram-check-failures/`
-
-**When invoked:**
-- User runs `/studygram-check-failures`
-- Scheduled cron job (planned)
-
-**What it does:**
-1. Pulls open failures from `product_failures`
-2. Presents triage summary (escalations, hotspots, volume)
-3. Offers follow-ups (show detail, resolve/ignore, prune)
-
-**Context gating:**
-- Active for `studygram-agent` only (product-specific)
 
 ### `/studygram-check-failures`
 
