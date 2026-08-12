@@ -274,6 +274,27 @@ Features that go beyond basic doc management.
 - **priority:** P3
 - **last_updated:** 2026-08-12
 
+### FRAMEWORK-016: Obsidian plugin for framework UI
+- **id:** FRAMEWORK-016
+- **title:** Obsidian plugin to view and interact with framework docs
+- **description:** A TypeScript plugin that reads the YAML-frontmatter docs and renders structured views (task board, roadmap timeline, decision log) plus a graph view of the ROADMAP↔TASK↔DECISION topology
+- **phase:** Phase 4
+- **status:** Deferred
+- **priority:** P3
+- **last_updated:** 2026-08-12
+
+A local-first UI head for the framework, building on Obsidian's graph view + wikilink model:
+- **Structured views** — task board, roadmap timeline, decision log rendered from frontmatter
+- **Graph view** — the `id + name + url` cross-links become Obsidian edges; the ROADMAP↔TASK↔DECISION topology is traversable both directions (mirrors the bidirectional linking the skills already enforce)
+- **Inline actions** — mark tasks complete, supersede decisions, from the UI
+- **Repo sync** — writes back to the canonical markdown source
+
+**Why deferred:** the framework's source of truth is the markdown + skills; a UI is additive, not foundational. Build only after the schemas stabilize and after FRAMEWORK-015 clarifies which views belong on the web vs. in a local-first tool. The OKF alignment (DEC-002) matters here: the plugin consumes the same frontmatter OKF-compliant tools read, so it is a consumer of the format, not a parallel structure.
+
+**Related:**
+- FRAMEWORK-015 (public docs rendering — the adjacent web-rendering line)
+- DEC-002 (OKF adoption — the plugin is an OKF consumer)
+
 ---
 
 ## Summary
@@ -284,6 +305,6 @@ Features that go beyond basic doc management.
 | Phase 1 — Proven in studygram-app | 🔄 In Progress | FRAMEWORK-004, -005 (done); FRAMEWORK-006 (in progress); FRAMEWORK-007 (deferred) |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 |
 | Phase 3 — Generalization | ⏸ Deferred | FRAMEWORK-011, -012 |
-| Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -015 |
+| Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -015, -016 |
 
 **Next priority:** FRAMEWORK-006 (migrate studygram-app docs to id+name+url pattern)

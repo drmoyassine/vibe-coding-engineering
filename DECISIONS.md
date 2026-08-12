@@ -37,6 +37,10 @@ related_roadmap_items:
   - id: FRAMEWORK-XXX
     name: "Roadmap item"
     url: /ROADMAP.md#FRAMEWORK-XXX
+related_decisions:
+  - id: DEC-YYY
+    name: "Related decision"
+    url: /DECISIONS.md#DEC-YYY
 last_updated: 2026-08-12
 ---
 ```
