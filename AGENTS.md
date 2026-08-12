@@ -31,7 +31,7 @@ The framework defines:
 
 ### `product-docs-agent`
 
-**Purpose:** Reconcile and regenerate product documentation. The primary worker for the `/product-docs` skill.
+**Purpose:** Reconcile and regenerate product documentation. The primary worker for the **product-docs skill suite** (`/tasks`, `/roadmap`, `/bugs`, `/decisions`).
 
 **System prompt:**
 ```markdown
@@ -51,11 +51,11 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - `Bash` — run `git add` and `git commit` (no force-pushes)
 
 **Skills:**
-- `/product-docs` — the reconciliation logic (defines schemas, assembly rules)
+- The **product-docs skill suite** — `/tasks`, `/roadmap`, `/bugs`, `/decisions` (each defines its own schema + reconcile logic), plus `/apply` for one-shot migration
 
 **When invoked:**
-- Manually via `/product-docs reconcile`
-- Automatically by GitHub Actions when fragments change (planned)
+- Manually via the per-doc skills (`/tasks reconcile`, `/roadmap reconcile`, `/decisions reconcile`, `/bugs sync`)
+- Automatically by GitHub Actions when docs change (planned)
 
 ### `studygram-agent`
 
@@ -107,6 +107,8 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - Active for `studygram-agent` (comment on PRs, reference Issues)
 
 ## Skill catalog
+
+> **OKF v0.2 (DEC-002).** All schemas below additionally support optional OKF fields: `tags` (cross-cutting labels), `resource` (canonical URI to artifact), `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. See [`CLAUDE.md` Frontmatter schemas](CLAUDE.md#frontmatter-schemas) for full detail.
 
 ### `/tasks`
 

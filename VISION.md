@@ -57,10 +57,11 @@ A one-line addition to `CLAUDE.md`:
 
 ```markdown
 When you complete direction-changing work (features, refactorings, decisions),
-run `/product-docs reconcile` to update VISION, ARCHITECTURE, ROADMAP, and TASKS.
+run the relevant product-docs skill (`/tasks`, `/roadmap`, `/bugs`, `/decisions`)
+to reconcile the affected doc, or `/apply` to migrate docs into the framework.
 ```
 
-That's it. No always-on tax. The skill fires when *needed*, not every session.
+That's it. No always-on tax. The skills fire when *needed*, not every session.
 
 ## Target user
 
@@ -105,6 +106,6 @@ It's a **documentation framework** optimized for AI-assisted engineering. One jo
 - Roadmap items → Tasks via `related_tasks` (URLs)
 - Decisions → Tasks/Roadmap via `related_tasks`/`related_roadmap_items` (URLs)
 
-**Key insight:** URLs in frontmatter enable bidirectional navigation and make cross-doc dependencies machine-readable. GitHub blob URLs (`https://github.com/user/repo/blob/main/FILE.md#ID`) are the canonical reference format.
+**Key insight:** URLs in frontmatter enable bidirectional navigation and make cross-doc dependencies machine-readable. Cross-linking uses the **`id + name + url`** pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`).
 
 This framework is the substrate for everything you ship. Start simple, evolve when you feel pain.

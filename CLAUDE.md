@@ -4,7 +4,7 @@ This file is loaded at the start of every Claude session in this repository. It 
 
 ## Project purpose
 
-**vibe-coding-engineering** is a structured documentation framework for AI-assisted product development. It's a meta-framework — a set of patterns, schemas, and a Claude skill (`/product-docs`) that keep product documentation in sync, queryable, and discoverable.
+**vibe-coding-engineering** is a structured documentation framework for AI-assisted product development. It's a meta-framework — a set of patterns, schemas, and a Claude skill suite (the **product-docs skills**: `/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`) that keep product documentation in sync, queryable, and discoverable.
 
 This repo is **not** an app. It's the definition of a system. The consumers are other repos (like `studygram-app`) that adopt the framework.
 
@@ -81,6 +81,8 @@ When working with docs in a repo that adopts this framework, invoke skills direc
 
 ### Frontmatter schemas
 
+> **OKF v0.2 conformance (DEC-002).** Every item carries the core fields below. The optional OKF fields — `tags`, `resource`, `generated` (by/at), `verified` (by/at) — may appear on any item. The **actor convention** (§7) applies to `generated.by` / `verified.by`: `human:<id>` for people, `<producer>/<version>` for agents/tools, `process:<id>` for automated processes. Unknown keys are preserved (round-trip safe).
+
 **Task (`TASKS.md`):**
 ```yaml
 ---
@@ -106,6 +108,14 @@ related_decisions:
   - id: DEC-001
     name: "Use markdown as source of truth"
     url: /DECISIONS.md#DEC-001
+tags: [agent, rls, permissions]         # OPTIONAL (OKF) — cross-cutting labels
+resource: https://github.com/user/repo/blob/main/migrations/001.sql  # OPTIONAL (OKF) — canonical URI to the artifact
+generated:                              # OPTIONAL (OKF trust signal)
+  by: "human:<id>"                      # actor convention: human:<id> | <producer>/<version> | process:<id>
+  at: "2026-08-12T00:00:00Z"
+verified:                               # OPTIONAL (OKF trust signal) — repeatable
+  - by: "human:<id>"
+    at: "2026-08-12T00:00:00Z"
 last_updated: 2026-08-12
 ---
 
@@ -133,6 +143,14 @@ related_decisions:
   - id: DEC-002
     name: "Markdown as source of truth"
     url: /DECISIONS.md#DEC-002
+tags: [documents, extraction]           # OPTIONAL (OKF)
+resource:                               # OPTIONAL (OKF) — canonical URI to the artifact
+generated:                              # OPTIONAL (OKF trust signal)
+  by: "human:<id>"
+  at: "2026-08-12T00:00:00Z"
+verified:                               # OPTIONAL (OKF trust signal)
+  - by: "human:<id>"
+    at: "2026-08-12T00:00:00Z"
 last_updated: 2026-08-12
 ---
 
@@ -161,6 +179,14 @@ related_roadmap_items:
   - id: ROADMAP-001
     name: "PowerPoint support"
     url: /ROADMAP.md#ROADMAP-001
+tags: [schema, docs]                    # OPTIONAL (OKF)
+resource:                               # OPTIONAL (OKF)
+generated:                              # OPTIONAL (OKF trust signal)
+  by: "human:<id>"
+  at: "2026-08-12T00:00:00Z"
+verified:                               # OPTIONAL (OKF trust signal)
+  - by: "human:<id>"
+    at: "2026-08-12T00:00:00Z"
 last_updated: 2026-08-12
 ---
 
@@ -230,10 +256,12 @@ It's a **documentation substrate** for AI-assisted engineering. One job: keep ca
 
 ## When in doubt
 
-Read `VISION.md` first. Then `ARCHITECTURE.md`. If you're still unsure, run:
+Read `VISION.md` first. Then `ARCHITECTURE.md`. If you're still unsure, run the relevant reconcile skill to see what would change:
 
 ```
-/product-docs reconcile --dry-run
+/tasks reconcile --dry-run        # validate TASKS.md
+/roadmap reconcile --dry-run      # validate ROADMAP.md
+/decisions reconcile --dry-run    # validate DECISIONS.md
 ```
 
-...to see what would change without actually changing it.
+Each reports inconsistencies without changing anything (when `--dry-run` is supported).
