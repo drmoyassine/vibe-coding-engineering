@@ -17,10 +17,29 @@ export const meta = {
 }
 
 // --- Args ---
-const flags = args || {}
+// NOTE: on some runtimes `args` does not propagate when invoked via
+// Workflow({ scriptPath, args }). The log() below surfaces what was received so
+// a silent fallback to defaults is diagnosable. To force flags for a run, edit here.
+log(`args received: ${JSON.stringify(args)}`)
+const flags = (args && typeof args === 'object' && Object.keys(args).length) ? args : {}
 const docTypes = flags.docTypes || ['tasks', 'roadmap', 'decisions', 'bugs']
 const dryRun = flags.dryRun ?? false
 const sources = flags.sources || ['file', 'memory', 'git']
+
+// --- docType normalization ---
+// Discovery agents self-label `docType` freely ('TASK-DISCOVERY', 'BUG-CATALOG').
+// Normalize to a canonical key so the prefix map and downstream stages resolve.
+const DOCTYPE_PREFIX = { tasks: 'TASK', roadmap: 'ROADMAP', decisions: 'DEC', bugs: 'BUG' }
+const DOCTYPE_ALIASES = {
+  tasks: 'tasks', task: 'tasks', 'task-discovery': 'tasks', todos: 'tasks', todo: 'tasks',
+  roadmap: 'roadmap', 'road-map': 'roadmap',
+  decisions: 'decisions', decision: 'decisions', 'decision-log': 'decisions', dec: 'decisions',
+  bugs: 'bugs', bug: 'bugs', 'bug-catalog': 'bugs', issues: 'bugs',
+}
+function canonicalDocType(raw) {
+  const key = String(raw || '').trim().toLowerCase()
+  return DOCTYPE_ALIASES[key] || key
+}
 
 // --- Schemas ---
 
@@ -218,7 +237,7 @@ const discoveryResults = await parallel(
   })
 )
 
-const discoveries = discoveryResults.filter(Boolean)
+const discoveries = discoveryResults.filter(Boolean).map(d => ({ ...d, docType: canonicalDocType(d.docType) }))
 const totalDiscovered = discoveries.reduce((sum, d) => sum + (d.items?.length || 0), 0)
 log(`Discovered ${totalDiscovered} items across ${discoveries.length} doc types`)
 
@@ -226,12 +245,12 @@ log(`Discovered ${totalDiscovered} items across ${discoveries.length} doc types`
 
 phase('Extract')
 
-const transformations = await pipeline(
+const _rawTransformations = await pipeline(
   discoveries,
   // Stage 1: Transform discovered items into standard frontmatter
   (discovery) => {
-    const dt = discovery.docType
-    const prefix = { tasks: 'TASK', roadmap: 'ROADMAP', decisions: 'DEC', bugs: 'BUG' }[dt] || 'ITEM'
+    const dt = canonicalDocType(discovery.docType)
+    const prefix = DOCTYPE_PREFIX[dt] || 'ITEM'
     return agent(
       `You are the ${dt.toUpperCase()} extraction agent. Transform the discovered items into the standard vibe-coding-engineering frontmatter format.
 
@@ -271,7 +290,7 @@ ${JSON.stringify(discovery.items, null, 2)}`,
   },
   // Stage 2: Cross-link pass — wire bidirectional relationships
   (transformed, originalDiscovery) => {
-    const dt = transformed.docType
+    const dt = canonicalDocType(transformed.docType)
     return agent(
       `You are the cross-link agent for ${dt.toUpperCase()}. Review the transformed entries and ensure all relationships are bidirectional and correctly formatted.
 
@@ -296,6 +315,8 @@ Return the corrected entries (same schema). Do NOT drop any entries.`,
     )
   }
 )
+
+const transformations = _rawTransformations.filter(Boolean).map(t => ({ ...t, docType: canonicalDocType(t.docType) }))
 
 // --- Phase 3: Validate (parallel — one validator per doc type) ---
 
