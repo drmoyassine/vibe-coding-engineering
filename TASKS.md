@@ -240,7 +240,7 @@ Completed 2026-08-13. `/apply` now defaults to read-only file evidence and requi
 id: TASK-009
 title: "Design and implement deterministic query commands"
 description: "Expose project-memory retrieval without an LLM through list, show, refs, why, graph, and search commands."
-status: pending
+status: completed
 priority: P1
 roadmap_item:
   id: FRAMEWORK-018
@@ -258,7 +258,9 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-Design stable text and JSON output around the canonical graph. `vef why TASK-XXX` should traverse task → roadmap → vision and relevant decisions without agent interpretation.
+Completed 2026-08-13. A shared read-only project loader now derives records and edges from the canonical parser and relationship schema. `vef list`, `show`, `refs`, `why`, `graph`, and `search` provide stable text output and a versioned `schemaVersion: 1` JSON envelope. Filters are deterministic and case-insensitive, errors remain machine-readable under `--json`, incoming links come from the typed graph, and `why` follows task → roadmap → vision plus relevant decision edges without agent interpretation.
+
+Integration tests cover text and JSON output, repeatability, filters and aliases, normalized dates, typed incoming/outgoing/external references, rationale traversal, graph rendering, body search, ambiguity selectors, and failing exit codes.
 
 ---
 
@@ -274,6 +276,6 @@ Design stable text and JSON output around the canonical graph. `vef why TASK-XXX
 | TASK-006 | Canonical schema and typed relationship model | completed | P0 |
 | TASK-007 | Filename conventions and provenance | completed | P0 |
 | TASK-008 | /apply migration trust boundaries | completed | P0 |
-| TASK-009 | Deterministic query commands | pending | P1 |
+| TASK-009 | Deterministic query commands | completed | P1 |
 
-**Next priority:** TASK-009. The Integrity Core is complete; deterministic query commands are the next user-facing layer. TASK-001 remains low-priority and cosmetic.
+**Next priority:** TASK-001 is the only remaining local task and remains intentionally P3/cosmetic. New framework product work should start as an explicit roadmap item and linked task.

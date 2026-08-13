@@ -58,6 +58,9 @@ test('init creates lowercase OKF files with truthful generated provenance', asyn
     const index = await readFile(join(dir, 'index.md'), 'utf8');
     assert.match(index, /by: "process:vef-init"/);
     assert.doesNotMatch(index, /2026-01-01T00:00:00Z|human:owner/);
+    const claude = await readFile(join(dir, 'CLAUDE.md'), 'utf8');
+    assert.match(claude, /vef why TASK-001/);
+    assert.match(claude, /versioned automation contract/);
     const { stdout: doctorOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]);
     assert.match(doctorOutput, /✓  \/apply trust contract/);
     assert.match(doctorOutput, /✓ All checks passed/);

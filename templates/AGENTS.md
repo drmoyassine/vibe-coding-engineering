@@ -6,6 +6,10 @@ Detailed working conventions for AI agents in this repo. Companion to `CLAUDE.md
 
 This repo uses the [vibe-engineering-framework](https://github.com/drmoyassine/vibe-engineering-framework) documentation system. See `CLAUDE.md` for the skills table and doc-framework overview.
 
+## Deterministic queries
+
+Use `vef list`, `show`, `refs`, `why`, `graph`, and `search` for read-only project retrieval. Every query supports versioned JSON through `--json`; none modifies files or invokes an agent.
+
 ## Editing workflow
 
 1. **Read before you write** — never patch a file you haven't seen this session.

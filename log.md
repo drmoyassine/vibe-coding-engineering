@@ -8,6 +8,11 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### Deterministic project queries shipped
+- Completed TASK-009 and FRAMEWORK-018. The CLI now exposes `list`, `show`, `refs`, `why`, `graph`, and `search` over one canonical read-only project loader.
+- Query text is stable and human-readable; `--json` uses a versioned `schemaVersion: 1` envelope for successes and failures.
+- `why` traverses declared task → roadmap → vision and decision edges without an LLM. Integration tests cover filters, aliases, incoming/outgoing/external refs, traversal, graph output, search, normalization, and error exit codes.
+
 ### Integrity Core completed
 - Replaced the duplicated field descriptions in the CLI with a single machine-readable schema and typed relationship declarations.
 - The validator now checks field types, enums, dates, reference objects, target types, complete inverse links, duplicate IDs, dependency cycles, and heading/frontmatter agreement.

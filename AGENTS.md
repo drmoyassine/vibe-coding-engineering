@@ -15,6 +15,21 @@ When working with docs in a repo that adopts this framework, invoke these skills
 
 **Skills are manual invoke only** — type `/skillname command` to run. No auto-trigger.
 
+## Deterministic CLI queries
+
+The skills are write/reconciliation adapters. For read-only project retrieval, prefer the VEF CLI:
+
+| Command | Result |
+|---|---|
+| `vef list [type]` | Filtered task, roadmap, vision, or decision summaries |
+| `vef show <id>` | Full frontmatter and prose for one item |
+| `vef refs <id>` | Typed incoming and outgoing relationships |
+| `vef why <id>` | Rule-based task → roadmap → vision and decision rationale paths |
+| `vef graph` | Complete canonical typed graph |
+| `vef search <query>` | Case-insensitive canonical frontmatter/body search |
+
+All query commands support `--json`; they do not modify files or invoke an agent.
+
 ---
 
 ## Conceptual model

@@ -25,6 +25,10 @@ Navigation hub for {{PROJECT_NAME}} documentation.
 | [CLAUDE.md](CLAUDE.md) | Repo-level instructions for Claude Code |
 | [AGENTS.md](AGENTS.md) | Working conventions for AI agents |
 
+## Query project state
+
+Use `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search` for deterministic read-only retrieval. Add `--json` for the versioned automation contract.
+
 ## External
 
 | Source | URL |

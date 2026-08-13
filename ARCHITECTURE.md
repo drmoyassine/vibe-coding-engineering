@@ -32,29 +32,27 @@ The boundary is intentional: agents handle semantic ambiguity; deterministic cod
 
 The canonical model is version-controlled Markdown with YAML frontmatter. The structured item documents are `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md`; `log.md` provides chronological narrative memory. `index.md` is the navigation/OKF entry point. External systems such as GitHub Issues remain canonical for their native records and are referenced by URL.
 
-Every structured item has a stable ID. Relationships are explicit `{ id, name, url }` objects. The intended relationship declarations define source type, target type, cardinality, and inverse field—for example, `TASK.roadmap_item` targets a roadmap item and is mirrored by `ROADMAP.related_tasks`.
+Every structured item has a stable ID. Relationships are explicit `{ id, name, url }` objects. The canonical relationship declarations define source type, target type, cardinality, and inverse field—for example, `TASK.roadmap_item` targets a roadmap item and is mirrored by `ROADMAP.related_tasks`.
 
 VEF deliberately keeps useful backlinks in the documents so local reading remains excellent. That denormalization is safe only when validation and mutation paths make inverse drift observable or impossible.
 
 ## Integrity Core
 
-The current CLI provides parsing, initial per-document schema checks, orphan detection, a task-to-roadmap backlink check, scaffolding, and health checks. It is an early implementation, not yet the complete Integrity Core advertised by the product direction.
-
-FRAMEWORK-017 defines the target core:
+FRAMEWORK-017 delivered the current Integrity Core:
 
 - a single machine-readable schema definition used by validation, docs, templates, CLI help, and agent prompts;
 - typed relationship declarations and complete two-way validation;
 - strict validation of reference shape, target type, cardinality, duplicates, cycles, IDs, dates, URLs, headings, and provenance;
-- a complete CI contract rather than a permissive partial check;
-- atomic or generated backlink mutation so agents do not manually maintain fragile graph state.
+- a cross-platform CI contract covering tests, strict validation, health, and package contents;
+- a guarded `/apply` proposal/write boundary that requires explicit sources and deterministic staged validation.
 
-Until that work lands, public material must distinguish implemented checks from intended guarantees.
+The core also provides one read-only project loader and typed graph used by every query command. Deterministic general-purpose mutation commands are not implemented; agent adapters remain responsible for proposing edits that the core validates.
 
 ## Interfaces
 
 ### CLI
 
-`vef init`, `vef migrate`, `vef validate`, and `vef doctor` are the current interface. The planned query layer will expose project state without an LLM: `vef show`, `vef refs`, `vef why`, `vef graph`, and filtered list/search commands.
+`vef init`, `vef migrate`, `vef validate`, and `vef doctor` manage adoption and integrity. The read-only query interface is `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search`. Text output is the human interface; `--json` uses a versioned envelope for automation. `why` follows declared task→roadmap→vision and decision-rationale edges without model interpretation.
 
 ### Agent adapters
 
@@ -82,3 +80,4 @@ This repository is the first VEF instance. It must pass its own health and stric
 - [DEC-002](DECISIONS.md#DEC-002) — OKF conventions and extensions
 - [DEC-003](DECISIONS.md#DEC-003) — Integrity Core authority and portable architecture
 - [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) — Integrity Core
+- [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) — Deterministic project queries

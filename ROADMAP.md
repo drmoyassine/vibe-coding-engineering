@@ -383,7 +383,7 @@ id: FRAMEWORK-018
 title: "Expose deterministic project queries"
 description: "Make the project graph useful without an LLM through CLI list, show, reference, rationale, graph, and search commands."
 phase: "Phase 1 — Queryable Project Memory"
-status: "Deferred"
+status: "Completed"
 priority: "P1"
 related_tasks:
   - id: TASK-009
@@ -396,7 +396,7 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-After structural trust is established, expose the graph through `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and search. This makes VEF useful to a human or CI environment even where no agent is available.
+Completed 2026-08-13. `vef list`, `show`, `refs`, `why`, `graph`, and `search` derive records and typed edges from the canonical parser and relationship declarations used by integrity checks. Default text output serves humans; versioned JSON serves scripts and CI. Rationale traversal is rule-based and read-only, so the model remains useful where no agent is available.
 
 ---
 
@@ -406,9 +406,10 @@ After structural trust is established, expose the graph through `vef list`, `vef
 |---|---|---|
 | Phase 0 — Integrity Core | ✅ Completed | FRAMEWORK-017 |
 | Phase 0 — Foundation | ✅ Completed | FRAMEWORK-001, -002, -003 |
+| Phase 1 — Queryable Project Memory | ✅ Completed | FRAMEWORK-018 |
 | Phase 1 — Proven in studygram-app | 🔄 In Progress | FRAMEWORK-004, -005 (done); FRAMEWORK-006 (in progress); FRAMEWORK-007 (deferred) |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -015, -016 |
 
-**Next priority:** FRAMEWORK-018 (expose deterministic project queries). FRAMEWORK-006 remains active consumer migration work.
+**Next priority:** FRAMEWORK-006 remains active consumer migration work. No additional framework-core milestone is committed yet.

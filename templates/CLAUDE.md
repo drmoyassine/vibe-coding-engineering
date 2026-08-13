@@ -19,6 +19,21 @@ Loaded at the start of every Claude session in this repo. This file covers proje
 
 Skills are **manual invoke only**. No auto-trigger.
 
+## Deterministic CLI queries
+
+Use the read-only CLI when the answer should come directly from canonical project state:
+
+```bash
+vef list tasks --status pending
+vef show TASK-001
+vef refs TASK-001
+vef why TASK-001
+vef graph --json
+vef search "customer outcome" --json
+```
+
+Text is the default; `--json` emits the versioned automation contract. Use `type:id` only to disambiguate duplicate IDs in an invalid repository.
+
 ## Doc framework (single sources of truth)
 
 | Doc | Purpose |
@@ -68,7 +83,7 @@ Tasks/Roadmap/Vision link to **DECISIONS.md**, not to log.md. The decision is th
 
 ## When in doubt
 
-Read `VISION.md` first. Then check `DECISIONS.md`. If still unsure, run the relevant skill:
+Read `VISION.md` first. Then check `DECISIONS.md`. Use `vef why <id>` or `vef refs <id>` for deterministic retrieval. If still unsure, run the relevant skill:
 ```
 /tasks list
 /decisions list

@@ -93,7 +93,9 @@ export function parseDoc(text) {
     if (rest.startsWith('---')) {
       const fm = parseFrontmatter(rest);
       data = fm.data;
-      body = fm.content.trim();
+      // Item sections are separated by a standalone `---` before the next
+      // heading. It is document framing, not part of the item's prose.
+      body = fm.content.replace(/\r?\n---\s*$/, '').trim();
       hasFrontmatter = !fm._parseError;
     }
 

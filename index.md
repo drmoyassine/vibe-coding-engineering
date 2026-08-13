@@ -7,7 +7,7 @@ description: "Git-native project memory and integrity for AI-assisted engineerin
 
 # Vibe Engineering Framework
 
-VEF maintains a portable, version-controlled project model for humans and AI agents. Its current implementation is being hardened around an authoritative Integrity Core; see the [README](README.md) for the product overview and capability boundary.
+VEF maintains a portable, version-controlled project model for humans and AI agents. Its Integrity Core and deterministic query layer are dogfooded in this repository; see the [README](README.md) for the product overview and capability boundary.
 
 ## Canonical project state
 
@@ -24,11 +24,12 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 
 ## Current priority
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) builds the VEF Integrity Core: a canonical schema, typed graph validation, safe migration boundaries, tests, and CI dogfooding. [DEC-003](DECISIONS.md#DEC-003) records the architectural decision.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. [DEC-003](DECISIONS.md#DEC-003) records the architectural decision. FRAMEWORK-006 remains active consumer migration work.
 
 ## Current interfaces
 
-- CLI: `vef init`, `vef migrate`, `vef validate`, `vef doctor`
+- CLI integrity/adoption: `vef init`, `vef migrate`, `vef validate`, `vef doctor`
+- CLI queries: `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, `vef search` (text or versioned JSON)
 - Claude Code adapter: `/apply`, `/tasks`, `/roadmap`, `/decisions`, `/bugs`
 - External bugs: GitHub Issues are canonical; VEF references them rather than maintaining a duplicate bug document.
 

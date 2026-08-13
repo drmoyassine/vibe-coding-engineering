@@ -8,9 +8,11 @@
  *   vef migrate [--dir] [--apply]                    Adopt an existing repo (alias: --migrate)
  *   vef validate [--dir] [--strict]                  Schema + cross-link validation (alias: --validate)
  *   vef doctor [--dir]                               Health check (alias: --doctor)
+ *   vef list|show|refs|why|graph|search               Deterministic project queries
  */
 
 import { program } from 'commander';
+import { QUERY_SCHEMA_VERSION } from '../src/lib/project-query.mjs';
 
 // ── Flag-to-subcommand shim ──────────────────────────────────────────────
 // The user's mental model is `vef --new` / `vef --migrate`. Commander uses
@@ -37,7 +39,7 @@ for (const [flag, cmd] of Object.entries(flagMap)) {
 
 program
   .name('vef')
-  .description('Vibe Engineering Framework — scaffold, migrate, and validate AI-assisted product docs.')
+  .description('Vibe Engineering Framework — scaffold, validate, and query durable project memory.')
   .version('0.1.0');
 
 program
@@ -81,4 +83,81 @@ program
     await doctorCommand(opts);
   });
 
-program.parse();
+async function runQuery(command, json, action) {
+  try {
+    await action();
+  } catch (error) {
+    const message = error?.message || String(error);
+    if (json) console.error(JSON.stringify({ schemaVersion: QUERY_SCHEMA_VERSION, command, error: { message } }, null, 2));
+    else console.error(`Error: ${message}`);
+    process.exitCode = 1;
+  }
+}
+
+program
+  .command('list [type]')
+  .description('List project items, optionally filtered by type, status, or priority')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--status <status>', 'filter by exact status (case-insensitive)')
+  .option('--priority <priority>', 'filter by exact priority (case-insensitive)')
+  .option('--json', 'emit versioned JSON')
+  .action((type, opts) => runQuery('list', opts.json, async () => {
+    const { listCommand } = await import('../src/commands/query.mjs');
+    await listCommand(type, opts);
+  }));
+
+program
+  .command('show <id>')
+  .description('Show one project item; use type:id if an ID is ambiguous')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--json', 'emit versioned JSON')
+  .action((id, opts) => runQuery('show', opts.json, async () => {
+    const { showCommand } = await import('../src/commands/query.mjs');
+    await showCommand(id, opts);
+  }));
+
+program
+  .command('refs <id>')
+  .description('Show typed incoming and outgoing references for an item')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--direction <direction>', 'in, out, or both', 'both')
+  .option('--json', 'emit versioned JSON')
+  .action((id, opts) => runQuery('refs', opts.json, async () => {
+    const { refsCommand } = await import('../src/commands/query.mjs');
+    await refsCommand(id, opts);
+  }));
+
+program
+  .command('why <id>')
+  .description('Trace deterministic rationale paths through roadmap, vision, and decisions')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--json', 'emit versioned JSON')
+  .action((id, opts) => runQuery('why', opts.json, async () => {
+    const { whyCommand } = await import('../src/commands/query.mjs');
+    await whyCommand(id, opts);
+  }));
+
+program
+  .command('graph')
+  .description('Render the complete typed project graph')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--json', 'emit versioned JSON')
+  .action((opts) => runQuery('graph', opts.json, async () => {
+    const { graphCommand } = await import('../src/commands/query.mjs');
+    await graphCommand(opts);
+  }));
+
+program
+  .command('search <query>')
+  .description('Search IDs, frontmatter, relationships, and body prose')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--type <type>', 'filter by vision, roadmap, tasks, or decisions')
+  .option('--status <status>', 'filter by exact status (case-insensitive)')
+  .option('--priority <priority>', 'filter by exact priority (case-insensitive)')
+  .option('--json', 'emit versioned JSON')
+  .action((query, opts) => runQuery('search', opts.json, async () => {
+    const { searchCommand } = await import('../src/commands/query.mjs');
+    await searchCommand(query, opts);
+  }));
+
+await program.parseAsync();

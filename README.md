@@ -19,7 +19,7 @@ conversation, code, issues, git history
 
 VEF is for teams that want an AI agent to inherit a project, not merely a prompt.
 
-> **Status:** early and actively hardening. The Markdown model, CLI, templates, and first agent adapter exist today. The next milestone, the **Integrity Core**, makes the graph's guarantees fully deterministic. See [ROADMAP.md](ROADMAP.md).
+> **Status:** early but operational. The Integrity Core, cross-platform CI gate, safe migration boundary, and deterministic query layer are implemented and dogfooded here. See [ROADMAP.md](ROADMAP.md).
 
 ## Why this exists
 
@@ -41,8 +41,8 @@ VEF has a vendor-neutral core and agent-specific adapters.
 | Layer | Responsibility | Current form |
 |---|---|---|
 | **Canonical project model** | Durable records for intent, work, decisions, and learnings | Markdown + YAML frontmatter |
-| **Integrity Core** | Schemas, typed relationships, validation, provenance, lifecycle rules | `vef` CLI (expanding) |
-| **Interfaces** | Create, inspect, migrate, and render the model | CLI, Markdown, future query/UI layers |
+| **Integrity Core** | Schemas, typed relationships, validation, provenance, lifecycle rules | `vef` CLI + CI |
+| **Interfaces** | Create, inspect, migrate, query, and render the model | CLI, Markdown, agent adapters |
 | **Agent adapters** | Help an AI interpret and maintain project state | Claude Code skills today; other agents are a core design goal |
 
 It is not a replacement for Linear, Jira, GitHub Issues, or a chat tool. Those can remain excellent intake and collaboration systems. VEF is the durable, curated model that explains how their important facts relate to the product.
@@ -80,7 +80,7 @@ This creates useful answers that a plain document pile cannot reliably provide:
 - Which work will be affected if a decision changes?
 - What is still unverified or needs human review?
 
-The model is deliberately denormalized for local readability: backlinks live near the thing they describe. The Integrity Core is being strengthened so that convenience never becomes silent graph drift.
+The model is deliberately denormalized for local readability: backlinks live near the thing they describe. The Integrity Core validates every declared inverse so that convenience does not become silent graph drift.
 
 ## Core documents
 
@@ -100,21 +100,22 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 
 - `vef init` scaffolds a project with the docs, templates, and current agent skills.
 - `vef migrate` detects existing structure and prepares a repository for adoption.
-- `vef validate` checks the current schemas, dangling links, and the implemented task-to-roadmap backlink.
-- `vef doctor` checks that a project has the expected docs and skills.
+- `vef validate --strict` checks field contracts, typed targets, dangling links, inverse relationships, duplicates, and dependency cycles.
+- `vef doctor` checks expected docs and skills, migration review state, casing, and the `/apply` trust contract.
+- `vef list`, `show`, `refs`, `why`, `graph`, and `search` expose the canonical model without an LLM.
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
 - The framework is dogfooded in this repository and first adopted by [studygram-app](https://github.com/drmoyassine/studygram-app).
 
-## What VEF will guarantee next
+## Deterministic contract
 
-The roadmap deliberately distinguishes the product's current capability from its intended guarantee. The Integrity Core will make deterministic code authoritative for:
+The Integrity Core makes deterministic code authoritative for:
 
 - one machine-readable canonical schema;
 - reference shape, target type, cardinality, duplicate IDs, and cycles;
 - every direction of every declared inverse relationship;
 - heading/frontmatter agreement, dates, enums, URLs, and provenance structure;
 - strict CI checks that establish a complete framework contract;
-- safe mutation paths so agents do not have to remember every backlink themselves.
+- safe proposal/write boundaries for agent-assisted migration.
 
 LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence, and explaining conflicts. They should not be the authority for mechanical invariants. That boundary is a product principle, not an implementation detail.
 
@@ -132,6 +133,21 @@ vef init --name "My project"
 vef doctor
 vef validate --strict
 ```
+
+Query the project model directly:
+
+```bash
+vef list tasks --status pending
+vef show TASK-009
+vef refs TASK-009 --direction both
+vef why TASK-009
+vef graph --json
+vef search "migration trust" --type decisions --json
+```
+
+Queries are read-only. Human-readable text is the default; every command accepts `--json` and emits a versioned
+`schemaVersion: 1` envelope; lookup and filter failures use the same envelope on stderr. `show`, `refs`, and `why` resolve a stable ID across
+all document types; use `tasks:TASK-009`-style selectors if an invalid repository contains a cross-type ambiguity.
 
 For an existing repository:
 
@@ -168,11 +184,11 @@ VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform
 
 ## Roadmap
 
-The Integrity Core milestone, [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017), is complete. The immediate priority is [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018): a deterministic query interface—commands such as `vef show`, `vef refs`, `vef why`, and `vef graph`—so the model is useful even without an LLM.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. FRAMEWORK-006 remains active consumer-migration work in `studygram-app`; the framework has no additional core milestone committed yet.
 
 ## Contributing and status
 
-This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks and CI gate as the current structural contract. Query and mutation ergonomics remain roadmap work.
+This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks, versioned queries, and CI gate as the current contract. Deterministic day-to-day mutation commands remain future work; `/apply` is the guarded agent-assisted migration path.
 
 The most valuable contribution is helping make this statement literally true:
 

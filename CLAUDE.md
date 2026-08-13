@@ -17,6 +17,8 @@ This repo is **not** an app. It's the definition of a system. The consumers are 
 | **ROADMAP.md** | Directional roadmap — quarters, themes, priorities | Via `/roadmap reconcile` |
 | **TASKS.md** | WBS of roadmap — tasks, status, owners, dependencies | Via `/tasks reconcile` |
 | **DECISIONS.md** | Architectural/product/technical decisions | Via `/decisions reconcile` |
+| **log.md** | Chronological project memory and material learnings | After material work or decisions |
+| **index.md** | OKF navigation and project entry point | When canonical documents change |
 | **BUGS** | Bug tracker (GitHub Issues — no markdown file) | Create/edit Issues directly |
 | **AGENTS.md** | Agent profiles, tool/skill catalogs, context-gating rules | When agent tooling changes |
 | **CLAUDE.md** | This file — repo-level instructions for Claude | When the workflow changes |
@@ -69,6 +71,21 @@ When working with docs in a repo that adopts this framework, invoke skills direc
 - After adding/updating items manually in the docs
 - Before committing to validate schemas
 - When you need to filter/list items
+
+## Deterministic CLI queries
+
+Use the read-only CLI when the answer should come directly from canonical project state rather than agent interpretation:
+
+```bash
+vef list tasks --status pending
+vef show TASK-009
+vef refs TASK-009
+vef why TASK-009
+vef graph --json
+vef search "query interface" --json
+```
+
+Text is the default; `--json` emits the versioned automation contract. Use `type:id` selectors only to disambiguate an invalid repository containing the same ID in multiple document types.
 
 ## Key patterns
 
@@ -256,7 +273,7 @@ It's a **documentation substrate** for AI-assisted engineering. One job: keep ca
 
 ## When in doubt
 
-Read `VISION.md` first. Then `ARCHITECTURE.md`. If you're still unsure, run the relevant reconcile skill to see what would change:
+Read `VISION.md` first. Then `ARCHITECTURE.md`. Use `vef why <id>` or `vef refs <id>` to inspect canonical intent and relationships. If the repository may be inconsistent, run the relevant reconcile skill to see what would change:
 
 ```
 /tasks reconcile --dry-run        # validate TASKS.md
