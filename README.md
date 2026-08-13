@@ -117,10 +117,9 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 ## What works today
 
 - `vef init` scaffolds a project with the docs, templates, and current agent skills.
-- `vef migrate` detects existing structure and prepares a repository for adoption.
-- `vef project` deterministically regenerates committed ledgers from canonical item files; `--check` is read-only.
-- `vef validate --strict` checks field contracts, typed targets, dangling links, inverse relationships, duplicates, dependency cycles, and the canonical durable-memory catalogue.
-- `vef doctor` checks expected docs and skills, catalogue alignment, migration review state, casing, and the `/apply` trust contract.
+- `vef doctor` reports deterministic core enforcement and optional agent-adapter compatibility as separate results; `--fix` performs supported non-destructive core repair.
+- Advanced `vef migrate` and `vef project` commands expose storage migration and deterministic ledger projection for maintainers.
+- `vef validate --strict` provides the CI gate for field contracts, typed targets, dangling links, inverse relationships, duplicates, dependency cycles, and the canonical durable-memory catalogue.
 - `vef list`, `show`, `refs`, `why`, `graph`, and `search` expose the canonical model without an LLM.
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
 - The framework is dogfooded in this repository and designed for adoption by independent product repositories.
@@ -172,24 +171,33 @@ all document types; use `tasks:TASK-009`-style selectors if an invalid repositor
 For an existing repository running the current VEF CLI, remediation is one explicitly authorized command:
 
 ```bash
+npx vef doctor
 npx vef doctor --fix
 ```
 
-`doctor --fix` preflights the candidate, installs or updates framework adapters, creates or relocates canonical records under `docs/`, regenerates the root ledgers, runs strict validation, and finishes with a health check. Plain `vef doctor` remains read-only for CI and diagnosis. Neither form commits changes.
+Plain `doctor` is read-only and reports two independent results: deterministic **core enforcement** and optional **agent-adapter compatibility**. Core status is one of:
 
-The equivalent lower-level commands remain available for inspection and troubleshooting:
+| Status | Meaning | Next action |
+|---|---|---|
+| `NOT ADOPTED` | The repository has no VEF structured state | Run `vef init` |
+| `SEMANTIC RECONCILIATION REQUIRED` | Records contain missing meaning, invalid relationships, or review flags | Reconcile the reported records, then rerun `vef doctor --fix` |
+| `STRUCTURALLY REPAIRABLE` | Meaning is coherent; storage or projections need deterministic repair | Run `vef doctor --fix` |
+| `CORE ENFORCED` | Canonical project memory satisfies the deterministic contract | No core repair needed |
+
+`doctor --fix` preflights the complete candidate, creates or relocates canonical records under `docs/`, regenerates the root ledgers, runs strict validation, and finishes with the same health report. It may install adapter files that are missing, but it **never modifies an existing adapter file**. Adapter attention does not invalidate `CORE ENFORCED`; adapters are consumer-owned and require reviewed reconciliation. Neither doctor mode commits changes.
+
+Lower-level commands remain available for framework maintainers, troubleshooting, and CI, but consumers do not need to compose them:
 
 ```bash
-vef doctor                  # identifies legacy storage and prints this path
-vef migrate                 # preview; does not rewrite docs
-vef migrate --apply --update-adapters  # extract items, regenerate ledgers, and opt in to adapter upgrade
-vef validate --strict
-vef doctor
+vef migrate            # advanced storage migration preview
+vef migrate --apply    # advanced storage migration apply
+vef project            # regenerate committed ledgers
+vef validate --strict  # CI/integrity gate
 ```
 
-The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. VEF is not published to npm yet, so `npx vibe-engineering-framework@latest ...` currently returns npm `E404` and must not be used. Commit-pinned consumers must first update their VEF dependency to a revision containing TASK-028; after that one-time bootstrap, `npx vef doctor --fix` performs the complete project migration. npm publication remains tracked by TASK-001.
+The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. VEF is not published to npm yet, so `npx vibe-engineering-framework@latest ...` currently returns npm `E404` and must not be used. Commit-pinned consumers must first update their VEF dependency to a revision containing TASK-029; after that one-time bootstrap, `npx vef doctor --fix` performs the complete project migration. npm publication remains tracked by TASK-001.
 
-Commit `.vef/`, `docs/`, the four regenerated root ledgers, and upgraded installed skills together. The migration checks schemas and typed relationships before writing, refuses conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. Adapter replacement is explicit through `--update-adapters`, so customized skills are not overwritten by an ordinary migration.
+Commit `.vef/`, `docs/`, the four regenerated root ledgers, and any newly installed adapter files together. The repair checks schemas and typed relationships before writing, refuses semantic blockers and conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. The former `--update-adapters` option is retired and fails without changing files.
 
 For normal record maintenance, edit the canonical item file and project the public views:
 

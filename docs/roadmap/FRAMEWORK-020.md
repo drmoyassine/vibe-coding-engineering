@@ -26,8 +26,15 @@ related_tasks:
   - id: TASK-028
     name: Add one-command doctor remediation
     url: /TASKS.md#TASK-028
+  - id: TASK-029
+    name: Separate core enforcement from consumer-owned adapters
+    url: /TASKS.md#TASK-029
+related_decisions:
+  - id: DEC-007
+    name: Separate core enforcement from agent adapter compatibility
+    url: /DECISIONS.md#DEC-007
 last_updated: '2026-08-13'
 ---
 # FRAMEWORK-020 — Publish and publicly launch VEF
 
-This is the immediate framework priority. Public claims must remain tied to implemented behavior: Integrity Core validation, deterministic queries, safe migration boundaries, and current package status. TASK-028 has closed the post-install adoption ergonomics gap with one explicitly authorized `doctor --fix` operation while keeping plain doctor read-only. TASK-001 still owns npm publication, so registry-based `@latest` instructions must not appear as executable guidance before the package exists. The launch should make installation, remediation, evaluation, examples, contribution, and feedback obvious without claiming the deferred transaction layer has shipped.
+This is the immediate framework priority. Public claims must remain tied to implemented behavior: Integrity Core validation, deterministic queries, safe migration boundaries, and current package status. TASK-028 and TASK-029 close the post-install adoption ergonomics and safety gaps with one explicitly authorized, non-destructive `doctor --fix` operation while keeping plain doctor read-only and consumer-owned adapters independent. TASK-001 still owns npm publication, so registry-based `@latest` instructions must not appear as executable guidance before the package exists. The launch should make installation, remediation, evaluation, examples, contribution, and feedback obvious without claiming the deferred transaction layer has shipped.

@@ -519,10 +519,17 @@ related_tasks:
   - id: TASK-028
     name: Add one-command doctor remediation
     url: /TASKS.md#TASK-028
+  - id: TASK-029
+    name: Separate core enforcement from consumer-owned adapters
+    url: /TASKS.md#TASK-029
+related_decisions:
+  - id: DEC-007
+    name: Separate core enforcement from agent adapter compatibility
+    url: /DECISIONS.md#DEC-007
 last_updated: '2026-08-13'
 ---
 
-This is the immediate framework priority. Public claims must remain tied to implemented behavior: Integrity Core validation, deterministic queries, safe migration boundaries, and current package status. TASK-028 has closed the post-install adoption ergonomics gap with one explicitly authorized `doctor --fix` operation while keeping plain doctor read-only. TASK-001 still owns npm publication, so registry-based `@latest` instructions must not appear as executable guidance before the package exists. The launch should make installation, remediation, evaluation, examples, contribution, and feedback obvious without claiming the deferred transaction layer has shipped.
+This is the immediate framework priority. Public claims must remain tied to implemented behavior: Integrity Core validation, deterministic queries, safe migration boundaries, and current package status. TASK-028 and TASK-029 close the post-install adoption ergonomics and safety gaps with one explicitly authorized, non-destructive `doctor --fix` operation while keeping plain doctor read-only and consumer-owned adapters independent. TASK-001 still owns npm publication, so registry-based `@latest` instructions must not appear as executable guidance before the package exists. The launch should make installation, remediation, evaluation, examples, contribution, and feedback obvious without claiming the deferred transaction layer has shipped.
 
 ---
 
@@ -575,4 +582,4 @@ The public write surface remains intentionally small: `vef create` creates a rec
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
 
-**Next priority:** FRAMEWORK-020 can now publish the verified storage contract while FRAMEWORK-015 defines and implements the lightweight review workspace against the same canonical loader. Adapter-specific UI work remains deferred under FRAMEWORK-016, and transaction commands remain deferred to FRAMEWORK-022. Named consumer implementations and commercial programs remain canonical in their own repositories rather than VEF's roadmap.
+**Next priority:** FRAMEWORK-020 can now publish the verified storage and non-destructive enforcement contract while FRAMEWORK-015 defines and implements the lightweight review workspace against the same canonical loader. Adapter-specific UI work remains deferred under FRAMEWORK-016, and transaction commands remain deferred to FRAMEWORK-022. Named consumer implementations and commercial programs remain canonical in their own repositories rather than VEF's roadmap.

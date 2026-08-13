@@ -12,7 +12,7 @@
  *   vef list|show|refs|why|graph|search               Deterministic project queries
  */
 
-import { program } from 'commander';
+import { Option, program } from 'commander';
 import { QUERY_SCHEMA_VERSION } from '../src/lib/project-query.mjs';
 
 // ── Flag-to-subcommand shim ──────────────────────────────────────────────
@@ -57,10 +57,10 @@ program
 
 program
   .command('migrate')
-  .description('Adopt the framework in an existing repo')
+  .description('Advanced: inspect or apply canonical-storage migration')
   .option('--dir <path>', 'target directory', '.')
   .option('--apply', 'apply structural fixes (default: dry-run report)')
-  .option('--update-adapters', 'replace installed VEF skills with this package version (explicit opt-in)')
+  .addOption(new Option('--update-adapters').hideHelp())
   .action(async (opts) => {
     const { migrateCommand } = await import('../src/commands/migrate.mjs');
     await migrateCommand(opts);
@@ -68,7 +68,7 @@ program
 
 program
   .command('validate')
-  .description('Validate canonical schemas, graph relationships, and durable-memory catalogue')
+  .description('Advanced/CI: validate schemas, graph relationships, and durable-memory catalogue')
   .option('--dir <path>', 'target directory', '.')
   .option('--strict', 'exit 1 on warnings too')
   .action(async (opts) => {
@@ -78,9 +78,9 @@ program
 
 program
   .command('doctor')
-  .description('Health check — are all docs and skills installed?')
+  .description('Report core enforcement and optional adapter compatibility')
   .option('--dir <path>', 'target directory', '.')
-  .option('--fix', 'explicitly repair supported VEF storage, adapter, and projection drift')
+  .option('--fix', 'explicitly repair supported core storage and projection drift without overwriting adapters')
   .action(async (opts) => {
     const { doctorCommand } = await import('../src/commands/doctor.mjs');
     await doctorCommand(opts);
@@ -88,7 +88,7 @@ program
 
 program
   .command('project')
-  .description('Generate committed ledgers from canonical per-item records')
+  .description('Advanced: generate committed ledgers from canonical per-item records')
   .option('--dir <path>', 'target directory', '.')
   .option('--check', 'check projection drift without writing')
   .action(async (opts) => {

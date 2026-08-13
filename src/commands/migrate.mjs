@@ -4,7 +4,7 @@
  * Adopts the framework in an existing repo that has docs predating it.
  * The CLI does structural work; Claude Code's /apply does the AI work.
  *
- *  1. Install skills (copy from templates if missing)
+ *  1. Install missing skills (never overwrite consumer-owned adapters)
  *  2. Detect framework docs (which exist, which are missing)
  *  3. Analyze items — flag those without frontmatter or with bare IDs
  *  4. Check CLAUDE.md for framework integration
@@ -39,19 +39,17 @@ async function exists(path) {
 /**
  * Copy a skill directory from templates into the target.
  */
-function renderAdapterTemplate(content, existing, targetDir) {
-  const projectMatch = String(existing || '').match(/^Manage (?:canonical )?(.+?) (?:task records|roadmap records|decision records|tasks|roadmap|architectural|bugs)/m);
-  const issueMatch = String(existing || '').match(/https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/);
-  const projectName = projectMatch?.[1] || basename(targetDir) || 'project';
-  const githubOwner = issueMatch?.[1] || 'example';
-  const repoName = issueMatch?.[2] || basename(targetDir) || 'project';
+function renderAdapterTemplate(content, targetDir) {
+  const projectName = basename(targetDir) || 'project';
+  const githubOwner = 'example';
+  const repoName = basename(targetDir) || 'project';
   return content
     .split('{{PROJECT_NAME}}').join(projectName)
     .split('{{GITHUB_OWNER}}').join(githubOwner)
     .split('{{REPO_NAME}}').join(repoName);
 }
 
-async function copySkill(skillName, destSkillsDir, dryRun, { overwrite = false, targetDir = '.' } = {}) {
+async function copySkill(skillName, destSkillsDir, dryRun, { targetDir = '.' } = {}) {
   const srcDir = join(TEMPLATES_DIR, '.claude', 'skills', skillName);
   try {
     const entries = await readdir(srcDir, { withFileTypes: true });
@@ -59,12 +57,11 @@ async function copySkill(skillName, destSkillsDir, dryRun, { overwrite = false, 
       if (!entry.isFile()) continue;
       const src = join(srcDir, entry.name);
       const dest = join(destSkillsDir, skillName, entry.name);
+      if (await exists(dest)) continue;
       if (dryRun) continue;
       await mkdir(dirname(dest), { recursive: true });
       const content = await readFile(src, 'utf-8');
-      let existing = '';
-      if (overwrite && await exists(dest)) existing = await readFile(dest, 'utf8');
-      await writeFile(dest, renderAdapterTemplate(content, existing, targetDir), 'utf-8');
+      await writeFile(dest, renderAdapterTemplate(content, targetDir), 'utf-8');
     }
     return true;
   } catch {
@@ -79,6 +76,14 @@ export async function migrateCommand(opts) {
   const targetDir = opts.dir;
   const dryRun = !opts.apply;
   const mode = dryRun ? '[DRY RUN]' : '[APPLY]';
+
+  if (opts.updateAdapters) {
+    console.log('\n  ✗  --update-adapters is retired because adapters are consumer-owned and may contain intentional customizations.');
+    console.log('     No files were changed. Run `vef doctor` to inspect adapter compatibility; reconcile adapters through review.\n');
+    process.exitCode = 1;
+    return { ok: false, applied: false, phase: 'deprecated-adapter-update' };
+  }
+
   const storagePlan = await planStorageMigration(targetDir);
   const skillDryRun = dryRun || !storagePlan.ready;
 
@@ -89,20 +94,18 @@ export async function migrateCommand(opts) {
   const skillsDir = join(targetDir, '.claude', 'skills');
   let skillsInstalled = 0;
   let skillsAlready = 0;
-  let skillsUpdated = 0;
 
   for (const skill of SKILLS) {
     const skillPath = join(skillsDir, skill, 'SKILL.md');
     const present = await exists(skillPath);
     if (present) skillsAlready++;
-    if (present && !opts.updateAdapters) {
-      console.log(`  ✓  /${skill} (already installed)`);
+    if (present) {
+      console.log(`  ✓  /${skill} (preserved)`);
     } else {
-      const updating = present;
-      const copied = await copySkill(skill, skillsDir, skillDryRun, { overwrite: updating, targetDir });
+      const copied = await copySkill(skill, skillsDir, skillDryRun, { targetDir });
       if (copied) {
-        console.log(`  +  /${skill} ${updating ? (skillDryRun ? '(would update)' : '(updated)') : (skillDryRun ? '(would install)' : '(installed)')}`);
-        if (updating) skillsUpdated++; else skillsInstalled++;
+        console.log(`  +  /${skill} ${skillDryRun ? '(would install)' : '(installed)'}`);
+        skillsInstalled++;
       } else {
         console.log(`  !  /${skill} (template not found)`);
       }
@@ -178,7 +181,6 @@ export async function migrateCommand(opts) {
   console.log(`  Docs found:      ${foundDocs.length}/${FRAMEWORK_DOCS.length}`);
   console.log(`  Skills present:  ${skillsAlready}/${SKILLS.length}`);
   console.log(`  Skills ${skillDryRun ? 'to install' : 'installed'}: ${skillsInstalled}`);
-  if (opts.updateAdapters) console.log(`  Skills ${skillDryRun ? 'to update' : 'updated'}: ${skillsUpdated}`);
   console.log(`  Total items:     ${totalItems}`);
   console.log(`  No frontmatter:  ${itemsWithoutFm}`);
   console.log(`  Needs review:    ${itemsWithNeedsReview}`);
@@ -216,9 +218,9 @@ export async function migrateCommand(opts) {
   if (!storagePlan.ready) {
     console.log(`\n  Storage migration was not applied. Resolve the reported conflicts and re-run the preview.`);
   } else if (dryRun) {
-    console.log(`\n  (Dry run — no changes made. Re-run with --apply${opts.updateAdapters ? ' --update-adapters' : ''} to apply this plan.)`);
+    console.log('\n  (Dry run — no changes made. Use `vef doctor --fix` for supported remediation.)');
   } else {
-    console.log('\n  Migration applied. Run vef validate --strict and vef doctor, then review and commit the complete diff.');
+    console.log('\n  Migration applied. Run vef doctor, then review and commit the complete diff.');
   }
   console.log('');
   return {
@@ -226,6 +228,6 @@ export async function migrateCommand(opts) {
     applied: !dryRun && storagePlan.ready,
     storagePlan,
     skillsInstalled,
-    skillsUpdated,
+    skillsUpdated: 0,
   };
 }

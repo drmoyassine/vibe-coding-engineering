@@ -110,9 +110,9 @@ test('init creates lowercase OKF files with truthful provenance and a validated 
     assert.deepEqual({ schemaVersion: manifest.schemaVersion, layout: manifest.layout }, { schemaVersion: 1, layout: 'per-item' });
     assert.equal(manifest.canonical.tasks.directory, 'docs/tasks');
     const { stdout: doctorOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]);
-    assert.match(doctorOutput, /✓  \/apply trust contract/);
+    assert.match(doctorOutput, /✓  Claude adapter contract is compatible/);
     assert.match(doctorOutput, /✓  Canonical records and document surfaces align/);
-    assert.match(doctorOutput, /✓ All checks passed/);
+    assert.match(doctorOutput, /CORE ENFORCED/);
     const { stdout: validateOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'validate', '--strict', '--dir', dir]);
     assert.match(validateOutput, /✓  All canonical records and document surfaces align/);
   } finally {

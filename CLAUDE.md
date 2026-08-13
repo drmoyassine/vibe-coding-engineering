@@ -95,7 +95,7 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 - Prose lives in the markdown body below the frontmatter
 - Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each directory's `_index.md` owns ledger-level prose.
 - `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are generated committed ledgers. Never edit their generated item blocks directly; run `vef project` after canonical item changes.
-- `.vef/storage.json` versions the storage layout. `vef validate --strict` rejects stale projections; plain `vef doctor` is read-only, while `vef doctor --fix` explicitly authorizes supported migration, adapter updates, projection, strict validation, and a final health check.
+- `.vef/storage.json` versions the storage layout. `vef validate --strict` rejects stale projections; plain `vef doctor` reports core enforcement and optional adapter compatibility separately, while `vef doctor --fix` explicitly authorizes supported core migration, projection, strict validation, and a final health check. Existing adapter files are never overwritten.
 - Cross-linking uses the `id + name + url` pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`)
 
 ### Frontmatter schemas

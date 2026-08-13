@@ -310,7 +310,7 @@ verified:
 last_updated: '2026-08-13'
 ---
 
-Implemented by TASK-012 and TASK-028 on 2026-08-13. The framework now dogfoods canonical collections under `docs/`, deterministic projection, drift checks, fresh-init behavior, and preflighted migrations for both monolithic ledgers and the retired root-directory preview layout. Plain `vef doctor` is the read-only diagnostic entry point; explicit `vef doctor --fix` orchestrates migration, adapter upgrade, projection, strict validation, and the final health check. Package acquisition remains outside that mutation boundary. General-purpose transaction commands remain deferred under FRAMEWORK-022.
+Implemented by TASK-012, TASK-028, and the safety correction in TASK-029 on 2026-08-13. The framework now dogfoods canonical collections under `docs/`, deterministic projection, drift checks, fresh-init behavior, and preflighted migrations for both monolithic ledgers and the retired root-directory preview layout. Plain `vef doctor` is the read-only diagnostic entry point; explicit `vef doctor --fix` orchestrates core migration, projection, strict validation, and the final health check without overwriting existing agent adapters. Package acquisition remains outside that mutation boundary. General-purpose transaction commands remain deferred under FRAMEWORK-022.
 
 ---
 
@@ -439,6 +439,65 @@ last_updated: '2026-08-13'
 ---
 
 This decision restores the intent behind the early website and Obsidian roadmap items while putting a tool-neutral review contract ahead of any specific UI ecosystem.
+
+---
+
+## DEC-007 — Separate core enforcement from agent adapter compatibility
+
+---
+id: DEC-007
+title: Separate core enforcement from agent adapter compatibility
+status: accepted
+context: >-
+  The first one-command remediation implementation coupled deterministic project-memory enforcement to one packaged
+  agent-adapter version. It offered to replace installed adapters and treated adapter integration as part of project
+  health. Adopting repositories may intentionally customize their agents, so this created data-loss risk and made a
+  valid core appear unhealthy for an optional integration concern.
+decision: >-
+  Treat deterministic core enforcement and optional agent-adapter compatibility as independent dimensions. `vef doctor`
+  reports an explicit core state and a separate adapter state. `vef doctor --fix` may repair only mechanically provable
+  core structure and projections; it may install adapter files that are absent but must never modify an existing adapter
+  file. Semantic record problems stop repair before writes. Retire `--update-adapters` as a no-write error. Adapter
+  reconciliation remains a reviewed, consumer-owned activity and does not invalidate `CORE ENFORCED`.
+rationale: >-
+  VEF can prove its schemas, graph, storage, projections, and catalogue without owning an adopter's prompts or agent
+  workflows. Preserving that boundary makes one-command adoption safe, keeps the Integrity Core vendor-neutral, and
+  avoids presenting optional integration drift as corruption of canonical project memory.
+consequences: >-
+  Positive — repairs are non-destructive, enforcement has an unambiguous result, customized agents remain owned by the
+  adopting repository, and semantic blockers are actionable. Negative — VEF cannot silently upgrade existing adapters;
+  adapter compatibility may require an explicit reviewed change outside doctor, and users must distinguish core status
+  from optional integration status.
+related_tasks:
+  - id: TASK-028
+    name: Add one-command doctor remediation
+    url: /TASKS.md#TASK-028
+  - id: TASK-029
+    name: Separate core enforcement from consumer-owned adapters
+    url: /TASKS.md#TASK-029
+related_roadmap_items:
+  - id: FRAMEWORK-020
+    name: Publish and publicly launch VEF
+    url: /ROADMAP.md#FRAMEWORK-020
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+  - id: DEC-004
+    name: Store canonical items in per-type folders and generate the ledgers
+    url: /DECISIONS.md#DEC-004
+tags:
+  - integrity
+  - adoption
+  - agent-adapters
+  - safety
+generated:
+  by: process:codex
+  at: '2026-08-13T00:00:00Z'
+last_updated: '2026-08-13'
+---
+
+This decision narrows `doctor --fix` to the structure VEF can prove. Agent workflows may consume the same canonical contract, but VEF does not own or overwrite their installed implementation.
 
 <!-- End VEF generated items. -->
 

@@ -284,7 +284,7 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 - ✅ Canonical one-file-per-item storage with deterministic committed ledgers
 - ✅ Bidirectional linking via URLs
 
-> **Storage topology shipped (DEC-004 / TASK-012 / TASK-028).** Edit canonical records under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; edit collection prose in each `_index.md`; then run `vef project`. Root structured ledgers are generated, and strict validation rejects drift. Plain `vef doctor` is read-only; consumers running the current CLI may explicitly authorize complete remediation with `vef doctor --fix`.
+> **Storage topology shipped (DEC-004 / DEC-007 / TASK-012 / TASK-028 / TASK-029).** Edit canonical records under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; edit collection prose in each `_index.md`; then run `vef project`. Root structured ledgers are generated, and strict validation rejects drift. Plain `vef doctor` reports deterministic core enforcement separately from optional adapter compatibility; consumers may explicitly authorize supported core remediation with `vef doctor --fix`. Existing consumer-owned adapters are never overwritten.
 
 **Schema status:**
 - ✅ `description` present on Task + Roadmap schemas

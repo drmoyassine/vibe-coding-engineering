@@ -47,6 +47,6 @@ npm test
   - `/roadmap reconcile` — validate roadmap schemas
   - `/decisions reconcile` — validate decision schemas + cross-links
 - Run `/apply` to migrate scattered content into the canonical schema.
-- Plain `vef doctor` is read-only. To repair supported legacy storage using the current CLI, run `vef doctor --fix`, review the resulting `.vef/`, `docs/`, regenerated ledgers, and upgraded skills, then commit them together.
+- Plain `vef doctor` is read-only and reports core enforcement separately from optional adapter compatibility. To repair supported core storage using the current CLI, run `vef doctor --fix`, review the resulting `.vef/`, `docs/`, regenerated ledgers, and any newly installed adapter files, then commit them together. Existing adapter files are never overwritten.
 
 <!-- PROJECT: Add your project-specific conventions here. -->

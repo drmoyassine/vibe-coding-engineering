@@ -36,7 +36,8 @@ test('doctor distinguishes an uninitialized repository from a legacy consumer', 
       run(dir, ['doctor']),
       (error) => error.code === 1
         && /VEF structured storage is not initialized/.test(error.stdout)
-        && /Run: vef init/.test(error.stdout)
+        && /Adopt: vef init/.test(error.stdout)
+        && /NOT ADOPTED/.test(error.stdout)
         && !/Legacy monolithic ledgers are still canonical/.test(error.stdout),
     );
   } finally {
@@ -44,14 +45,15 @@ test('doctor distinguishes an uninitialized repository from a legacy consumer', 
   }
 });
 
-test('doctor gives legacy consumers an exact, non-destructive storage migration path', async () => {
+test('doctor classifies a coherent legacy consumer as structurally repairable', async () => {
   const dir = await legacyFixture();
   try {
     await assert.rejects(
       run(dir, ['doctor']),
       (error) => error.code === 1
         && /Legacy monolithic ledgers are still canonical/.test(error.stdout)
-        && /vef migrate --apply/.test(error.stdout),
+        && /STRUCTURALLY REPAIRABLE/.test(error.stdout)
+        && /vef doctor --fix/.test(error.stdout),
     );
 
     const { stdout } = await run(dir, ['migrate']);
@@ -69,19 +71,26 @@ test('doctor gives legacy consumers an exact, non-destructive storage migration 
 test('doctor --fix performs the complete supported consumer remediation', async () => {
   const dir = await legacyFixture();
   try {
+    const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
+    const existingApplySkill = await readFile(applySkillPath, 'utf8');
+    await rm(join(dir, '.claude', 'skills', 'bugs'), { recursive: true, force: true });
     const { stdout } = await run(dir, ['doctor', '--fix']);
-    assert.match(stdout, /Repair preflight passed/);
+    assert.match(stdout, /Core repair preflight passed/);
+    assert.match(stdout, /Existing consumer adapters are protected from overwrite/);
     assert.match(stdout, /Extracted 1 canonical item file\(s\) under docs\//);
     assert.match(stdout, /Valid: 1   Errors: 0   Warnings: 0/);
-    assert.match(stdout, /All checks passed/);
-    assert.match(stdout, /Repair complete/);
+    assert.match(stdout, /CORE ENFORCED/);
+    assert.match(stdout, /Core repair complete/);
+    assert.match(stdout, /\/bugs \(installed\)/);
+    assert.equal(await readFile(applySkillPath, 'utf8'), existingApplySkill);
+    await access(join(dir, '.claude', 'skills', 'bugs', 'SKILL.md'));
     await access(join(dir, 'docs', 'decisions', 'DEC-001.md'));
     const manifest = JSON.parse(await readFile(join(dir, '.vef', 'storage.json'), 'utf8'));
     assert.equal(manifest.canonical.decisions.directory, 'docs/decisions');
     await run(dir, ['doctor']);
     const second = await run(dir, ['doctor', '--fix']);
     assert.match(second.stdout, /Per-item storage already enabled/);
-    assert.match(second.stdout, /Repair complete/);
+    assert.match(second.stdout, /Core repair complete/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -98,7 +107,7 @@ test('doctor --fix preflights the complete durable-memory contract before writes
     await assert.rejects(
       run(dir, ['doctor', '--fix']),
       (error) => error.code === 1
-        && /Repair preflight failed/.test(error.stdout)
+        && /Core repair preflight failed; no files were changed/.test(error.stdout)
         && /ARCHITECTURE\.md/.test(error.stdout),
     );
     await assert.rejects(access(join(dir, '.vef', 'storage.json')));
@@ -108,7 +117,7 @@ test('doctor --fix preflights the complete durable-memory contract before writes
   }
 });
 
-test('doctor --fix preflight blocks conflicting storage before updating adapters', async () => {
+test('doctor --fix preflight blocks conflicting storage without touching adapters', async () => {
   const dir = await legacyFixture();
   try {
     const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
@@ -120,8 +129,48 @@ test('doctor --fix preflight blocks conflicting storage before updating adapters
     await assert.rejects(
       run(dir, ['doctor', '--fix']),
       (error) => error.code === 1
-        && /Repair preflight failed/.test(error.stdout)
-        && /no migration or adapter changes were applied/.test(error.stdout),
+        && /Core repair preflight failed; no files were changed/.test(error.stdout),
+    );
+    await assert.rejects(access(join(dir, '.vef', 'storage.json')));
+    assert.equal(await readFile(applySkillPath, 'utf8'), customApplySkill);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('doctor --fix reports unresolved meaning and makes no structural or adapter changes', async () => {
+  const dir = await legacyFixture();
+  try {
+    const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
+    const customApplySkill = `${await readFile(applySkillPath, 'utf8')}\nConsumer customization.\n`;
+    await writeFile(applySkillPath, customApplySkill, 'utf8');
+    await appendFile(join(dir, 'ROADMAP.md'), `
+## FRAMEWORK-001 — Missing vision relationship
+
+---
+id: FRAMEWORK-001
+title: Missing vision relationship
+description: A structurally valid record whose declared meaning is unresolved
+status: In Progress
+priority: P1
+vision_theme:
+  id: missing-vision-theme
+  name: Missing vision theme
+  url: /VISION.md#missing-vision-theme
+related_tasks: []
+related_decisions: []
+last_updated: 2026-08-13
+---
+
+This item intentionally references a vision theme that does not exist.
+`, 'utf8');
+
+    await assert.rejects(
+      run(dir, ['doctor', '--fix']),
+      (error) => error.code === 1
+        && /Core repair preflight failed; no files were changed/.test(error.stdout)
+        && /FRAMEWORK-001 → missing-vision-theme \(missing vision target in vision_theme\)/.test(error.stdout)
+        && /Reconcile project meaning/.test(error.stdout),
     );
     await assert.rejects(access(join(dir, '.vef', 'storage.json')));
     assert.equal(await readFile(applySkillPath, 'utf8'), customApplySkill);
@@ -154,7 +203,7 @@ test('migrate extracts canonical items, preserves public ledgers, and enables st
     await run(dir, ['validate', '--strict']);
     const doctor = await run(dir, ['doctor']);
     assert.match(doctor.stdout, /Canonical items and generated ledgers agree/);
-    assert.match(doctor.stdout, /All checks passed/);
+    assert.match(doctor.stdout, /CORE ENFORCED/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -188,13 +237,13 @@ test('doctor upgrades the retired root-directory layout into docs/', async () =>
       run(dir, ['doctor']),
       (error) => error.code === 1
         && /retired root-directory layout/.test(error.stdout)
-        && /vef migrate --apply --update-adapters/.test(error.stdout),
+        && /vef doctor --fix/.test(error.stdout),
     );
     const preview = await run(dir, ['migrate']);
     assert.match(preview.stdout, /Would relocate 1 canonical item file\(s\)/);
     const fixed = await run(dir, ['doctor', '--fix']);
     assert.match(fixed.stdout, /Relocated 1 canonical item file\(s\) under docs\//);
-    assert.match(fixed.stdout, /Repair complete/);
+    assert.match(fixed.stdout, /Core repair complete/);
 
     await access(join(dir, 'docs', 'decisions', 'DEC-001.md'));
     await assert.rejects(access(join(dir, 'decisions')));
@@ -205,27 +254,60 @@ test('doctor upgrades the retired root-directory layout into docs/', async () =>
   }
 });
 
-test('explicit adapter upgrade brings a legacy consumer onto the per-item write contract', async () => {
+test('doctor --fix enforces the core while preserving customized adapters byte-for-byte', async () => {
   const dir = await legacyFixture();
   try {
     const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
     const applyWorkflowPath = join(dir, '.claude', 'skills', 'apply', 'workflow.mjs');
-    await writeFile(applySkillPath, (await readFile(applySkillPath, 'utf8')).replace('vef project --dir <staging-directory>', 'legacy projection step'), 'utf8');
-    await writeFile(applyWorkflowPath, (await readFile(applyWorkflowPath, 'utf8')).replaceAll('proposedItemFiles', 'proposedDocuments').replace('itemFilename(entry.id)', 'entry.id'), 'utf8');
+    const customSkill = (await readFile(applySkillPath, 'utf8')).replace('vef project --dir <staging-directory>', 'consumer projection step');
+    const customWorkflow = (await readFile(applyWorkflowPath, 'utf8')).replaceAll('proposedItemFiles', 'consumerDocuments').replace('itemFilename(entry.id)', 'entry.id');
+    await writeFile(applySkillPath, customSkill, 'utf8');
+    await writeFile(applyWorkflowPath, customWorkflow, 'utf8');
 
     await assert.rejects(
       run(dir, ['doctor']),
-      (error) => error.code === 1 && /Run: vef migrate --apply --update-adapters/.test(error.stdout),
+      (error) => error.code === 1
+        && /STRUCTURALLY REPAIRABLE/.test(error.stdout)
+        && /ADAPTER ATTENTION REQUIRED/.test(error.stdout),
     );
 
-    const upgraded = await run(dir, ['migrate', '--apply', '--update-adapters']);
-    assert.match(upgraded.stdout, /\/apply \(updated\)/);
-    assert.match(upgraded.stdout, /Skills updated: 5/);
-    const workflow = await readFile(applyWorkflowPath, 'utf8');
-    assert.match(workflow, /proposedItemFiles/);
-    assert.match(workflow, /itemFilename\(entry\.id\)/);
-    assert.doesNotMatch(workflow, /proposedDocuments/);
-    await run(dir, ['doctor']);
+    const fixed = await run(dir, ['doctor', '--fix']);
+    assert.match(fixed.stdout, /CORE ENFORCED/);
+    assert.match(fixed.stdout, /ADAPTER ATTENTION REQUIRED/);
+    assert.equal(await readFile(applySkillPath, 'utf8'), customSkill);
+    assert.equal(await readFile(applyWorkflowPath, 'utf8'), customWorkflow);
+
+    const healthyCore = await run(dir, ['doctor']);
+    assert.match(healthyCore.stdout, /CORE ENFORCED/);
+    assert.match(healthyCore.stdout, /ADAPTER ATTENTION REQUIRED/);
+
+    await assert.rejects(
+      run(dir, ['migrate', '--apply', '--update-adapters']),
+      (error) => error.code === 1
+        && /--update-adapters is retired/.test(error.stdout)
+        && /No files were changed/.test(error.stdout),
+    );
+    assert.equal(await readFile(applySkillPath, 'utf8'), customSkill);
+    assert.equal(await readFile(applyWorkflowPath, 'utf8'), customWorkflow);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('doctor --fix fills absent adapter files without overwriting a partial adapter', async () => {
+  const dir = await legacyFixture();
+  try {
+    const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
+    const applyWorkflowPath = join(dir, '.claude', 'skills', 'apply', 'workflow.mjs');
+    const customWorkflow = `${await readFile(applyWorkflowPath, 'utf8')}\n// Consumer-owned partial adapter.\n`;
+    await writeFile(applyWorkflowPath, customWorkflow, 'utf8');
+    await rm(applySkillPath);
+
+    const fixed = await run(dir, ['doctor', '--fix']);
+    assert.match(fixed.stdout, /\/apply \(installed\)/);
+    assert.match(fixed.stdout, /CORE ENFORCED/);
+    await access(applySkillPath);
+    assert.equal(await readFile(applyWorkflowPath, 'utf8'), customWorkflow);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -266,7 +348,7 @@ test('partial or conflicting migrations fail without activating the new storage 
     await mkdir(join(dir, 'docs', 'decisions'), { recursive: true });
     await writeFile(join(dir, 'docs', 'decisions', 'DEC-001.md'), 'conflicting item\n', 'utf8');
     await assert.rejects(
-      run(dir, ['migrate', '--apply', '--update-adapters']),
+      run(dir, ['migrate', '--apply']),
       (error) => error.code === 1 && /conflicts with the ledger-derived candidate/.test(error.stdout),
     );
     await assert.rejects(access(join(dir, '.vef', 'storage.json')));

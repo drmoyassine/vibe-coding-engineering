@@ -8,17 +8,24 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### Core enforcement separated from consumer-owned adapters
+- Accepted DEC-007 and completed TASK-029 after identifying a serious flaw in the first TASK-028 implementation: deterministic core repair had been coupled to replacement of installed agent adapters, even though adopting repositories may intentionally customize them.
+- `vef doctor` now reports explicit core states (`NOT ADOPTED`, `SEMANTIC RECONCILIATION REQUIRED`, `STRUCTURALLY REPAIRABLE`, `CORE ENFORCED`) independently from optional adapter installation/compatibility. Adapter attention no longer invalidates an enforced core.
+- `vef doctor --fix` now repairs only mechanically provable storage and projection state, installs only missing adapter files, preserves every existing adapter file byte-for-byte, and stops before writes when record meaning requires reconciliation. The old adapter-update option is retired as a no-write error and hidden from normal help.
+- Simplified the consumer path to `vef doctor` followed by `vef doctor --fix`; `migrate`, `project`, and `validate` remain advanced or CI surfaces rather than a sequence users must assemble.
+- Added consumer-shaped regression coverage for both observed conditions: a coherent legacy repository with customized adapters reaches `CORE ENFORCED` without adapter changes, while a repository with a dangling roadmap-to-vision relationship is blocked with the exact semantic issue and no mutation.
+
 ### One-command consumer remediation shipped
 - Identified an adoption UX failure after a consumer ran an obsolete pinned VEF doctor: the old command passed its historical checks but could not know the new canonical-storage contract, and the documented current migration required users to compose several deterministic commands.
-- Completed TASK-028 under the public-release milestone. `vef doctor --fix` now explicitly authorizes and orchestrates storage migration, adapter updates, ledger projection, strict validation, and a final health check; plain doctor remains read-only for CI and inspection.
+- Completed TASK-028 under the public-release milestone. `vef doctor --fix` explicitly authorizes and orchestrates storage migration, ledger projection, strict validation, and a final health check; TASK-029 subsequently separated and protected consumer-owned adapters. Plain doctor remains read-only for CI and inspection.
 - Clarified the bootstrap boundary: installed code cannot execute future behavior. Before package publication, commit-pinned consumers must update their dependency first and then run `npx vef doctor --fix`; registry-based `@latest` guidance is invalid until TASK-001 publishes the package.
-- Added success and failure tests proving that the complete legacy migration runs through one command and that conflicting candidates are rejected before storage or adapter changes.
+- Added success and failure tests proving that the complete legacy migration runs through one command and that conflicting candidates are rejected before writes.
 - A read-only current-CLI audit of the Studygram consumer confirmed the broader failure mode: an older session authored root VISION prose after inferring that structured vision themes were obsolete, while the repository still lacked canonical Architecture/log surfaces and contained unresolved task references. VEF retained only this compatibility evidence; Studygram's product vision remains in its owning repository. `doctor --fix` now preflights the complete durable-memory contract so this state is rejected before any write.
 
 ### Canonical per-item storage and consumer migration shipped
 - Completed TASK-012 and FRAMEWORK-019. Structured records now live canonically under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; collection `_index.md` files own ledger prose, and VISION.md, ROADMAP.md, TASKS.md, and DECISIONS.md are deterministic committed projections.
 - Added one canonical loader for validation, queries, projection, doctor, and future mutations. `.vef/storage.json` activates the layout; strict validation rejects missing or stale projections; `vef project` regenerates them without changing canonical items.
-- Made consumer migration explicit and recoverable: `vef doctor` distinguishes uninitialized, monolithic, retired root-directory, partial, and current storage; it prints `vef migrate` then `vef migrate --apply --update-adapters`; dry-run is non-destructive, adapter replacement requires explicit opt-in, schema/graph problems and conflicting partial directories block activation, and the storage manifest is written last.
+- Made consumer migration explicit and recoverable: `vef doctor` distinguishes uninitialized, semantically blocked, structurally repairable, and current enforced state; `vef doctor --fix` performs supported repair without requiring a lower-level command sequence. Schema/graph problems and conflicting partial directories block activation, existing adapters are preserved, and the storage manifest is written last.
 - Fresh `vef init` projects start directly on per-item storage. Updated shipped adapters to target canonical item files and project the root ledgers. Added tests for clean initialization, legacy guidance/read compatibility, migration, canonical query paths, drift repair, and partial-migration conflicts.
 - With the storage prerequisite complete, public release and the lightweight human-review workspace are the two active framework tracks.
 

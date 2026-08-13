@@ -374,7 +374,7 @@ related_decisions:
 last_updated: '2026-08-13'
 ---
 
-Completed 2026-08-13. One canonical loader now serves validation, queries, projection, doctor, and future mutation work. `.vef/storage.json` activates versioned per-item storage under `docs/`; `vef migrate` previews legacy extraction or root-layout relocation, `vef migrate --apply --update-adapters` preflights and performs it with an explicit adapter-upgrade opt-in, and `vef project` deterministically regenerates the four committed root ledgers. Strict validation rejects projection drift. Legacy queries remain readable during the compatibility window, doctor prints the exact upgrade path, conflicting partial migrations are blocked, and fresh initialization creates the new layout directly. Migration, root-layout compatibility, drift, clean-init, canonical-query, adapter-upgrade, and cross-platform path behavior are covered by automated tests.
+Completed 2026-08-13. One canonical loader now serves validation, queries, projection, doctor, and future mutation work. `.vef/storage.json` activates versioned per-item storage under `docs/`; the advanced `vef migrate` command previews or performs legacy extraction/root-layout relocation, and `vef project` deterministically regenerates the four committed root ledgers. Strict validation rejects projection drift. Legacy queries remain readable during the compatibility window, `vef doctor --fix` is the supported consumer repair path, conflicting partial migrations are blocked, and fresh initialization creates the new layout directly. Migration, root-layout compatibility, drift, clean-init, canonical-query, adapter-preservation, and cross-platform path behavior are covered by automated tests.
 
 ---
 
@@ -710,6 +710,9 @@ related_decisions:
   - id: DEC-004
     name: Store canonical items in per-type folders and generate the ledgers
     url: /DECISIONS.md#DEC-004
+  - id: DEC-007
+    name: Separate core enforcement from agent adapter compatibility
+    url: /DECISIONS.md#DEC-007
 last_updated: '2026-08-13'
 ---
 
@@ -719,7 +722,7 @@ Acceptance criteria:
 
 - preflight the complete storage and relationship candidate before changing the repository;
 - create or relocate `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/` as required;
-- install missing VEF adapters and update installed VEF adapters to the current package contract;
+- install missing VEF adapters as a convenience while preserving every existing consumer-owned adapter file;
 - regenerate all committed root ledgers from canonical records;
 - run strict validation and a final health check automatically;
 - preserve the recoverability and no-partial-activation guarantees of the existing migration core;
@@ -727,7 +730,49 @@ Acceptance criteria:
 - expose the current installed CLI as `npx vef doctor --fix`, and do not claim an npm `@latest` path before TASK-001 publishes the package;
 - cover legacy migration, retired-root relocation, already-current state, conflict preflight, and strict final validation with tests.
 
-The implementation preflights the storage graph, required singleton documents, durable-memory catalogue, CLAUDE integration, and unresolved review flags before adapter or storage writes. It delegates to the existing recoverable migration and projector, runs strict validation, and finishes by rerunning the read-only health check. It never commits automatically. Package acquisition remains a bootstrap responsibility because an obsolete CLI cannot execute behavior it does not contain.
+The implementation preflights the storage graph, required singleton documents, durable-memory catalogue, semantic relationships, and unresolved review flags before structural writes. It delegates to the existing recoverable migration and projector, runs strict validation, and finishes by rerunning the read-only health check. It never commits automatically. Package acquisition remains a bootstrap responsibility because an obsolete CLI cannot execute behavior it does not contain.
+
+TASK-029 corrected the initial adapter coupling: core enforcement and optional adapter compatibility are now separate results, existing adapters are never overwritten, and the former adapter-update flag is retired.
+
+---
+
+## TASK-029 — Separate core enforcement from consumer-owned adapters
+
+---
+id: TASK-029
+title: Separate core enforcement from consumer-owned adapters
+description: Make one-command core enforcement non-destructive and report optional adapter compatibility independently.
+status: completed
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-020
+  name: Publish and publicly launch VEF
+  url: /ROADMAP.md#FRAMEWORK-020
+assignee: Codex
+depends_on:
+  - id: TASK-028
+    name: Add one-command doctor remediation
+    url: /TASKS.md#TASK-028
+related_decisions:
+  - id: DEC-007
+    name: Separate core enforcement from agent adapter compatibility
+    url: /DECISIONS.md#DEC-007
+last_updated: '2026-08-13'
+---
+
+Completed 2026-08-13. Corrected the first implementation of TASK-028, which treated installed agent adapters as part of the core repair contract and exposed an overwrite flag.
+
+The shipped behavior now:
+
+- reports `NOT ADOPTED`, `SEMANTIC RECONCILIATION REQUIRED`, `STRUCTURALLY REPAIRABLE`, or `CORE ENFORCED` for deterministic project memory;
+- reports optional adapter installation/compatibility separately, without allowing adapter attention to invalidate an enforced core;
+- makes `vef doctor --fix` the only consumer-facing repair path and confines `migrate`, `project`, and `validate` to advanced or CI use;
+- migrates storage, regenerates projections, validates strictly, and reruns health without overwriting any existing adapter file;
+- installs only adapter files that are absent, as an optional convenience;
+- retires `--update-adapters` as a hard failure that changes no files;
+- stops before writes when schemas, relationships, catalogue meaning, or review flags require human/agent reconciliation.
+
+Regression coverage models both important adoption shapes: a structurally ready legacy repository with customized adapters reaches `CORE ENFORCED` without changing those adapters, while a repository with a dangling roadmap-to-vision relationship receives the exact semantic blocker and remains untouched.
 
 <!-- End VEF generated items. -->
 
@@ -759,5 +804,6 @@ The implementation preflights the storage graph, required singleton documents, d
 | TASK-026 | Lightweight `vef review` workspace | pending | P1 |
 | TASK-027 | Obsidian and wiki review adapters | pending | P2 |
 | TASK-028 | One-command doctor remediation | completed | P0 |
+| TASK-029 | Core enforcement and adapter separation | completed | P0 |
 
-**Next priority:** TASK-001 and TASK-017 prepare the publishable package and launch narrative now that TASK-012 and TASK-028 have completed storage migration and one-command remediation; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** TASK-001 and TASK-017 prepare the publishable package and launch narrative now that TASK-012, TASK-028, and TASK-029 have completed storage migration, one-command remediation, and non-destructive adapter separation; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.

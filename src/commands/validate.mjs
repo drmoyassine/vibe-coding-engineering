@@ -21,53 +21,61 @@ import { loadCanonicalDocuments, STORAGE_MANIFEST } from '../lib/record-store.mj
  */
 export async function validateCommand(opts) {
   const targetDir = opts.dir;
+  const log = opts.quiet ? () => {} : console.log;
   const parsedDocs = [];
   let totalErrors = 0;
   let totalWarnings = 0;
   let totalValid = 0;
+  const issues = [];
 
-  console.log(`\n  Validating: ${targetDir}\n`);
+  const recordIssue = (level, scope, message) => {
+    issues.push({ level, scope, message });
+    if (level === 'error') totalErrors++;
+    else totalWarnings++;
+  };
+
+  log(`\n  Validating: ${targetDir}\n`);
 
   const loaded = await loadCanonicalDocuments(targetDir);
 
-  console.log('  ── Canonical storage ──');
+  log('  ── Canonical storage ──');
   if (loaded.storage.mode === 'per-item') {
-    console.log(`  ✓  Per-item canonical storage (${STORAGE_MANIFEST})`);
+    log(`  ✓  Per-item canonical storage (${STORAGE_MANIFEST})`);
   } else if (loaded.storage.mode === 'per-item-root') {
-    console.log('  ⚠  Retired root-directory storage; run vef migrate, then vef migrate --apply --update-adapters');
-    totalWarnings++;
+    log('  ⚠  Retired root-directory storage; run vef doctor --fix');
+    recordIssue('warning', 'storage', 'Retired root-directory storage');
   } else if (loaded.storage.mode === 'legacy' || loaded.storage.mode === 'legacy-partial' || loaded.storage.mode === 'legacy-incomplete') {
-    console.log('  ⚠  Legacy monolithic ledger storage; run vef migrate, then vef migrate --apply --update-adapters');
-    totalWarnings++;
+    log('  ⚠  Legacy monolithic ledger storage; run vef doctor --fix');
+    recordIssue('warning', 'storage', 'Legacy monolithic ledger storage');
   } else if (loaded.storage.mode === 'uninitialized') {
-    console.log('  ⚠  VEF structured storage is not initialized; run vef init');
-    totalWarnings++;
+    log('  ⚠  VEF structured storage is not initialized; run vef init');
+    recordIssue('warning', 'storage', 'VEF structured storage is not initialized');
   }
   for (const issue of loaded.storageIssues) {
-    console.log(`  ✗  ${issue}`);
-    totalErrors++;
+    log(`  ✗  ${issue}`);
+    recordIssue('error', 'storage', issue);
   }
   for (const issue of loaded.projectionIssues) {
-    console.log(`  ✗  ${issue}`);
-    totalErrors++;
+    log(`  ✗  ${issue}`);
+    recordIssue('error', 'projection', issue);
   }
   if (loaded.storage.mode === 'per-item' && loaded.storageIssues.length === 0 && loaded.projectionIssues.length === 0) {
-    console.log('  ✓  All committed ledger projections are current');
+    log('  ✓  All committed ledger projections are current');
   }
 
   // Parse + validate every canonical item.
   for (const { docType, filename, items } of loaded.parsedDocs) {
     if (items.length === 0) continue;
 
-    console.log(`  ── ${filename} (${items.length} items) ──`);
+    log(`  ── ${filename} (${items.length} items) ──`);
 
     for (const item of items) {
       const id = item.data?.id || item.id || item.heading;
       const location = item.sourceFile && item.sourceFile !== filename ? `${item.sourceFile}:${id}` : id;
 
       if (!item.hasFrontmatter) {
-        console.log(`  ✗  ${location}: no frontmatter`);
-        totalErrors++;
+        log(`  ✗  ${location}: no frontmatter`);
+        recordIssue('error', 'schema', `${location}: no frontmatter`);
         continue;
       }
 
@@ -77,12 +85,12 @@ export async function validateCommand(opts) {
         totalValid++;
       } else {
         for (const e of errors) {
-          console.log(`  ✗  ${location}: ${e}`);
-          totalErrors++;
+          log(`  ✗  ${location}: ${e}`);
+          recordIssue('error', 'schema', `${location}: ${e}`);
         }
         for (const w of warnings) {
-          console.log(`  ⚠  ${location}: ${w}`);
-          totalWarnings++;
+          log(`  ⚠  ${location}: ${w}`);
+          recordIssue('warning', 'schema', `${location}: ${w}`);
         }
       }
     }
@@ -92,59 +100,66 @@ export async function validateCommand(opts) {
 
   // Cross-link validation
   if (parsedDocs.length > 0) {
-    console.log('\n  ── Cross-links ──');
+    log('\n  ── Cross-links ──');
 
     const orphans = findOrphans(parsedDocs);
     for (const orphan of orphans) {
-      console.log(`  ✗  ${orphan.fromItem} → ${orphan.refId} (missing ${orphan.expectedType} target in ${orphan.field})`);
-      totalErrors++;
+      const message = `${orphan.fromItem} → ${orphan.refId} (missing ${orphan.expectedType} target in ${orphan.field})`;
+      log(`  ✗  ${message}`);
+      recordIssue('error', 'crosslinks', message);
     }
 
     const duplicates = findDuplicateIds(parsedDocs);
     for (const duplicate of duplicates) {
-      console.log(`  ✗  Duplicate ID ${duplicate.id} in ${duplicate.docType}`);
-      totalErrors++;
+      const message = `Duplicate ID ${duplicate.id} in ${duplicate.docType}`;
+      log(`  ✗  ${message}`);
+      recordIssue('error', 'crosslinks', message);
     }
 
     const cycles = findDependencyCycles(parsedDocs);
     for (const cycle of cycles) {
-      console.log(`  ✗  Task dependency cycle: ${cycle.join(' → ')}`);
-      totalErrors++;
+      const message = `Task dependency cycle: ${cycle.join(' → ')}`;
+      log(`  ✗  ${message}`);
+      recordIssue('error', 'crosslinks', message);
     }
 
     const bidiIssues = checkBidirectional(parsedDocs);
     for (const issue of bidiIssues) {
-      console.log(`  ⚠  ${issue.message}`);
-      totalWarnings++;
+      log(`  ⚠  ${issue.message}`);
+      recordIssue('warning', 'crosslinks', issue.message);
     }
 
     if (orphans.length === 0 && duplicates.length === 0 && cycles.length === 0 && bidiIssues.length === 0) {
-      console.log('  ✓  All cross-links resolve');
+      log('  ✓  All cross-links resolve');
     }
   }
 
   // Project-level durable-memory contract
-  console.log('\n  ── Durable-memory catalogue ──');
+  log('\n  ── Durable-memory catalogue ──');
   const memoryIssues = await auditMemoryCatalogDirectory(targetDir);
   for (const issue of memoryIssues) {
-    console.log(`  ✗  ${issue.surface}: ${issue.message}`);
-    totalErrors++;
+    const message = `${issue.surface}: ${issue.message}`;
+    log(`  ✗  ${message}`);
+    recordIssue('error', 'catalogue', message);
   }
-  if (memoryIssues.length === 0) console.log('  ✓  All canonical records and document surfaces align');
+  if (memoryIssues.length === 0) log('  ✓  All canonical records and document surfaces align');
 
   // Summary
-  console.log(`\n  ── Result ──`);
-  console.log(`  Valid: ${totalValid}   Errors: ${totalErrors}   Warnings: ${totalWarnings}\n`);
+  log(`\n  ── Result ──`);
+  log(`  Valid: ${totalValid}   Errors: ${totalErrors}   Warnings: ${totalWarnings}\n`);
 
-  if (totalErrors > 0) {
-    process.exitCode = 1;
-  } else if (totalWarnings > 0 && opts.strict) {
-    process.exitCode = 1;
+  if (opts.setExitCode !== false) {
+    if (totalErrors > 0) {
+      process.exitCode = 1;
+    } else if (totalWarnings > 0 && opts.strict) {
+      process.exitCode = 1;
+    }
   }
   return {
     ok: totalErrors === 0 && (!opts.strict || totalWarnings === 0),
     valid: totalValid,
     errors: totalErrors,
     warnings: totalWarnings,
+    issues,
   };
 }
