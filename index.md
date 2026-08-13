@@ -21,6 +21,10 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 | [log.md](log.md) | Chronological history and durable learnings |
 | [CLAUDE.md](CLAUDE.md) | Current Claude Code adapter instructions |
 | [AGENTS.md](AGENTS.md) | Framework workforce manual and conventions |
+| [CHANGELOG.md](CHANGELOG.md) | Public release history and known limits |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development and pull-request contract |
+| [SECURITY.md](SECURITY.md) | Private vulnerability-reporting policy |
+| [RELEASING.md](RELEASING.md) | Maintainer release gate and npm publication boundary |
 
 ## Current strategic state
 
@@ -28,7 +32,7 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 
 ## Current interfaces
 
-- CLI integrity/adoption: `vef init`, `vef migrate`, `vef validate`, `vef doctor`
+- CLI integrity/adoption: consumer-facing `vef init`, `vef doctor`, and `vef doctor --fix`; advanced `vef migrate`, `vef project`, and `vef validate`
 - CLI queries: `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, `vef search` (text or versioned JSON)
 - Claude Code adapter: `/apply`, `/tasks`, `/roadmap`, `/decisions`, `/bugs`
 - External bugs: GitHub Issues are canonical; VEF references them rather than maintaining a duplicate bug document.

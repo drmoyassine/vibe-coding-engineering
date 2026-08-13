@@ -1,18 +1,23 @@
 {
   "name": "vibe-engineering-framework",
   "version": "0.1.0",
-  "description": "Structured documentation framework for AI-assisted product engineering — markdown docs, Claude Code skills, and a CLI.",
+  "description": "Git-native durable project memory and integrity for AI-assisted engineering.",
   "type": "module",
   "bin": {
-    "vef": "./bin/vef.mjs"
+    "vef": "bin/vef.mjs"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "verify": "npm test && node bin/vef.mjs validate --strict && node bin/vef.mjs doctor",
+    "release:smoke": "node scripts/release-smoke.mjs",
+    "release:check": "npm run verify && npm run release:smoke && npm pack --dry-run --ignore-scripts",
+    "prepublishOnly": "npm run release:check"
   },
   "files": [
     "bin/",
     "src/",
-    "templates/"
+    "templates/",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18"
@@ -22,18 +27,29 @@
     "js-yaml": "^4.1.0"
   },
   "keywords": [
+    "ai",
+    "ai-assisted-engineering",
+    "agents",
     "documentation",
     "framework",
-    "ai",
-    "claude",
+    "git",
+    "knowledge-graph",
+    "project-memory",
     "product-engineering",
+    "claude",
     "frontmatter",
-    "yaml",
     "okf"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/drmoyassine/vibe-engineering-framework.git"
+    "url": "git+https://github.com/drmoyassine/vibe-engineering-framework.git"
+  },
+  "homepage": "https://github.com/drmoyassine/vibe-engineering-framework#readme",
+  "bugs": {
+    "url": "https://github.com/drmoyassine/vibe-engineering-framework/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "author": "drmoyassine",
   "license": "MIT"

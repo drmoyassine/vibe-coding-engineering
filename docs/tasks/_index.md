@@ -54,7 +54,7 @@ Full description, acceptance criteria, implementation notes.
 | TASK-014 | `vef create` and `vef update` | pending | P0 |
 | TASK-015 | Agent-adapter migration and mutation tests | pending | P1 |
 | TASK-016 | Rename the local repository directory | pending | P3 |
-| TASK-017 | Public VEF release and launch narrative | in-progress | P0 |
+| TASK-017 | Public VEF release and launch narrative | completed | P0 |
 | TASK-018 | Adoption examples and public feedback loop | pending | P0 |
 | TASK-019 | Public launch and distribution plan | pending | P0 |
 | TASK-024 | Consumer-neutral framework boundary | completed | P0 |
@@ -64,4 +64,4 @@ Full description, acceptance criteria, implementation notes.
 | TASK-028 | One-command doctor remediation | completed | P0 |
 | TASK-029 | Core enforcement and adapter separation | completed | P0 |
 
-**Next priority:** TASK-001 and TASK-017 prepare the publishable package and launch narrative now that TASK-012, TASK-028, and TASK-029 have completed storage migration, one-command remediation, and non-destructive adapter separation; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** Complete TASK-001's authenticated first npm publication and registry smoke verification now that TASK-017 and the `0.1.0` release candidate are complete; then TASK-018 and TASK-019 own examples, feedback, and distribution. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.

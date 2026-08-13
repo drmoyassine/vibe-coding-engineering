@@ -1,0 +1,41 @@
+name: Stage npm release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to stage (for example, v0.2.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stage:
+    name: Verify and stage ${{ inputs.tag }}
+    if: github.repository == 'drmoyassine/vibe-engineering-framework'
+    runs-on: ubuntu-latest
+    environment: npm
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Install trusted-publishing compatible npm
+        run: npm install --global npm@^11.15.0
+      - run: npm ci
+      - name: Require an existing release tag
+        run: git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"
+      - name: Match tag to package version
+        run: node scripts/check-release-tag.mjs "$RELEASE_TAG"
+      - run: npm run release:check
+      - name: Stage package for human approval
+        run: npm stage publish --ignore-scripts

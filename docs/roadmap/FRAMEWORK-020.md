@@ -33,8 +33,11 @@ related_decisions:
   - id: DEC-007
     name: Separate core enforcement from agent adapter compatibility
     url: /DECISIONS.md#DEC-007
+  - id: DEC-008
+    name: Bootstrap npm manually, then use staged trusted publishing
+    url: /DECISIONS.md#DEC-008
 last_updated: '2026-08-13'
 ---
 # FRAMEWORK-020 — Publish and publicly launch VEF
 
-This is the immediate framework priority. Public claims must remain tied to implemented behavior: Integrity Core validation, deterministic queries, safe migration boundaries, and current package status. TASK-028 and TASK-029 close the post-install adoption ergonomics and safety gaps with one explicitly authorized, non-destructive `doctor --fix` operation while keeping plain doctor read-only and consumer-owned adapters independent. TASK-001 still owns npm publication, so registry-based `@latest` instructions must not appear as executable guidance before the package exists. The launch should make installation, remediation, evaluation, examples, contribution, and feedback obvious without claiming the deferred transaction layer has shipped.
+This is the immediate framework priority. Public claims remain tied to implemented behavior: Integrity Core validation, deterministic queries, safe migration boundaries, and current package status. TASK-017 has completed the public narrative and the `0.1.0` artifact now passes the complete release-candidate gate. TASK-001 remains open only at the authenticated, irreversible first npm publication and registry verification boundary defined by DEC-008. After that bootstrap, staged OIDC publishing with human approval becomes the release path. TASK-018 and TASK-019 still own examples, feedback, and distribution; deferred transaction work must not be advertised as shipped.

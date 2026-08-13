@@ -16,7 +16,10 @@ depends_on:
   - id: TASK-018
     name: Publish adoption examples and a public feedback loop
     url: /TASKS.md#TASK-018
-related_decisions: []
+related_decisions:
+  - id: DEC-008
+    name: Bootstrap npm manually, then use staged trusted publishing
+    url: /DECISIONS.md#DEC-008
 last_updated: '2026-08-13'
 ---
 # TASK-019 — Execute the public launch and distribution plan

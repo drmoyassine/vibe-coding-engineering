@@ -55,6 +55,35 @@ test('defines and dogfoods one complete durable-memory catalogue', async () => {
   assert.deepEqual(await auditMemoryCatalogDirectory('.'), []);
 });
 
+test('CLI version is sourced from package metadata', async () => {
+  const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+  const { stdout } = await execFileAsync(process.execPath, ['bin/vef.mjs', '--version']);
+  assert.equal(stdout.trim(), packageJson.version);
+});
+
+test('release metadata and workflow preserve the verified publication boundary', async () => {
+  const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+  assert.equal(packageJson.name, 'vibe-engineering-framework');
+  assert.equal(packageJson.publishConfig?.access, 'public');
+  assert.equal(packageJson.repository?.url, 'git+https://github.com/drmoyassine/vibe-engineering-framework.git');
+  assert.match(packageJson.scripts?.prepublishOnly || '', /release:check/);
+  assert.match(packageJson.scripts?.['release:check'] || '', /release:smoke/);
+
+  const validationWorkflow = await readFile('.github/workflows/validate.yml', 'utf8');
+  assert.match(validationWorkflow, /npm ci/);
+  assert.match(validationWorkflow, /npm run release:check/);
+  assert.doesNotMatch(validationWorkflow, /npm install\s*$/m);
+
+  const publishWorkflow = await readFile('.github/workflows/publish.yml', 'utf8');
+  assert.match(publishWorkflow, /workflow_dispatch:/);
+  assert.match(publishWorkflow, /id-token: write/);
+  assert.match(publishWorkflow, /git show-ref --verify --quiet/);
+  assert.match(publishWorkflow, /check-release-tag\.mjs/);
+  assert.match(publishWorkflow, /npm stage publish --ignore-scripts/);
+  assert.doesNotMatch(publishWorkflow, /NODE_AUTH_TOKEN|NPM_TOKEN/);
+  assert.doesNotMatch(publishWorkflow, /run:.*\$\{\{ inputs\.tag \}\}/);
+});
+
 test('keeps named consumers out of framework product and agent surfaces', async () => {
   const decisions = parseDoc(await readFile('DECISIONS.md', 'utf8')).items;
   const boundary = decisions.find((item) => item.data?.id === 'DEC-005');
@@ -74,7 +103,12 @@ test('keeps named consumers out of framework product and agent surfaces', async 
     'templates/ARCHITECTURE.md',
     'templates/index.md',
     'templates/CLAUDE.md',
-    'templates/AGENTS.md'
+    'templates/AGENTS.md',
+    'CHANGELOG.md',
+    'CONTRIBUTING.md',
+    'SECURITY.md',
+    'RELEASING.md',
+    'docs/releases/v0.1.0.md'
   ];
   for (const surface of surfaces) {
     const content = await readFile(surface, 'utf8');

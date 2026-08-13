@@ -12,8 +12,12 @@
  *   vef list|show|refs|why|graph|search               Deterministic project queries
  */
 
+import { createRequire } from 'node:module';
 import { Option, program } from 'commander';
 import { QUERY_SCHEMA_VERSION } from '../src/lib/project-query.mjs';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
 
 // ── Flag-to-subcommand shim ──────────────────────────────────────────────
 // The user's mental model is `vef --new` / `vef --migrate`. Commander uses
@@ -41,7 +45,7 @@ for (const [flag, cmd] of Object.entries(flagMap)) {
 program
   .name('vef')
   .description('Vibe Engineering Framework — scaffold, validate, and query durable project memory.')
-  .version('0.1.0');
+  .version(version);
 
 program
   .command('init')

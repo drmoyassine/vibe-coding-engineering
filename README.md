@@ -124,6 +124,19 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
 - The framework is dogfooded in this repository and designed for adoption by independent product repositories.
 
+## Current and planned capabilities
+
+| Capability | Status |
+|---|---|
+| Canonical project-memory documents and typed records | Implemented; included in the 0.1.0 candidate |
+| Integrity validation and cross-platform CI | Implemented; included in the 0.1.0 candidate |
+| Per-item storage and deterministic ledgers | Implemented; included in the 0.1.0 candidate |
+| Deterministic read-only graph queries | Implemented; included in the 0.1.0 candidate |
+| Safe initialization and non-destructive doctor remediation | Implemented; included in the 0.1.0 candidate |
+| Claude Code agent adapters | Implemented as optional adapters |
+| Lightweight human review workspace | Planned under FRAMEWORK-015 |
+| Transactional `vef create` and `vef update` | Deferred under FRAMEWORK-022 |
+
 ## Deterministic contract
 
 The Integrity Core makes deterministic code authoritative for:
@@ -138,9 +151,9 @@ The Integrity Core makes deterministic code authoritative for:
 
 LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence, and explaining conflicts. They should not be the authority for mechanical invariants. That boundary is a product principle, not an implementation detail.
 
-## Getting started
+## Install and evaluate
 
-The package is not published to npm yet. Use the repository locally:
+The `0.1.0` package is a verified release candidate but is not yet published to npm. Until the authenticated first publication, evaluate it from the repository:
 
 ```bash
 git clone https://github.com/drmoyassine/vibe-engineering-framework.git
@@ -151,6 +164,14 @@ npm link
 vef init --name "My project"
 vef doctor
 vef validate --strict
+```
+
+After registry publication, the clean-directory path will be:
+
+```bash
+npx vibe-engineering-framework@latest init --name "My Project"
+npx vibe-engineering-framework@latest doctor
+npx vibe-engineering-framework@latest validate --strict
 ```
 
 Query the project model directly:
@@ -168,7 +189,7 @@ Queries are read-only. Human-readable text is the default; every command accepts
 `schemaVersion: 1` envelope; lookup and filter failures use the same envelope on stderr. `show`, `refs`, and `why` resolve a stable ID across
 all document types; use `tasks:TASK-009`-style selectors if an invalid repository contains a cross-type ambiguity.
 
-For an existing repository running the current VEF CLI, remediation is one explicitly authorized command:
+For an existing repository with VEF installed as a development dependency, remediation is one explicitly authorized command:
 
 ```bash
 npx vef doctor
@@ -195,7 +216,7 @@ vef project            # regenerate committed ledgers
 vef validate --strict  # CI/integrity gate
 ```
 
-The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. VEF is not published to npm yet, so `npx vibe-engineering-framework@latest ...` currently returns npm `E404` and must not be used. Commit-pinned consumers must first update their VEF dependency to a revision containing TASK-029; after that one-time bootstrap, `npx vef doctor --fix` performs the complete project migration. npm publication remains tracked by TASK-001.
+The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. Before the first npm release, commit-pinned adopters must update their VEF dependency to a revision containing TASK-029; after that bootstrap, `npx vef doctor --fix` performs the complete project migration. npm publication remains tracked by TASK-001.
 
 Commit `.vef/`, `docs/`, the four regenerated root ledgers, and any newly installed adapter files together. The repair checks schemas and typed relationships before writing, refuses semantic blockers and conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. The former `--update-adapters` option is retired and fails without changing files.
 
@@ -243,6 +264,8 @@ This is an early framework with a strong thesis and intentionally narrow scope. 
 The most valuable contribution is helping make this statement literally true:
 
 > If `vef validate --strict` passes, the repository's documented project state satisfies VEF's implemented structural contract.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development and pull-request contract, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [CHANGELOG.md](CHANGELOG.md) for release history, and [RELEASING.md](RELEASING.md) for the maintainer publication boundary.
 
 ## License
 

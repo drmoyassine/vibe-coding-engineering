@@ -499,6 +499,66 @@ last_updated: '2026-08-13'
 
 This decision narrows `doctor --fix` to the structure VEF can prove. Agent workflows may consume the same canonical contract, but VEF does not own or overwrite their installed implementation.
 
+---
+
+## DEC-008 — Bootstrap npm manually, then use staged trusted publishing
+
+---
+id: DEC-008
+title: Bootstrap npm manually, then use staged trusted publishing
+status: accepted
+context: >-
+  VEF needs a public npm package with verifiable release provenance and no long-lived CI publish token. npm cannot
+  attach a trusted publisher until the package already exists, while the first publication permanently consumes a
+  package name and version. Release automation must therefore distinguish the one-time bootstrap from subsequent
+  releases.
+decision: >-
+  Publish the first verified package manually from the tagged release commit using an authenticated maintainer account
+  with 2FA. After the package exists, configure npm trusted publishing for the repository's publish.yml workflow with
+  staged-publish permission only. Subsequent release workflows must check out an existing version tag, run the complete
+  release gate, submit the package to npm staging through OIDC, and require human 2FA approval before public release.
+rationale: >-
+  A manual first bootstrap satisfies npm's package-existence constraint. OIDC eliminates persistent publish secrets,
+  automatic provenance links later artifacts to their public source, and staged approval preserves proof of presence at
+  the irreversible publication boundary.
+consequences: >-
+  Positive — repeatable release checks, no long-lived npm write token in GitHub, provenance for subsequent releases, and
+  explicit human approval. Negative — the first release cannot use trusted publishing, requires npm login/2FA, and must
+  be followed by a one-time trust configuration before the automated staged workflow is usable.
+related_tasks:
+  - id: TASK-001
+    name: Publish the VEF CLI package to npm
+    url: /TASKS.md#TASK-001
+  - id: TASK-017
+    name: Prepare the public VEF release and launch narrative
+    url: /TASKS.md#TASK-017
+  - id: TASK-019
+    name: Execute the public launch and distribution plan
+    url: /TASKS.md#TASK-019
+related_roadmap_items:
+  - id: FRAMEWORK-020
+    name: Publish and publicly launch VEF
+    url: /ROADMAP.md#FRAMEWORK-020
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+  - id: DEC-007
+    name: Separate core enforcement from agent adapter compatibility
+    url: /DECISIONS.md#DEC-007
+tags:
+  - npm
+  - release
+  - provenance
+  - security
+generated:
+  by: process:codex
+  at: '2026-08-13T00:00:00Z'
+last_updated: '2026-08-13'
+---
+
+The operational checklist is maintained in `RELEASING.md`. Publication remains a maintainer-authorized external action; a passing repository gate does not itself authorize consuming an npm name/version.
+
 <!-- End VEF generated items. -->
 
 ## Legend

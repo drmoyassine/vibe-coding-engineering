@@ -53,11 +53,25 @@ depends_on:
   - id: TASK-012
     name: Implement the canonical record store and ledger projector
     url: /TASKS.md#TASK-012
-related_decisions: []
+related_decisions:
+  - id: DEC-008
+    name: Bootstrap npm manually, then use staged trusted publishing
+    url: /DECISIONS.md#DEC-008
 last_updated: '2026-08-13'
 ---
 
-Scope revised 2026-08-13 when public launch became the immediate priority. Publishing is now P0; the unrelated local-directory rename moved to TASK-016. Acceptance: the package contents pass the existing CI contract, the registry metadata and version are truthful, installation works from a clean directory, and `npx vibe-engineering-framework@latest --help` plus a fresh `vef init`/`doctor`/`validate --strict` flow succeed.
+Scope revised 2026-08-13 when public launch became the immediate priority. Publishing is now P0; the unrelated local-directory rename moved to TASK-016.
+
+Release-candidate readiness completed 2026-08-13:
+
+- confirmed that the intended unscoped package name is currently absent from the public registry;
+- made `package.json` the single CLI version source and added truthful repository, issue, homepage, keyword, and public-access metadata;
+- added a release gate that runs tests, strict dogfood validation, doctor, package construction, isolated tarball installation, CLI help/version, and a fresh `init` → `doctor` → `validate --strict` flow;
+- upgraded CI to `npm ci` across Windows/Ubuntu and the declared Node 18 boundary/current Node 24;
+- added a tag/version guard plus a future OIDC staged-publishing workflow with human approval;
+- verified the exact `vibe-engineering-framework@0.1.0` candidate through the complete release gate with zero validation errors or warnings.
+
+Remaining acceptance boundary: this machine is not authenticated to npm. A maintainer must complete `npm login` with account-level 2FA and explicitly authorize the irreversible first `npm publish`. Only after the registry package exists can trusted publishing be configured. TASK-001 remains in progress until the public `@latest` help and clean-directory registry flow are verified.
 
 ---
 
@@ -497,22 +511,27 @@ title: Prepare the public VEF release and launch narrative
 description: >-
   Create a truthful, coherent release package that explains VEF's problem, implemented contract, installation path,
   boundaries, and public invitation.
-status: in-progress
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-020
   name: Publish and publicly launch VEF
   url: /ROADMAP.md#FRAMEWORK-020
-assignee: null
+assignee: Codex
 depends_on: []
 related_decisions:
   - id: DEC-003
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
+  - id: DEC-008
+    name: Bootstrap npm manually, then use staged trusted publishing
+    url: /DECISIONS.md#DEC-008
 last_updated: '2026-08-13'
 ---
 
-Reconcile the README/front door, release notes, repository metadata, installation path, license/contribution expectations, current-vs-planned capability table, and reusable launch copy. Do not advertise FRAMEWORK-022 mutations as shipped.
+Completed 2026-08-13. Reconciled the README/front door, truthful pre-publication and post-publication installation paths, current-versus-planned capability table, package/repository metadata, changelog, contribution contract, security reporting, maintainer release procedure, and reusable `0.1.0` launch copy.
+
+The public narrative now leads with Git-native durable project memory and its deterministic integrity boundary. It names per-item storage, generated ledgers, queries, adoption, and optional adapters as shipped; it explicitly marks the human-review workspace as planned and transactional `create`/`update` as deferred. Registry publication itself remains TASK-001, and distribution/adoption execution remains TASK-018/TASK-019.
 
 ---
 
@@ -566,7 +585,10 @@ depends_on:
   - id: TASK-018
     name: Publish adoption examples and a public feedback loop
     url: /TASKS.md#TASK-018
-related_decisions: []
+related_decisions:
+  - id: DEC-008
+    name: Bootstrap npm manually, then use staged trusted publishing
+    url: /DECISIONS.md#DEC-008
 last_updated: '2026-08-13'
 ---
 
@@ -796,7 +818,7 @@ Regression coverage models both important adoption shapes: a structurally ready 
 | TASK-014 | `vef create` and `vef update` | pending | P0 |
 | TASK-015 | Agent-adapter migration and mutation tests | pending | P1 |
 | TASK-016 | Rename the local repository directory | pending | P3 |
-| TASK-017 | Public VEF release and launch narrative | in-progress | P0 |
+| TASK-017 | Public VEF release and launch narrative | completed | P0 |
 | TASK-018 | Adoption examples and public feedback loop | pending | P0 |
 | TASK-019 | Public launch and distribution plan | pending | P0 |
 | TASK-024 | Consumer-neutral framework boundary | completed | P0 |
@@ -806,4 +828,4 @@ Regression coverage models both important adoption shapes: a structurally ready 
 | TASK-028 | One-command doctor remediation | completed | P0 |
 | TASK-029 | Core enforcement and adapter separation | completed | P0 |
 
-**Next priority:** TASK-001 and TASK-017 prepare the publishable package and launch narrative now that TASK-012, TASK-028, and TASK-029 have completed storage migration, one-command remediation, and non-destructive adapter separation; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** Complete TASK-001's authenticated first npm publication and registry smoke verification now that TASK-017 and the `0.1.0` release candidate are complete; then TASK-018 and TASK-019 own examples, feedback, and distribution. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
