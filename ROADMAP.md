@@ -345,7 +345,7 @@ id: FRAMEWORK-017
 title: "Build the VEF Integrity Core"
 description: "Make VEF's documented project model deterministically coherent through one schema, typed graph validation, safe mutations, tests, and CI dogfooding."
 phase: "Phase 0 — Integrity Core"
-status: "In Progress"
+status: "Completed"
 priority: "P0"
 related_tasks:
   - id: TASK-004
@@ -370,7 +370,7 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-This is the foundational milestone ahead of additional integrations and interfaces. Its first slices are complete: validation knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, and heading/frontmatter agreement; tests and CI enforce the contract on Ubuntu and Windows. Remaining P0 work is migration trust boundaries.
+Completed 2026-08-13. Validation knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, and heading/frontmatter agreement. Tests and CI enforce the contract on Ubuntu and Windows. `/apply` now uses proposal-first migration boundaries: untrusted evidence, explicit optional sources and writes, classified memory, blocked orphan invention, and deterministic staged validation.
 
 The work also resolves dogfooding drift (filenames, stale claims, templates, provenance), makes strict validation a complete CI contract, and makes migration conservative when evidence is uncertain.
 
@@ -404,11 +404,11 @@ After structural trust is established, expose the graph through `vef list`, `vef
 
 | Phase | Status | Items |
 |---|---|---|
-| Phase 0 — Integrity Core | 🔄 In Progress | FRAMEWORK-017 |
+| Phase 0 — Integrity Core | ✅ Completed | FRAMEWORK-017 |
 | Phase 0 — Foundation | ✅ Completed | FRAMEWORK-001, -002, -003 |
 | Phase 1 — Proven in studygram-app | 🔄 In Progress | FRAMEWORK-004, -005 (done); FRAMEWORK-006 (in progress); FRAMEWORK-007 (deferred) |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -015, -016 |
 
-**Next priority:** FRAMEWORK-017 (make the Integrity Core authoritative). FRAMEWORK-006 remains active but no longer outranks framework correctness.
+**Next priority:** FRAMEWORK-018 (expose deterministic project queries). FRAMEWORK-006 remains active consumer migration work.

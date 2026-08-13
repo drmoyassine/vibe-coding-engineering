@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { validateItem } from '../src/lib/schemas.mjs';
 import { checkBidirectional, findDependencyCycles, findDuplicateIds, findOrphans } from '../src/lib/crosslinks.mjs';
+import { auditApplyContract } from '../src/lib/apply-contract.mjs';
 
 const execFileAsync = promisify(execFile);
 const ref = (id, name, url) => ({ id, name, url });
@@ -57,7 +58,46 @@ test('init creates lowercase OKF files with truthful generated provenance', asyn
     const index = await readFile(join(dir, 'index.md'), 'utf8');
     assert.match(index, /by: "process:vef-init"/);
     assert.doesNotMatch(index, /2026-01-01T00:00:00Z|human:owner/);
+    const { stdout: doctorOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]);
+    assert.match(doctorOutput, /✓  \/apply trust contract/);
+    assert.match(doctorOutput, /✓ All checks passed/);
   } finally {
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('/apply defaults to read-only untrusted evidence with opt-in classified memory', async () => {
+  const pairs = [
+    ['.claude/skills/apply/SKILL.md', '.claude/skills/apply/workflow.mjs'],
+    ['templates/.claude/skills/apply/SKILL.md', 'templates/.claude/skills/apply/workflow.mjs'],
+  ];
+  for (const [skillPath, workflowPath] of pairs) {
+    const [skill, workflow] = await Promise.all([readFile(skillPath, 'utf8'), readFile(workflowPath, 'utf8')]);
+    assert.deepEqual(auditApplyContract({ skill, workflow }), [], `${skillPath} must satisfy the trust contract`);
+    const parseableWorkflow = workflow.replace(/^export const meta/m, 'const meta');
+    assert.doesNotThrow(
+      () => new Function(`return async function workflowHarness() {\n${parseableWorkflow}\n}`),
+      `${workflowPath} must remain syntactically valid in its workflow runtime`,
+    );
+  }
+});
+
+test('/apply trust audit rejects legacy unsafe defaults and orphan invention', () => {
+  const issues = auditApplyContract({
+    skill: '# /apply\n',
+    workflow: "const dryRun = flags.dryRun ?? false\nconst sources = flags.sources || ['file', 'memory', 'git']\nFor orphans, create placeholder entries",
+  });
+  assert(issues.some(issue => issue.includes('default memory and Git on')));
+  assert(issues.some(issue => issue.includes('default to write mode')));
+  assert(issues.some(issue => issue.includes('placeholder entities')));
+});
+
+test('dogfood and install-template /apply adapters stay identical', async () => {
+  for (const name of ['SKILL.md', 'workflow.mjs']) {
+    const [installed, template] = await Promise.all([
+      readFile(join('.claude', 'skills', 'apply', name), 'utf8'),
+      readFile(join('templates', '.claude', 'skills', 'apply', name), 'utf8'),
+    ]);
+    assert.equal(installed, template, `${name} drifted between dogfood and template copies`);
   }
 });

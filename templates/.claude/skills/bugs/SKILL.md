@@ -88,7 +88,7 @@ When `/bugs sync` finds an Issue with no referencing task, or a task `related_bu
 
 ## Cross-linking philosophy
 
-Bugs link to **TASKS** (via `related_bugs` in task schema) and **DECISIONS** (via `related_decisions`), NOT to LOG.md. A bug that results from or blocks a decision should link to that decision.
+Bugs link to **TASKS** (via `related_bugs` in task schema) and **DECISIONS** (via `related_decisions`), not to `log.md`. A bug that results from or blocks a decision should link to that decision.
 
 ## Labels
 

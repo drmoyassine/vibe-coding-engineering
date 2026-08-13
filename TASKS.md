@@ -212,7 +212,7 @@ Completed 2026-08-13. The canonical files are `index.md` and `log.md`; templates
 id: TASK-008
 title: "Harden /apply migration trust boundaries"
 description: "Treat discovered repository content as untrusted data, make memory import opt-in, and require deterministic validation before a migration is accepted."
-status: pending
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-017
@@ -230,7 +230,9 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-Separate evidence from instructions in prompts, use read-only discovery/reconciliation, classify memory before import, and mark unresolved references `needsReview`. Never invent a missing canonical entity merely to satisfy a dangling link.
+Completed 2026-08-13. `/apply` now defaults to read-only file evidence and requires explicit `--write`, `--source memory`, and `--source git` intent. Every discovery phase labels repository, memory, Git, and agent payloads as untrusted evidence. Memory is classified as project/personal/sensitive/transient before reconciliation; only project knowledge remains eligible. Orphans become blocked review items instead of fabricated targets. Agent validation is advisory, and the write contract requires staged and post-write `vef validate --strict` passes without automatic commits.
+
+`vef doctor` deterministically audits these security-critical adapter defaults. Regression tests cover both the dogfooded adapter and install template, reject the legacy unsafe defaults, and require both copies to remain identical.
 
 ## TASK-009 — Design and implement deterministic query commands
 
@@ -271,7 +273,7 @@ Design stable text and JSON output around the canonical graph. `vef why TASK-XXX
 | TASK-005 | Integrity Core CI gate | completed | P0 |
 | TASK-006 | Canonical schema and typed relationship model | completed | P0 |
 | TASK-007 | Filename conventions and provenance | completed | P0 |
-| TASK-008 | /apply migration trust boundaries | pending | P0 |
+| TASK-008 | /apply migration trust boundaries | completed | P0 |
 | TASK-009 | Deterministic query commands | pending | P1 |
 
-**Next priority:** TASK-008. The core now has an executable schema, test suite, and CI enforcement; migration trust boundaries are the remaining P0 work. TASK-001 remains low-priority and cosmetic.
+**Next priority:** TASK-009. The Integrity Core is complete; deterministic query commands are the next user-facing layer. TASK-001 remains low-priority and cosmetic.

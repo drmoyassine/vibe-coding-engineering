@@ -18,7 +18,7 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 | [ROADMAP.md](ROADMAP.md) | Product commitments and sequencing |
 | [TASKS.md](TASKS.md) | Concrete implementation work |
 | [DECISIONS.md](DECISIONS.md) | Architectural and product decisions |
-| [LOG.md](LOG.md) | Chronological history and durable learnings |
+| [log.md](log.md) | Chronological history and durable learnings |
 | [CLAUDE.md](CLAUDE.md) | Current Claude Code adapter instructions |
 | [AGENTS.md](AGENTS.md) | Framework workforce manual and conventions |
 

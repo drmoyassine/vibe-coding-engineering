@@ -45,7 +45,7 @@ related_decisions:              # array of decision refs (empty: [])
     url: /DECISIONS.md#DEC-002
 tags: []                      # OPTIONAL (OKF) — cross-cutting labels
 resource:                     # OPTIONAL (OKF) — canonical URI to the artifact
-log_ref:                      # OPTIONAL — ref to LOG.md section (narrative history)
+log_ref:                      # OPTIONAL — ref to log.md section (narrative history)
   date: 2026-01-01
   section: "### Decision discussion"
 generated:                    # OPTIONAL (OKF trust signal)
@@ -64,14 +64,14 @@ Full prose expansion of the decision, discussion, alternatives considered.
 - `superseded_by` is **singular** (one newer decision). Omit it, or leave empty, unless `status: superseded`.
 - `related_vision`, `related_roadmap_items`, `related_tasks`, `related_decisions` are **arrays**. Empty array = `[]`.
 - Decisions are **bidirectionally linked** to/from vision/roadmap/tasks (e.g., if a decision results in a task, link both ways).
-- `log_ref` points to LOG.md (narrative history) but LOG.md does NOT link back to decisions. The decision is the canonical record.
+- `log_ref` points to `log.md` (narrative history), but `log.md` does not link back to decisions. The decision is the canonical record.
 - Same-repo URLs are **relative** (`/TASKS.md#TASK-001`); cross-repo/external are **absolute**.
 - There is no separate `description` field; `context` + `decision` carry the summary.
 - **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. Omit when unused; unknown keys are preserved.
 
 ## Cross-linking philosophy
 
-Decisions are the **central ledger** — they link bidirectionally to all vision/roadmap/tasks, and LOG.md links to them (not the reverse). This ensures the decision is the single source of truth for "what we decided."
+Decisions are the **central ledger** — they link bidirectionally to all vision/roadmap/tasks, and `log.md` links to them (not the reverse). This ensures the decision is the single source of truth for "what we decided."
 
 ## How to use
 

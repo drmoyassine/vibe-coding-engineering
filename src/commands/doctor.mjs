@@ -10,6 +10,7 @@
 import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseDoc } from '../lib/frontmatter.mjs';
+import { auditApplyContract } from '../lib/apply-contract.mjs';
 
 const EXPECTED_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md', 'CLAUDE.md'];
 const EXPECTED_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
@@ -47,6 +48,22 @@ export async function doctorCommand(opts) {
     const found = await exists(join(targetDir, '.claude', 'skills', skill, 'SKILL.md'));
     console.log(`  ${found ? '✓' : '✗'}  /${skill}`);
     if (!found) allGood = false;
+  }
+
+  const applySkillPath = join(targetDir, '.claude', 'skills', 'apply', 'SKILL.md');
+  const applyWorkflowPath = join(targetDir, '.claude', 'skills', 'apply', 'workflow.mjs');
+  if (await exists(applySkillPath) && await exists(applyWorkflowPath)) {
+    const [skill, workflow] = await Promise.all([
+      readFile(applySkillPath, 'utf-8'),
+      readFile(applyWorkflowPath, 'utf-8'),
+    ]);
+    const trustIssues = auditApplyContract({ skill, workflow });
+    console.log(`  ${trustIssues.length === 0 ? '✓' : '✗'}  /apply trust contract`);
+    for (const issue of trustIssues) console.log(`     ${issue}`);
+    if (trustIssues.length > 0) allGood = false;
+  } else {
+    console.log('  ✗  /apply trust contract (SKILL.md or workflow.mjs missing)');
+    allGood = false;
   }
 
   // ── CLAUDE.md integration ──

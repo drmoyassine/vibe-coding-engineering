@@ -91,7 +91,7 @@ The model is deliberately denormalized for local readability: backlinks live nea
 | [ROADMAP.md](ROADMAP.md) | Directional product commitments and sequencing |
 | [TASKS.md](TASKS.md) | Concrete, traceable work |
 | [DECISIONS.md](DECISIONS.md) | Context, decision, rationale, and consequences |
-| [LOG.md](LOG.md) | Chronological learning and material changes |
+| [log.md](log.md) | Chronological learning and material changes |
 | [index.md](index.md) | Navigation and OKF metadata |
 
 GitHub Issues remain the canonical bug tracker. A task can reference an external issue; VEF does not create a competing `BUGS.md` ledger.
@@ -146,10 +146,12 @@ Then use the installed agent adapter to maintain the model. In Claude Code, for 
 /tasks add
 /roadmap graduate FRAMEWORK-017
 /decisions add
-/apply --dry-run
+/apply                       # read-only proposal (default)
+/apply --source memory       # explicit, classified memory evidence
+/apply --write               # explicit write request through the validation gate
 ```
 
-`/apply` is an adoption assistant, not a source of truth. It discovers and reconciles material from Git history and prose, then renders proposed canonical records. Its safety model is being hardened so untrusted repository text is classified as data, memory import is opt-in, and deterministic validation can veto an invalid migration.
+`/apply` is an adoption assistant, not a source of truth. It treats repository, Git, memory, and agent output as untrusted evidence and produces read-only proposals by default. Memory and Git are opt-in sources; memory is classified before import; unresolved references are blocked instead of invented. An explicit write request must pass deterministic validation against a staged candidate and again after writing, and it never commits automatically.
 
 ## Design principles
 
@@ -166,15 +168,15 @@ VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform
 
 ## Roadmap
 
-The immediate priority is [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017): establish the Integrity Core before expanding integrations, visualizations, or more document types. The next user-facing layer after that is a deterministic query interface—commands such as `vef show`, `vef refs`, `vef why`, and `vef graph`—so the model is useful even without an LLM.
+The Integrity Core milestone, [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017), is complete. The immediate priority is [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018): a deterministic query interface—commands such as `vef show`, `vef refs`, `vef why`, and `vef graph`—so the model is useful even without an LLM.
 
 ## Contributing and status
 
-This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks as the current contract and the documentation's Integrity Core sections as committed roadmap, not completed functionality.
+This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks and CI gate as the current structural contract. Query and mutation ergonomics remain roadmap work.
 
 The most valuable contribution is helping make this statement literally true:
 
-> If `vef check` passes, the repository's documented project state is structurally coherent.
+> If `vef validate --strict` passes, the repository's documented project state satisfies VEF's implemented structural contract.
 
 ## License
 
