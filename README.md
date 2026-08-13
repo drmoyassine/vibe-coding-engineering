@@ -128,12 +128,12 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 
 | Capability | Status |
 |---|---|
-| Canonical project-memory documents and typed records | Implemented; included in the 0.1.0 candidate |
-| Integrity validation and cross-platform CI | Implemented; included in the 0.1.0 candidate |
-| Per-item storage and deterministic ledgers | Implemented; included in the 0.1.0 candidate |
-| Deterministic read-only graph queries | Implemented; included in the 0.1.0 candidate |
-| Safe initialization and non-destructive doctor remediation | Implemented; included in the 0.1.0 candidate |
-| Claude Code agent adapters | Implemented as optional adapters |
+| Canonical project-memory documents and typed records | Shipped in 0.1.0 |
+| Integrity validation and cross-platform CI | Shipped in 0.1.0 |
+| Per-item storage and deterministic ledgers | Shipped in 0.1.0 |
+| Deterministic read-only graph queries | Shipped in 0.1.0 |
+| Safe initialization and non-destructive doctor remediation | Shipped in 0.1.0 |
+| Claude Code agent adapters | Shipped as optional adapters |
 | Lightweight human review workspace | Planned under FRAMEWORK-015 |
 | Transactional `vef create` and `vef update` | Deferred under FRAMEWORK-022 |
 
@@ -151,27 +151,22 @@ The Integrity Core makes deterministic code authoritative for:
 
 LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence, and explaining conflicts. They should not be the authority for mechanical invariants. That boundary is a product principle, not an implementation detail.
 
-## Install and evaluate
+## Install
 
-The `0.1.0` package is a verified release candidate but is not yet published to npm. Until the authenticated first publication, evaluate it from the repository:
-
-```bash
-git clone https://github.com/drmoyassine/vibe-engineering-framework.git
-cd vibe-engineering-framework
-npm install
-npm link
-
-vef init --name "My project"
-vef doctor
-vef validate --strict
-```
-
-After registry publication, the clean-directory path will be:
+VEF requires Node.js 18 or newer. Scaffold a new project directly from npm:
 
 ```bash
 npx vibe-engineering-framework@latest init --name "My Project"
 npx vibe-engineering-framework@latest doctor
 npx vibe-engineering-framework@latest validate --strict
+```
+
+For an existing repository, install VEF as a development dependency so the version is explicit and repeatable:
+
+```bash
+npm install --save-dev vibe-engineering-framework
+npx vef doctor
+npx vef doctor --fix
 ```
 
 Query the project model directly:
@@ -216,7 +211,7 @@ vef project            # regenerate committed ledgers
 vef validate --strict  # CI/integrity gate
 ```
 
-The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. Before the first npm release, commit-pinned adopters must update their VEF dependency to a revision containing TASK-029; after that bootstrap, `npx vef doctor --fix` performs the complete project migration. npm publication remains tracked by TASK-001.
+The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. Update the installed development dependency before relying on newer repair behavior; `npx vef doctor` will then classify the repository and provide the supported path.
 
 Commit `.vef/`, `docs/`, the four regenerated root ledgers, and any newly installed adapter files together. The repair checks schemas and typed relationships before writing, refuses semantic blockers and conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. The former `--update-adapters` option is retired and fails without changing files.
 
