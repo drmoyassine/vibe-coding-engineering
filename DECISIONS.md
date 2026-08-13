@@ -559,6 +559,8 @@ last_updated: '2026-08-13'
 
 The operational checklist is maintained in `RELEASING.md`. Publication remains a maintainer-authorized external action; a passing repository gate does not itself authorize consuming an npm name/version.
 
+Implemented 2026-08-13: `0.1.0` completed the manual bootstrap, the matching GitHub Release and `npm` environment are live, and npm independently reported a single GitHub trust relationship for `publish.yml` with only `createStagedPackage`. Package publishing access was then restricted to human 2FA with traditional tokens disallowed. No long-lived npm publication credential is stored in GitHub.
+
 <!-- End VEF generated items. -->
 
 ## Legend

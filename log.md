@@ -12,7 +12,9 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 - Published `vibe-engineering-framework@0.1.0` publicly to npm and confirmed that the `latest` distribution tag resolves to `0.1.0`.
 - Matched the public registry's tarball SHA-1 and SHA-512 integrity metadata to the exact release candidate tagged `v0.1.0` at commit `a24b341`.
 - Installed `vibe-engineering-framework@latest` from the public registry into a clean temporary project. The installed CLI reported `0.1.0`, initialized canonical per-item storage, reached `CORE ENFORCED` in doctor, and passed strict validation with zero errors or warnings.
-- Completed TASK-001. TASK-018 and TASK-019 now own the remaining public adoption, feedback, and distribution work; DEC-008's staged trusted-publishing path remains the release-hardening follow-up for later versions.
+- Published the matching GitHub Release and created the GitHub `npm` deployment environment used by `publish.yml`.
+- Verified npm's trust record before locking token access: repository `drmoyassine/vibe-engineering-framework`, workflow `publish.yml`, environment `npm`, and `createStagedPackage` as the only permission. Then required human 2FA and disabled traditional publish tokens; no long-lived npm publication secret is stored in GitHub.
+- Completed TASK-001 and DEC-008's release-hardening follow-up. TASK-018 and TASK-019 now own the remaining public adoption, feedback, and distribution work.
 
 ### Public 0.1.0 release candidate verified
 - Completed TASK-017 and prepared the public front door, current-versus-planned capability boundary, GitHub description/topics, changelog, contribution contract, private security-reporting path, maintainer release checklist, and reusable `0.1.0` launch copy.

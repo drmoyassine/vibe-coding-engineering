@@ -21,6 +21,8 @@ Published name/version pairs cannot be reused, even after unpublishing. Treat pu
 
 ## First registry publication only
 
+Completed for `v0.1.0` on 2026-08-13. The package, GitHub Release, GitHub `npm` environment, stage-only trusted publisher, and token restriction are all established. The commands below document the one-time bootstrap and must not be repeated for an already-published version.
+
 The package must exist before npm can attach a trusted publisher. The first release therefore requires an authenticated maintainer with account-level 2FA:
 
 ```bash
@@ -47,6 +49,8 @@ npm trust github vibe-engineering-framework --file publish.yml --repo drmoyassin
 ```
 
 Then require 2FA and disallow traditional publish tokens in the package settings.
+
+For VEF, this trust relationship is intentionally stage-only: `publish.yml` has `createStagedPackage` permission and cannot directly publish a public version.
 
 ## Subsequent releases
 

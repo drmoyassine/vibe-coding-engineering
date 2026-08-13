@@ -76,9 +76,11 @@ Completed 2026-08-13:
 - published `vibe-engineering-framework@0.1.0` publicly to npm with the `latest` tag;
 - verified registry integrity SHA-512 `oZCNC0i4cylkDFJafu7vEdj8A9B6PZgnSUx66m0xMgM0JDGakm63SFD6ARNPEiYhoa0hT1c6jR640ihdfWSkpQ==` and tarball SHA-1 `c527517e369748180a16224c94972eb3d6a2acde` against the release candidate;
 - installed `vibe-engineering-framework@latest` from the public registry into a clean temporary project;
-- verified the installed `0.1.0` CLI through `init`, `doctor`, and `validate --strict`, reaching `CORE ENFORCED` with zero errors or warnings.
+- verified the installed `0.1.0` CLI through `init`, `doctor`, and `validate --strict`, reaching `CORE ENFORCED` with zero errors or warnings;
+- published the matching GitHub Release and created its `npm` deployment environment;
+- configured npm trusted publishing for `publish.yml` with `createStagedPackage` as its only permission, then required human 2FA and disabled traditional publish tokens.
 
-The manual bootstrap boundary is closed. Future releases use the staged trusted-publishing path defined by DEC-008 after the npm package trust relationship is configured.
+The manual bootstrap and release-hardening boundaries are closed. Future releases use the staged trusted-publishing path defined by DEC-008: GitHub may submit a verified tagged artifact to npm staging, but only a human 2FA approval may make it public.
 
 ---
 
