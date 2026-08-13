@@ -8,12 +8,18 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### VEF 0.1.0 published and independently verified
+- Published `vibe-engineering-framework@0.1.0` publicly to npm and confirmed that the `latest` distribution tag resolves to `0.1.0`.
+- Matched the public registry's tarball SHA-1 and SHA-512 integrity metadata to the exact release candidate tagged `v0.1.0` at commit `a24b341`.
+- Installed `vibe-engineering-framework@latest` from the public registry into a clean temporary project. The installed CLI reported `0.1.0`, initialized canonical per-item storage, reached `CORE ENFORCED` in doctor, and passed strict validation with zero errors or warnings.
+- Completed TASK-001. TASK-018 and TASK-019 now own the remaining public adoption, feedback, and distribution work; DEC-008's staged trusted-publishing path remains the release-hardening follow-up for later versions.
+
 ### Public 0.1.0 release candidate verified
 - Completed TASK-017 and prepared the public front door, current-versus-planned capability boundary, GitHub description/topics, changelog, contribution contract, private security-reporting path, maintainer release checklist, and reusable `0.1.0` launch copy.
 - Made `package.json` the single CLI version source and added truthful npm metadata. Confirmed by a live registry lookup that the intended unscoped name was unclaimed at audit time; package names remain first-come, first-served until publication.
 - Added one release gate spanning 31 tests, dogfood strict validation/doctor, dry-run package inspection, isolated installation of the exact tarball, installed CLI help/version, and a fresh `init` → `doctor` → `validate --strict` flow. CI now runs the same gate on Ubuntu and Windows at Node 18 and Node 24.
 - Accepted DEC-008. The first npm release must be an authenticated maintainer bootstrap with 2FA because npm cannot configure a trusted publisher for a package that does not yet exist. Subsequent releases use the prepared `publish.yml` OIDC workflow to stage a tagged artifact for human 2FA approval and automatic provenance.
-- TASK-001 remains in progress at one explicit external boundary: this workstation returned npm `E401` for `whoami`, so no irreversible registry publication was attempted. The verified candidate passes all local release gates.
+- At candidate time, TASK-001 remained at the explicit npm authentication boundary. The later publication entry above records closure of that boundary without rewriting this chronological checkpoint.
 
 ### Core enforcement separated from consumer-owned adapters
 - Accepted DEC-007 and completed TASK-029 after identifying a serious flaw in the first TASK-028 implementation: deterministic core repair had been coupled to replacement of installed agent adapters, even though adopting repositories may intentionally customize them.

@@ -28,7 +28,7 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 
 ## Current strategic state
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, and [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage with deterministic ledgers. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) public release and [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) lightweight human review are the active tracks. General-purpose mutations are deferred to FRAMEWORK-022.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, and [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage with deterministic ledgers. VEF `0.1.0` is publicly available from npm. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) now continues through adoption examples and distribution, while [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) advances lightweight human review. General-purpose mutations are deferred to FRAMEWORK-022.
 
 ## Current interfaces
 

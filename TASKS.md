@@ -42,7 +42,7 @@ title: Publish the VEF CLI package to npm
 description: >-
   Release the verified CLI, templates, and adapter package to npm so public adopters can install and run VEF without a
   local clone.
-status: in-progress
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-020
@@ -71,7 +71,14 @@ Release-candidate readiness completed 2026-08-13:
 - added a tag/version guard plus a future OIDC staged-publishing workflow with human approval;
 - verified the exact `vibe-engineering-framework@0.1.0` candidate through the complete release gate with zero validation errors or warnings.
 
-Remaining acceptance boundary: this machine is not authenticated to npm. A maintainer must complete `npm login` with account-level 2FA and explicitly authorize the irreversible first `npm publish`. Only after the registry package exists can trusted publishing be configured. TASK-001 remains in progress until the public `@latest` help and clean-directory registry flow are verified.
+Completed 2026-08-13:
+
+- published `vibe-engineering-framework@0.1.0` publicly to npm with the `latest` tag;
+- verified registry integrity SHA-512 `oZCNC0i4cylkDFJafu7vEdj8A9B6PZgnSUx66m0xMgM0JDGakm63SFD6ARNPEiYhoa0hT1c6jR640ihdfWSkpQ==` and tarball SHA-1 `c527517e369748180a16224c94972eb3d6a2acde` against the release candidate;
+- installed `vibe-engineering-framework@latest` from the public registry into a clean temporary project;
+- verified the installed `0.1.0` CLI through `init`, `doctor`, and `validate --strict`, reaching `CORE ENFORCED` with zero errors or warnings.
+
+The manual bootstrap boundary is closed. Future releases use the staged trusted-publishing path defined by DEC-008 after the npm package trust relationship is configured.
 
 ---
 
@@ -828,4 +835,4 @@ Regression coverage models both important adoption shapes: a structurally ready 
 | TASK-028 | One-command doctor remediation | completed | P0 |
 | TASK-029 | Core enforcement and adapter separation | completed | P0 |
 
-**Next priority:** Complete TASK-001's authenticated first npm publication and registry smoke verification now that TASK-017 and the `0.1.0` release candidate are complete; then TASK-018 and TASK-019 own examples, feedback, and distribution. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** TASK-018 and TASK-019 own adoption examples, public feedback, and distribution now that TASK-001 and TASK-017 have completed the verified public `0.1.0` npm release. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
