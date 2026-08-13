@@ -7,7 +7,7 @@
  *   vef init [--dir] [--name] [--github] [--force]   Scaffold the framework (alias: --new)
  *   vef migrate [--dir] [--apply]                    Adopt an existing repo (alias: --migrate)
  *   vef validate [--dir] [--strict]                  Schema + graph + catalogue validation (alias: --validate)
- *   vef doctor [--dir]                               Health check (alias: --doctor)
+ *   vef doctor [--dir] [--fix]                       Health check or explicitly authorized repair (alias: --doctor)
  *   vef project [--dir] [--check]                    Generate committed ledgers from canonical items
  *   vef list|show|refs|why|graph|search               Deterministic project queries
  */
@@ -80,6 +80,7 @@ program
   .command('doctor')
   .description('Health check — are all docs and skills installed?')
   .option('--dir <path>', 'target directory', '.')
+  .option('--fix', 'explicitly repair supported VEF storage, adapter, and projection drift')
   .action(async (opts) => {
     const { doctorCommand } = await import('../src/commands/doctor.mjs');
     await doctorCommand(opts);

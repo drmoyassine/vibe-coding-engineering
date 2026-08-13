@@ -47,7 +47,7 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 | **index.md** | Navigation hub / table of contents (OKF) |
 | **BUGS** | Bug tracker — **GitHub Issues** (no markdown file — the Issues *are* the source) |
 
-Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each `_index.md` owns collection-level prose. Root structured ledgers are generated and committed for reading and stable links. Edit the item file, run `vef project`, then run `vef validate --strict`. `vef doctor` reports legacy storage and gives the exact `vef migrate` / `vef migrate --apply --update-adapters` upgrade path.
+Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each `_index.md` owns collection-level prose. Root structured ledgers are generated and committed for reading and stable links. Edit the item file, run `vef project`, then run `vef validate --strict`. Plain `vef doctor` is read-only; `vef doctor --fix` explicitly authorizes supported storage migration, adapter updates, projection, strict validation, and a final health check.
 
 **Before making or reversing an architectural/product decision, check DECISIONS.md** (`/decisions list`) — don't re-litigate settled decisions; record new or reversed ones via `/decisions add` / `supersede`.
 

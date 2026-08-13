@@ -47,6 +47,6 @@ npm test
   - `/roadmap reconcile` — validate roadmap schemas
   - `/decisions reconcile` — validate decision schemas + cross-links
 - Run `/apply` to migrate scattered content into the canonical schema.
-- If `vef doctor` reports legacy monolithic or retired root-directory storage, preview with `vef migrate`, apply with `vef migrate --apply --update-adapters`, and commit `.vef/`, `docs/`, regenerated ledgers, and upgraded skills together.
+- Plain `vef doctor` is read-only. To repair supported legacy storage using the current CLI, run `vef doctor --fix`, review the resulting `.vef/`, `docs/`, regenerated ledgers, and upgraded skills, then commit them together.
 
 <!-- PROJECT: Add your project-specific conventions here. -->

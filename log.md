@@ -8,6 +8,13 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### One-command consumer remediation shipped
+- Identified an adoption UX failure after a consumer ran an obsolete pinned VEF doctor: the old command passed its historical checks but could not know the new canonical-storage contract, and the documented current migration required users to compose several deterministic commands.
+- Completed TASK-028 under the public-release milestone. `vef doctor --fix` now explicitly authorizes and orchestrates storage migration, adapter updates, ledger projection, strict validation, and a final health check; plain doctor remains read-only for CI and inspection.
+- Clarified the bootstrap boundary: installed code cannot execute future behavior. Before package publication, commit-pinned consumers must update their dependency first and then run `npx vef doctor --fix`; registry-based `@latest` guidance is invalid until TASK-001 publishes the package.
+- Added success and failure tests proving that the complete legacy migration runs through one command and that conflicting candidates are rejected before storage or adapter changes.
+- A read-only current-CLI audit of the Studygram consumer confirmed the broader failure mode: an older session authored root VISION prose after inferring that structured vision themes were obsolete, while the repository still lacked canonical Architecture/log surfaces and contained unresolved task references. VEF retained only this compatibility evidence; Studygram's product vision remains in its owning repository. `doctor --fix` now preflights the complete durable-memory contract so this state is rejected before any write.
+
 ### Canonical per-item storage and consumer migration shipped
 - Completed TASK-012 and FRAMEWORK-019. Structured records now live canonically under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; collection `_index.md` files own ledger prose, and VISION.md, ROADMAP.md, TASKS.md, and DECISIONS.md are deterministic committed projections.
 - Added one canonical loader for validation, queries, projection, doctor, and future mutations. `.vef/storage.json` activates the layout; strict validation rejects missing or stale projections; `vef project` regenerates them without changing canonical items.

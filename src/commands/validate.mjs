@@ -141,4 +141,10 @@ export async function validateCommand(opts) {
   } else if (totalWarnings > 0 && opts.strict) {
     process.exitCode = 1;
   }
+  return {
+    ok: totalErrors === 0 && (!opts.strict || totalWarnings === 0),
+    valid: totalValid,
+    errors: totalErrors,
+    warnings: totalWarnings,
+  };
 }

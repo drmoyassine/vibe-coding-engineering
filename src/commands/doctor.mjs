@@ -11,7 +11,9 @@ import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { auditApplyContract } from '../lib/apply-contract.mjs';
 import { auditMemoryCatalogDirectory } from '../lib/memory-catalog.mjs';
-import { loadCanonicalDocuments, STORAGE_MANIFEST } from '../lib/record-store.mjs';
+import { loadCanonicalDocuments, planStorageMigration, projectLedgers, STORAGE_MANIFEST } from '../lib/record-store.mjs';
+import { migrateCommand } from './migrate.mjs';
+import { validateCommand } from './validate.mjs';
 
 const EXPECTED_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md', 'CLAUDE.md'];
 const EXPECTED_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
@@ -29,6 +31,8 @@ async function exists(path) {
  * @param {{ dir: string }} opts
  */
 export async function doctorCommand(opts) {
+  if (opts.fix) return doctorFixCommand(opts);
+
   const targetDir = opts.dir;
   let allGood = true;
 
@@ -151,4 +155,71 @@ export async function doctorCommand(opts) {
   console.log(`\n  ${allGood ? '✓ All checks passed' : '✗ Issues found'}`);
   console.log('');
   if (!allGood) process.exitCode = 1;
+  return { ok: allGood };
+}
+
+/**
+ * Explicitly authorized remediation over the deterministic migration core.
+ * Package acquisition remains outside this boundary: the running CLI must
+ * already contain the storage contract it is being asked to enforce.
+ */
+async function doctorFixCommand(opts) {
+  const targetDir = opts.dir;
+  console.log(`\n  Repairing VEF project state: ${targetDir}\n`);
+
+  const plan = await planStorageMigration(targetDir);
+  const preflightIssues = [...plan.issues];
+  for (const doc of EXPECTED_DOCS) {
+    if (!(await exists(join(targetDir, doc)))) preflightIssues.push(`Missing required document ${doc}`);
+  }
+  for (const issue of await auditMemoryCatalogDirectory(targetDir)) {
+    preflightIssues.push(`${issue.surface}: ${issue.message}`);
+  }
+  const claudePath = join(targetDir, 'CLAUDE.md');
+  if (await exists(claudePath)) {
+    const content = await readFile(claudePath, 'utf8');
+    if (!(content.includes('/apply') || content.toLowerCase().includes('skills'))) preflightIssues.push('CLAUDE.md does not reference VEF skills');
+    if (!(content.includes('TASKS.md') && content.includes('DECISIONS.md'))) preflightIssues.push('CLAUDE.md does not reference the VEF document framework');
+  }
+  const canonical = await loadCanonicalDocuments(targetDir);
+  const needsReviewCount = canonical.parsedDocs
+    .flatMap((doc) => doc.items)
+    .filter((item) => item.data?.needsReview === true).length;
+  if (needsReviewCount > 0) preflightIssues.push(`${needsReviewCount} item(s) are flagged needsReview`);
+
+  const uniquePreflightIssues = [...new Set(preflightIssues)];
+  if (!plan.ready || uniquePreflightIssues.length > 0) {
+    console.log('  ✗  Repair preflight failed; no migration or adapter changes were applied:');
+    for (const issue of uniquePreflightIssues) console.log(`     • ${issue}`);
+    if (plan.storage.mode === 'uninitialized') console.log('     Run vef init for a repository that has not adopted VEF yet.');
+    process.exitCode = 1;
+    return { ok: false, phase: 'preflight' };
+  }
+
+  console.log('  ✓  Repair preflight passed');
+  const migration = await migrateCommand({ ...opts, apply: true, updateAdapters: true, fix: undefined });
+  if (!migration.ok) {
+    process.exitCode = 1;
+    return { ok: false, phase: 'migration' };
+  }
+
+  const projected = await projectLedgers(targetDir, { write: true });
+  if (projected.written > 0) console.log(`  ✓  Regenerated ${projected.written} stale ledger projection(s)`);
+  else console.log('  ✓  Ledger projections are current');
+
+  const validation = await validateCommand({ dir: targetDir, strict: true });
+  if (!validation.ok) {
+    console.log('  ✗  Repair stopped because strict validation failed');
+    process.exitCode = 1;
+    return { ok: false, phase: 'validation' };
+  }
+
+  const health = await doctorCommand({ dir: targetDir, fix: false });
+  if (!health.ok) {
+    process.exitCode = 1;
+    return { ok: false, phase: 'health' };
+  }
+
+  console.log('  ✓ Repair complete. Review and commit .vef/, docs/, generated ledgers, and adapter changes.\n');
+  return { ok: true };
 }

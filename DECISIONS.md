@@ -282,6 +282,9 @@ related_tasks:
   - id: TASK-013
     name: Build the recoverable transaction engine
     url: /TASKS.md#TASK-013
+  - id: TASK-028
+    name: Add one-command doctor remediation
+    url: /TASKS.md#TASK-028
 related_roadmap_items:
   - id: FRAMEWORK-019
     name: Adopt canonical per-item storage and ledger projections
@@ -307,7 +310,7 @@ verified:
 last_updated: '2026-08-13'
 ---
 
-Implemented by TASK-012 on 2026-08-13. The framework now dogfoods canonical collections under `docs/`, deterministic projection, drift checks, fresh-init behavior, and preflighted migrations for both monolithic ledgers and the retired root-directory preview layout. `vef doctor` is the consumer entry point and prints the exact upgrade path. General-purpose transaction commands remain deferred under FRAMEWORK-022.
+Implemented by TASK-012 and TASK-028 on 2026-08-13. The framework now dogfoods canonical collections under `docs/`, deterministic projection, drift checks, fresh-init behavior, and preflighted migrations for both monolithic ledgers and the retired root-directory preview layout. Plain `vef doctor` is the read-only diagnostic entry point; explicit `vef doctor --fix` orchestrates migration, adapter upgrade, projection, strict validation, and the final health check. Package acquisition remains outside that mutation boundary. General-purpose transaction commands remain deferred under FRAMEWORK-022.
 
 ---
 

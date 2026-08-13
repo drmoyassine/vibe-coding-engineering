@@ -98,6 +98,8 @@ docs/
 
 The root ledgers preserve stable public links and convenient sequential reading, but their generated item blocks are not edited directly. `.vef/storage.json` activates the layout, and strict validation rejects projection drift.
 
+`docs/vision/_index.md` owns the collection-level vision narrative. When an adopter models individual vision themes, each theme is a structured item file with canonical frontmatter under `docs/vision/`; root `VISION.md` is still the generated reading surface. Do not infer a consumer's storage contract from root prose alone—run the current CLI's doctor and migration preflight.
+
 ## Core documents
 
 | Document | Role |
@@ -167,7 +169,15 @@ Queries are read-only. Human-readable text is the default; every command accepts
 `schemaVersion: 1` envelope; lookup and filter failures use the same envelope on stderr. `show`, `refs`, and `why` resolve a stable ID across
 all document types; use `tasks:TASK-009`-style selectors if an invalid repository contains a cross-type ambiguity.
 
-For an existing repository:
+For an existing repository running the current VEF CLI, remediation is one explicitly authorized command:
+
+```bash
+npx vef doctor --fix
+```
+
+`doctor --fix` preflights the candidate, installs or updates framework adapters, creates or relocates canonical records under `docs/`, regenerates the root ledgers, runs strict validation, and finishes with a health check. Plain `vef doctor` remains read-only for CI and diagnosis. Neither form commits changes.
+
+The equivalent lower-level commands remain available for inspection and troubleshooting:
 
 ```bash
 vef doctor                  # identifies legacy storage and prints this path
@@ -176,6 +186,8 @@ vef migrate --apply --update-adapters  # extract items, regenerate ledgers, and 
 vef validate --strict
 vef doctor
 ```
+
+The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. VEF is not published to npm yet, so `npx vibe-engineering-framework@latest ...` currently returns npm `E404` and must not be used. Commit-pinned consumers must first update their VEF dependency to a revision containing TASK-028; after that one-time bootstrap, `npx vef doctor --fix` performs the complete project migration. npm publication remains tracked by TASK-001.
 
 Commit `.vef/`, `docs/`, the four regenerated root ledgers, and upgraded installed skills together. The migration checks schemas and typed relationships before writing, refuses conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. Adapter replacement is explicit through `--update-adapters`, so customized skills are not overwritten by an ordinary migration.
 

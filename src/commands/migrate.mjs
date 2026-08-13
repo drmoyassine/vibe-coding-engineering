@@ -221,4 +221,11 @@ export async function migrateCommand(opts) {
     console.log('\n  Migration applied. Run vef validate --strict and vef doctor, then review and commit the complete diff.');
   }
   console.log('');
+  return {
+    ok: storagePlan.ready,
+    applied: !dryRun && storagePlan.ready,
+    storagePlan,
+    skillsInstalled,
+    skillsUpdated,
+  };
 }

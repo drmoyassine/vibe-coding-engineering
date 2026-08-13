@@ -61,5 +61,6 @@ Full description, acceptance criteria, implementation notes.
 | TASK-025 | Human review artifact and comment contract | in-progress | P1 |
 | TASK-026 | Lightweight `vef review` workspace | pending | P1 |
 | TASK-027 | Obsidian and wiki review adapters | pending | P2 |
+| TASK-028 | One-command doctor remediation | completed | P0 |
 
-**Next priority:** TASK-001 and TASK-017 prepare the verified public release now that TASK-012 has completed its storage prerequisite; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** TASK-001 and TASK-017 prepare the publishable package and launch narrative now that TASK-012 and TASK-028 have completed storage migration and one-command remediation; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.

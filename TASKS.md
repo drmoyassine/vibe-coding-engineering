@@ -687,6 +687,48 @@ last_updated: '2026-08-13'
 
 Build narrow proofs for Obsidian and one generic wiki/static-site projection using the review manifest and comment packet. Compare navigation, backlinks, graph exploration, annotation exchange, installation burden, and write-back risk. Do not ship adapter-specific canonical mutations before the shared transaction layer exists.
 
+---
+
+## TASK-028 — Add one-command doctor remediation
+
+---
+id: TASK-028
+title: Add one-command doctor remediation
+description: Collapse the safe post-install consumer migration sequence into an explicitly authorized doctor repair mode.
+status: completed
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-020
+  name: Publish and publicly launch VEF
+  url: /ROADMAP.md#FRAMEWORK-020
+assignee: Codex
+depends_on:
+  - id: TASK-012
+    name: Implement the canonical record store and ledger projector
+    url: /TASKS.md#TASK-012
+related_decisions:
+  - id: DEC-004
+    name: Store canonical items in per-type folders and generate the ledgers
+    url: /DECISIONS.md#DEC-004
+last_updated: '2026-08-13'
+---
+
+Completed 2026-08-13. `vef doctor --fix` is the consumer-facing orchestration layer over the migration operations delivered by TASK-012. Plain `vef doctor` remains read-only and suitable for CI; `--fix` is explicit write authorization and does not require users to reproduce the internal sequence manually.
+
+Acceptance criteria:
+
+- preflight the complete storage and relationship candidate before changing the repository;
+- create or relocate `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/` as required;
+- install missing VEF adapters and update installed VEF adapters to the current package contract;
+- regenerate all committed root ledgers from canonical records;
+- run strict validation and a final health check automatically;
+- preserve the recoverability and no-partial-activation guarantees of the existing migration core;
+- clearly report that package acquisition is a bootstrap responsibility, since an obsolete installed binary cannot execute future repair behavior;
+- expose the current installed CLI as `npx vef doctor --fix`, and do not claim an npm `@latest` path before TASK-001 publishes the package;
+- cover legacy migration, retired-root relocation, already-current state, conflict preflight, and strict final validation with tests.
+
+The implementation preflights the storage graph, required singleton documents, durable-memory catalogue, CLAUDE integration, and unresolved review flags before adapter or storage writes. It delegates to the existing recoverable migration and projector, runs strict validation, and finishes by rerunning the read-only health check. It never commits automatically. Package acquisition remains a bootstrap responsibility because an obsolete CLI cannot execute behavior it does not contain.
+
 <!-- End VEF generated items. -->
 
 ## Summary
@@ -716,5 +758,6 @@ Build narrow proofs for Obsidian and one generic wiki/static-site projection usi
 | TASK-025 | Human review artifact and comment contract | in-progress | P1 |
 | TASK-026 | Lightweight `vef review` workspace | pending | P1 |
 | TASK-027 | Obsidian and wiki review adapters | pending | P2 |
+| TASK-028 | One-command doctor remediation | completed | P0 |
 
-**Next priority:** TASK-001 and TASK-017 prepare the verified public release now that TASK-012 has completed its storage prerequisite; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** TASK-001 and TASK-017 prepare the publishable package and launch narrative now that TASK-012 and TASK-028 have completed storage migration and one-command remediation; TASK-025 then TASK-026 deliver the lightweight human-review contract and workspace against the canonical loader. TASK-013 through TASK-015 are deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.

@@ -66,6 +66,70 @@ test('doctor gives legacy consumers an exact, non-destructive storage migration 
   }
 });
 
+test('doctor --fix performs the complete supported consumer remediation', async () => {
+  const dir = await legacyFixture();
+  try {
+    const { stdout } = await run(dir, ['doctor', '--fix']);
+    assert.match(stdout, /Repair preflight passed/);
+    assert.match(stdout, /Extracted 1 canonical item file\(s\) under docs\//);
+    assert.match(stdout, /Valid: 1   Errors: 0   Warnings: 0/);
+    assert.match(stdout, /All checks passed/);
+    assert.match(stdout, /Repair complete/);
+    await access(join(dir, 'docs', 'decisions', 'DEC-001.md'));
+    const manifest = JSON.parse(await readFile(join(dir, '.vef', 'storage.json'), 'utf8'));
+    assert.equal(manifest.canonical.decisions.directory, 'docs/decisions');
+    await run(dir, ['doctor']);
+    const second = await run(dir, ['doctor', '--fix']);
+    assert.match(second.stdout, /Per-item storage already enabled/);
+    assert.match(second.stdout, /Repair complete/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('doctor --fix preflights the complete durable-memory contract before writes', async () => {
+  const dir = await legacyFixture();
+  try {
+    const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
+    const customApplySkill = `${await readFile(applySkillPath, 'utf8')}\nConsumer customization.\n`;
+    await writeFile(applySkillPath, customApplySkill, 'utf8');
+    await rm(join(dir, 'ARCHITECTURE.md'));
+
+    await assert.rejects(
+      run(dir, ['doctor', '--fix']),
+      (error) => error.code === 1
+        && /Repair preflight failed/.test(error.stdout)
+        && /ARCHITECTURE\.md/.test(error.stdout),
+    );
+    await assert.rejects(access(join(dir, '.vef', 'storage.json')));
+    assert.equal(await readFile(applySkillPath, 'utf8'), customApplySkill);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('doctor --fix preflight blocks conflicting storage before updating adapters', async () => {
+  const dir = await legacyFixture();
+  try {
+    const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
+    const customApplySkill = `${await readFile(applySkillPath, 'utf8')}\nConsumer customization.\n`;
+    await writeFile(applySkillPath, customApplySkill, 'utf8');
+    await mkdir(join(dir, 'docs', 'decisions'), { recursive: true });
+    await writeFile(join(dir, 'docs', 'decisions', 'DEC-001.md'), 'conflicting item\n', 'utf8');
+
+    await assert.rejects(
+      run(dir, ['doctor', '--fix']),
+      (error) => error.code === 1
+        && /Repair preflight failed/.test(error.stdout)
+        && /no migration or adapter changes were applied/.test(error.stdout),
+    );
+    await assert.rejects(access(join(dir, '.vef', 'storage.json')));
+    assert.equal(await readFile(applySkillPath, 'utf8'), customApplySkill);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('migrate extracts canonical items, preserves public ledgers, and enables strict validation', async () => {
   const dir = await legacyFixture();
   try {
@@ -128,7 +192,9 @@ test('doctor upgrades the retired root-directory layout into docs/', async () =>
     );
     const preview = await run(dir, ['migrate']);
     assert.match(preview.stdout, /Would relocate 1 canonical item file\(s\)/);
-    await run(dir, ['migrate', '--apply', '--update-adapters']);
+    const fixed = await run(dir, ['doctor', '--fix']);
+    assert.match(fixed.stdout, /Relocated 1 canonical item file\(s\) under docs\//);
+    assert.match(fixed.stdout, /Repair complete/);
 
     await access(join(dir, 'docs', 'decisions', 'DEC-001.md'));
     await assert.rejects(access(join(dir, 'decisions')));
