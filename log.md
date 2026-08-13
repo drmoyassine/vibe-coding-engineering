@@ -8,6 +8,32 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### Canonical per-item storage and consumer migration shipped
+- Completed TASK-012 and FRAMEWORK-019. Structured records now live canonically under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; collection `_index.md` files own ledger prose, and VISION.md, ROADMAP.md, TASKS.md, and DECISIONS.md are deterministic committed projections.
+- Added one canonical loader for validation, queries, projection, doctor, and future mutations. `.vef/storage.json` activates the layout; strict validation rejects missing or stale projections; `vef project` regenerates them without changing canonical items.
+- Made consumer migration explicit and recoverable: `vef doctor` distinguishes uninitialized, monolithic, retired root-directory, partial, and current storage; it prints `vef migrate` then `vef migrate --apply --update-adapters`; dry-run is non-destructive, adapter replacement requires explicit opt-in, schema/graph problems and conflicting partial directories block activation, and the storage manifest is written last.
+- Fresh `vef init` projects start directly on per-item storage. Updated shipped adapters to target canonical item files and project the root ledgers. Added tests for clean initialization, legacy guidance/read compatibility, migration, canonical query paths, drift repair, and partial-migration conflicts.
+- With the storage prerequisite complete, public release and the lightweight human-review workspace are the two active framework tracks.
+
+### Human review workspace direction restored
+- Reconciled the early public-docs website and Obsidian ideas into one tool-neutral human review capability rather than creating a separate product direction.
+- Accepted DEC-006: review interfaces are disposable projections, while canonical Markdown records and Git remain authoritative. Human comments are exportable review evidence and require explicit reconciliation plus strict validation before they can affect project state.
+- Moved FRAMEWORK-015 to an in-progress P1 definition and retained FRAMEWORK-016 as a deferred adapter milestone. Added TASK-025 for the review bundle and comment contract, TASK-026 for the lightweight local workspace, and TASK-027 for later Obsidian/wiki prototypes.
+- Kept implementation parallel and non-blocking so the public package and adoption material remain the immediate framework priority.
+
+### Public launch priority and consumer boundary corrected
+- Accepted DEC-004: canonical structured items will move to per-type Markdown folders and root ledgers will become deterministic committed projections. TASK-011 is complete; TASK-012 is a narrow public-release prerequisite. General-purpose transaction work moved to deferred FRAMEWORK-022 so it does not delay launch.
+- Inspected the NoCodeHero and Frontbase repositories read-only. NoCodeHero already contains course, commerce, blog, tools, and learner-facing infrastructure around a no-code software-engineering bootcamp. Frontbase is a substantial edge-native visual CMS/framework with builder, compiler, data/automation, and deployment capabilities.
+- Corrected the initial DEC-005 framing after it cross-contaminated VEF product direction. DEC-005 now requires VEF to remain consumer-neutral and confines named consumer/business references to decisions, tasks, and log when provenance or compatibility requires them.
+- Removed NoCodeHero, Frontbase, and Studygram strategy from VEF's VISION, ROADMAP, ARCHITECTURE, README, index, CLAUDE, and AGENTS. Historical consumer milestones in ROADMAP were generalized rather than erased. Removed the NoCodeHero education milestone and business-owned course tasks from VEF.
+- Persisted the business and credential plan in the NoCodeHero repository: NoCodeHero owns the launch of Certified Vibe Engineer (using VEF) and Certified No-code Engineer (using Frontbase), along with the site redesign, curriculum, commerce, community, and distribution strategy.
+- FRAMEWORK-020 remains VEF's immediate publication/launch priority. Re-scoped TASK-001 to npm publication, split the cosmetic directory rename into TASK-016, and completed TASK-024 for the governance correction.
+
+### Transactional mutation milestone defined
+- Defined two intended public writes, `vef create` and `vef update`. Agents retain intent interpretation and semantic authorship; the core will own mechanical graph consistency and recoverable validated writes.
+- Added TASK-011 through TASK-015 for storage/projection architecture, implementation, the transaction engine, CLI exposure, adapter migration, and cross-platform failure testing. Final reconciliation places storage under FRAMEWORK-019 and defers transactions under FRAMEWORK-022.
+- Identified and resolved a source-topology contradiction: CLAUDE.md and the implementation use monolithic ledgers, while the product-docs agent profile described per-item fragments feeding generated ledgers. DEC-004 now records canonical per-item files with deterministic committed ledgers as the accepted target.
+
 ### Strategic priority reconciled
 - Updated VISION.md after completion of FRAMEWORK-017 and FRAMEWORK-018. No additional framework milestone is currently committed.
 - Clarified that FRAMEWORK-006 tracks consumer-specific adoption work in `studygram-app` and does not define this framework's next priority.

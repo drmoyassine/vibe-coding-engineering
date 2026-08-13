@@ -1,6 +1,6 @@
 # Roadmap
 
-Directional roadmap — quarters, themes, priorities. Each item is a markdown section with YAML frontmatter.
+Directional roadmap — quarters, themes, priorities. Canonical roadmap items live in `docs/roadmap/`; this generated ledger is the complete reading view.
 
 > All related references use the **`id + name + url`** pattern. Same-repo URLs are relative; cross-repo/external are absolute.
 

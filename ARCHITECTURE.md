@@ -30,7 +30,11 @@ The boundary is intentional: agents handle semantic ambiguity; deterministic cod
 
 ## Canonical project model
 
-The canonical model is version-controlled Markdown with YAML frontmatter. The structured item documents are `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md`; `log.md` provides chronological narrative memory. `index.md` is the navigation/OKF entry point. External systems such as GitHub Issues remain canonical for their native records and are referenced by URL.
+The canonical model is version-controlled Markdown with YAML frontmatter. Structured records live in one file per item under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each collection's `_index.md` owns its ledger-level prose. The `docs/` namespace prevents collisions with application-owned directories and gives review tooling one coherent content root. `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are deterministic committed projections for sequential reading and stable public anchors. `log.md`, `ARCHITECTURE.md`, and `index.md` remain canonical singleton documents. External systems such as GitHub Issues remain canonical for their native records and are referenced by URL.
+
+`.vef/storage.json` activates and versions the per-item layout. One loader reads canonical item files for validation, queries, projection, doctor, and future mutations. `vef project` regenerates the four ledgers; `vef validate --strict` rejects a missing or stale projection. Generated item blocks in root ledgers must not be edited directly.
+
+Legacy monolithic repositories remain readable during the compatibility window. `vef doctor` identifies that layout and prints an exact migration path: preview with `vef migrate`, apply with `vef migrate --apply --update-adapters`, then validate and commit `.vef/`, `docs/`, the regenerated ledgers, and upgraded skills together. The short-lived root-directory preview layout is also detected and relocated under `docs/`. The adapter replacement flag is explicit so an ordinary migration never overwrites customized skills. The storage migration preflights schemas and the typed graph, refuses conflicting partial directories, uses recoverable per-file replacement, writes the manifest last, and can be rerun after an interrupted pre-manifest migration.
 
 Every structured item has a stable ID. Relationships are explicit `{ id, name, url }` objects. The canonical relationship declarations define source type, target type, cardinality, and inverse field—for example, `TASK.roadmap_item` targets a roadmap item and is mirrored by `ROADMAP.related_tasks`.
 
@@ -49,15 +53,45 @@ FRAMEWORK-017 delivered the current Integrity Core:
 
 The core also provides one read-only project loader and typed graph used by every query command. Deterministic general-purpose mutation commands are not implemented; agent adapters remain responsible for proposing edits that the core validates.
 
+## Planned transaction boundary
+
+FRAMEWORK-022 is deferred behind public launch, but its accepted direction will add one reusable mutation library with two public CLI operations: `vef create` and `vef update`. `update` may combine scalar field changes with relationship additions/removals so one intent produces one validated candidate. The CLI is a portable interface over the library, not the architecture itself; agent adapters may call the same core directly.
+
+Agents and humans continue to interpret intent and author semantic content. Deterministic code owns mechanical operations: IDs, lifecycle fields, typed/inverse relationships, projection, candidate validation, and recoverable file replacement. Direct editing remains an escape hatch followed by `vef validate --strict`. The filesystem implementation must be described as validated and recoverable, not as providing database-level atomicity.
+
 ## Interfaces
 
 ### CLI
 
-`vef init`, `vef migrate`, `vef validate`, and `vef doctor` manage adoption and integrity. The read-only query interface is `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search`. Text output is the human interface; `--json` uses a versioned envelope for automation. `why` follows declared task→roadmap→vision and decision-rationale edges without model interpretation.
+`vef init`, `vef migrate`, `vef project`, `vef validate`, and `vef doctor` manage adoption, canonical storage, projections, and integrity. The read-only query interface is `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search`. Text output is the human interface; `--json` uses a versioned envelope for automation. `why` follows declared task→roadmap→vision and decision-rationale edges without model interpretation.
 
 ### Agent adapters
 
 The repository currently ships Claude Code skills for adoption and day-to-day management. They are adapters over the canonical model, not the model itself. A Codex, Cursor, Gemini, or generic adapter should use the same schemas, relationship declarations, and integrity commands.
+
+### Planned human review workspace
+
+FRAMEWORK-015 adds a presentation and annotation layer between agent proposals and canonical acceptance. A planned `vef review` command will derive a disposable, portable workspace from the canonical loader, graph, validation results, provenance, and an optional candidate diff. The workspace may capture comments, but it does not edit the canonical model.
+
+```text
+canonical records + candidate/audit evidence
+                     │
+                     ▼
+          versioned review bundle
+                     │
+                     ▼
+        local static review workspace
+                     │
+                     ▼
+       exported human comment packet
+                     │
+                     ▼
+   explicit reconciliation → strict validation
+```
+
+Review targets use stable document, record, field, relationship, or selected-text identities. Comments remain untrusted evidence with author, timestamp, resolution state, and provenance; a human can discard or archive them, or supply them to an agent or future deterministic mutation operation for explicit reconciliation. Rendering must escape untrusted content and must not transmit project material externally by default.
+
+Obsidian and wiki integrations are adapters over the same versioned bundle. They must not introduce a parallel project database or bypass canonical validation.
 
 ### Migration
 
@@ -82,3 +116,8 @@ This repository is the first VEF instance. It must pass its own health and stric
 - [DEC-003](DECISIONS.md#DEC-003) — Integrity Core authority and portable architecture
 - [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) — Integrity Core
 - [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) — Deterministic project queries
+- [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) — Canonical per-item storage and ledger projections
+- [FRAMEWORK-022](ROADMAP.md#FRAMEWORK-022) — Transactional project mutations
+- [TASK-011](TASKS.md#TASK-011) — Canonical item storage and ledger projection contract
+- [DEC-004](DECISIONS.md#DEC-004) — Per-item canonical storage and generated ledgers
+- [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) — Public VEF launch

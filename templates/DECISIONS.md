@@ -1,6 +1,6 @@
 # Decisions
 
-Architectural, product, and technical decisions with context + rationale. This is the **central decision ledger** — all decisions (including those made by AI agents) go here, never in memory files.
+Architectural, product, and technical decisions with context + rationale. Canonical decision items live in `docs/decisions/`; this generated ledger is the complete reading view. Decisions never live only in agent memory.
 
 > All related references use the **`id + name + url`** pattern. Same-repo URLs are relative; cross-repo/external are absolute.
 

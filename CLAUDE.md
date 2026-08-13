@@ -6,7 +6,7 @@ This file is loaded at the start of every Claude session in this repository. It 
 
 **vibe-engineering-framework** is a structured documentation framework for AI-assisted product development. It's a meta-framework — a set of patterns, schemas, and a Claude skill suite (the **product-docs skills**: `/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`) that keep product documentation in sync, queryable, and discoverable.
 
-This repo is **not** an app. It's the definition of a system. The consumers are other repos (like `studygram-app`) that adopt the framework.
+This repo is **not** an app. It defines a reusable system adopted by independently governed product repositories.
 
 ## Core documents
 
@@ -93,7 +93,9 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 
 - All docs use YAML frontmatter for machine-readable metadata (id, status, links, etc.)
 - Prose lives in the markdown body below the frontmatter
-- Items live directly in the doc (not separate fragment files) — one ROADMAP.md, one TASKS.md, one DECISIONS.md
+- Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each directory's `_index.md` owns ledger-level prose.
+- `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are generated committed ledgers. Never edit their generated item blocks directly; run `vef project` after canonical item changes.
+- `.vef/storage.json` versions the storage layout. `vef validate --strict` rejects stale projections; `vef doctor` gives legacy consumers the exact `vef migrate` / `vef migrate --apply --update-adapters` path.
 - Cross-linking uses the `id + name + url` pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`)
 
 ### Frontmatter schemas
@@ -214,9 +216,9 @@ Full prose expansion.
 
 When you complete direction-changing work, invoke the appropriate skill:
 
-- **`/tasks reconcile`** — Validate task schemas, detect orphans, regenerate if needed
-- **`/roadmap reconcile`** — Validate roadmap schemas, detect orphans, regenerate if needed
-- **`/decisions reconcile`** — Validate decision schemas, detect superseded items, regenerate if needed
+- **`/tasks reconcile`** — Validate canonical task files, detect orphans, and project the ledger
+- **`/roadmap reconcile`** — Validate canonical roadmap files, detect orphans, and project the ledger
+- **`/decisions reconcile`** — Validate canonical decision files, detect superseded items, and project the ledger
 - **`/bugs sync`** — Cross-reference GitHub Issues with product_failures table
 
 Skills are the **canonical definition** of the framework. If you want to change how items are structured, you edit the skill — not this file.

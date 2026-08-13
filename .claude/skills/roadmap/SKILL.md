@@ -1,13 +1,13 @@
 # /roadmap
 
-Manage vibe-engineering-framework roadmap in ROADMAP.md.
+Manage canonical roadmap records in `docs/roadmap/`. `ROADMAP.md` is a generated, committed ledger for reading and stable public links.
 
 ## Commands
 
 - `list` — Show all roadmap items, optionally filtered by quarter/status
 - `add` — Add a new roadmap item (Q1/Q2/Q3/Q4, title, description)
 - `graduate` — Graduate a roadmap item into one or more tasks
-- `reconcile` — Validate ROADMAP.md schema and regenerate if needed
+- `reconcile` — Validate canonical roadmap files and regenerate ROADMAP.md
 
 ## Roadmap item schema
 
@@ -104,14 +104,16 @@ This creates TASK-XXX entries in TASKS.md, each with `roadmap_item: { id: ROADMA
 ```
 /roadmap reconcile
 ```
-1. Reads ROADMAP.md
+1. Reads canonical `docs/roadmap/*.md` item files
 2. Validates every frontmatter block against the schema above
 3. Checks all `id + name + url` refs resolve (no orphans), bidirectionally with TASKS/DECISIONS
-4. Reports inconsistencies; asks before regenerating
+4. Reports inconsistencies; asks before changing canonical items
+5. Runs `vef project` after accepted item changes, then `vef validate --strict`
 
 ## Implementation notes
 
-- Roadmap items are stored in `ROADMAP.md` at the repo root, each a markdown section with YAML frontmatter.
+- Each roadmap item is stored canonically in `docs/roadmap/<ID>.md`; `docs/roadmap/_index.md` owns ledger-level prose.
+- Never edit generated item blocks in `ROADMAP.md`. Run `vef project` to regenerate the committed ledger.
 - The `id` field is the unique identifier (ROADMAP-XXX format).
 - Status is one of: Deferred, In Progress, Completed, Blocked.
 - `related_tasks` ↔ TASK `roadmap_item` must be bidirectional.

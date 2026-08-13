@@ -11,10 +11,10 @@ Loaded at the start of every Claude session in this repo. This file covers proje
 
 | Skill | What it does | When to use |
 |---|---|---|
-| **`/tasks`** | Manage TASKS.md (list, add, update, complete, reconcile) | After finishing work, when planning, when auditing |
-| **`/roadmap`** | Manage ROADMAP.md (list, add, graduate → tasks, reconcile) | When direction changes, when breaking down themes |
+| **`/tasks`** | Manage canonical `docs/tasks/` items and project TASKS.md | After finishing work, when planning, when auditing |
+| **`/roadmap`** | Manage canonical `docs/roadmap/` items and project ROADMAP.md | When direction changes, when breaking down themes |
 | **`/bugs`** | Manage GitHub Issues (list, create, resolve, sync) | When triaging failures, when reporting bugs |
-| **`/decisions`** | Manage DECISIONS.md (list, add, update, supersede, reconcile) | When making architectural/product decisions |
+| **`/decisions`** | Manage canonical `docs/decisions/` items and project DECISIONS.md | When making architectural/product decisions |
 | **`/apply`** | Migrate docs into the framework standard (multi-agent: discover → extract → cross-link → validate) | One-shot — adopting the framework, or migrating bare-ID docs to `id+name+url` |
 
 Skills are **manual invoke only**. No auto-trigger.
@@ -34,18 +34,20 @@ vef search "customer outcome" --json
 
 Text is the default; `--json` emits the versioned automation contract. Use `type:id` only to disambiguate duplicate IDs in an invalid repository.
 
-## Doc framework (single sources of truth)
+## Doc framework
 
 | Doc | Purpose |
 |---|---|
-| **VISION.md** | Why we exist, north-star direction, problem/solution framing |
+| **VISION.md** | Generated ledger assembled from `docs/vision/_index.md` and structured theme files |
 | **ARCHITECTURE.md** | How the system works — data model, key patterns, design decisions |
-| **ROADMAP.md** | Directional roadmap — quarters, themes, priorities |
-| **TASKS.md** | Work breakdown — tasks with status, owners, dependencies |
-| **DECISIONS.md** | Architectural/product/technical decisions with context + rationale |
+| **ROADMAP.md** | Generated directional roadmap ledger |
+| **TASKS.md** | Generated work-breakdown ledger |
+| **DECISIONS.md** | Generated decision ledger |
 | **log.md** | Single-source memory — chronological log + session learnings (OKF) |
 | **index.md** | Navigation hub / table of contents (OKF) |
 | **BUGS** | Bug tracker — **GitHub Issues** (no markdown file — the Issues *are* the source) |
+
+Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each `_index.md` owns collection-level prose. Root structured ledgers are generated and committed for reading and stable links. Edit the item file, run `vef project`, then run `vef validate --strict`. `vef doctor` reports legacy storage and gives the exact `vef migrate` / `vef migrate --apply --update-adapters` upgrade path.
 
 **Before making or reversing an architectural/product decision, check DECISIONS.md** (`/decisions list`) — don't re-litigate settled decisions; record new or reversed ones via `/decisions add` / `supersede`.
 

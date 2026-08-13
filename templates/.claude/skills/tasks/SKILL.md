@@ -1,6 +1,6 @@
 # /tasks
 
-Manage {{PROJECT_NAME}} tasks in TASKS.md.
+Manage canonical {{PROJECT_NAME}} task records in `docs/tasks/`. `TASKS.md` is a generated, committed ledger for reading and stable public links.
 
 ## Commands
 
@@ -8,7 +8,7 @@ Manage {{PROJECT_NAME}} tasks in TASKS.md.
 - `add` — Add a new task (prompts for required fields)
 - `update` — Update an existing task (change status, assignee, priority)
 - `complete` — Mark a task as completed
-- `reconcile` — Validate TASKS.md schema and regenerate if needed
+- `reconcile` — Validate canonical task files and regenerate TASKS.md
 
 ## Task schema
 
@@ -111,14 +111,16 @@ Sets status to completed, updates last_updated to today.
 ```
 /tasks reconcile
 ```
-1. Reads TASKS.md
+1. Reads canonical `docs/tasks/*.md` item files
 2. Validates every frontmatter block against the schema above
 3. Checks all `id + name + url` refs resolve (no orphans), bidirectionally with ROADMAP/DECISIONS
-4. Reports inconsistencies; asks before regenerating
+4. Reports inconsistencies; asks before changing canonical items
+5. Runs `vef project` after accepted item changes, then `vef validate --strict`
 
 ## Implementation notes
 
-- Tasks are stored in `TASKS.md` at the repo root, each a markdown section with YAML frontmatter.
+- Each task is stored canonically in `docs/tasks/<ID>.md`; `docs/tasks/_index.md` owns ledger-level prose.
+- Never edit generated item blocks in `TASKS.md`. Run `vef project` to regenerate the committed ledger.
 - The `id` field is the unique identifier (TASK-XXX format).
-- When reconciling, preserve the order: Open tasks → Completed tasks → Deferred items.
+- Generated ledgers use deterministic record-ID order; status filtering belongs in `vef list tasks --status ...` or a derived review view.
 - `roadmap_item` ↔ ROADMAP `related_tasks` must be bidirectional.

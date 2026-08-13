@@ -9,13 +9,12 @@
 
 import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
-import { parseDoc } from '../lib/frontmatter.mjs';
 import { auditApplyContract } from '../lib/apply-contract.mjs';
 import { auditMemoryCatalogDirectory } from '../lib/memory-catalog.mjs';
+import { loadCanonicalDocuments, STORAGE_MANIFEST } from '../lib/record-store.mjs';
 
 const EXPECTED_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md', 'CLAUDE.md'];
 const EXPECTED_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
-const VALIDATABLE_DOCS = ['TASKS.md', 'ROADMAP.md', 'DECISIONS.md', 'VISION.md'];
 
 async function exists(path) {
   try {
@@ -41,6 +40,49 @@ export async function doctorCommand(opts) {
     const found = await exists(join(targetDir, doc));
     console.log(`  ${found ? '✓' : '✗'}  ${doc}`);
     if (!found) allGood = false;
+  }
+
+  // ── Canonical storage ──
+  console.log('\n  ── Canonical storage ──');
+  const canonical = await loadCanonicalDocuments(targetDir);
+  if (canonical.storage.mode === 'per-item') {
+    console.log(`  ✓  Per-item records enabled by ${STORAGE_MANIFEST}`);
+    for (const issue of canonical.storageIssues) console.log(`  ✗  ${issue}`);
+    for (const issue of canonical.projectionIssues) console.log(`  ✗  ${issue}`);
+    if (canonical.storageIssues.length === 0 && canonical.projectionIssues.length === 0) {
+      console.log('  ✓  Canonical items and generated ledgers agree');
+    } else {
+      if (canonical.projectionIssues.length > 0) console.log('     Run: vef project');
+      allGood = false;
+    }
+  } else if (canonical.storage.mode === 'per-item-root') {
+    console.log('  ✗  Canonical records use the retired root-directory layout');
+    console.log('     Preview: vef migrate');
+    console.log('     Apply:   vef migrate --apply --update-adapters');
+    console.log('     This moves canonical records under docs/ and regenerates the root ledgers.');
+    allGood = false;
+  } else if (canonical.storage.mode === 'legacy') {
+    console.log('  ✗  Legacy monolithic ledgers are still canonical');
+    console.log('     Preview: vef migrate');
+    console.log('     Apply:   vef migrate --apply --update-adapters');
+    console.log('     Commit .vef/, docs/, and the regenerated root ledgers together.');
+    allGood = false;
+  } else if (canonical.storage.mode === 'uninitialized') {
+    console.log('  ✗  VEF structured storage is not initialized');
+    console.log('     Run: vef init');
+    allGood = false;
+  } else if (canonical.storage.mode === 'legacy-incomplete') {
+    console.log(`  ✗  Incomplete legacy document set (${canonical.storage.legacyLedgers.join(', ')})`);
+    console.log('     Scaffold missing documents non-destructively: vef init');
+    console.log('     Then preview storage migration: vef migrate');
+    allGood = false;
+  } else if (canonical.storage.mode === 'legacy-partial') {
+    console.log(`  ✗  Partial storage migration detected (${canonical.storage.partialDirectories.join(', ')})`);
+    console.log('     Resolve conflicting files, then run: vef migrate --apply --update-adapters');
+    allGood = false;
+  } else {
+    for (const issue of [...canonical.storage.issues, ...canonical.storageIssues]) console.log(`  ✗  ${issue}`);
+    allGood = false;
   }
 
   // ── Durable-memory catalogue ──
@@ -71,6 +113,7 @@ export async function doctorCommand(opts) {
     const trustIssues = auditApplyContract({ skill, workflow });
     console.log(`  ${trustIssues.length === 0 ? '✓' : '✗'}  /apply trust contract`);
     for (const issue of trustIssues) console.log(`     ${issue}`);
+    if (trustIssues.length > 0) console.log('     Run: vef migrate --apply --update-adapters');
     if (trustIssues.length > 0) allGood = false;
   } else {
     console.log('  ✗  /apply trust contract (SKILL.md or workflow.mjs missing)');
@@ -94,15 +137,9 @@ export async function doctorCommand(opts) {
 
   // ── Migration status ──
   console.log('\n  ── Migration status ──');
-  let needsReviewCount = 0;
-  for (const doc of VALIDATABLE_DOCS) {
-    const docPath = join(targetDir, doc);
-    if (!(await exists(docPath))) continue;
-    const content = await readFile(docPath, 'utf-8');
-    const { items } = parseDoc(content);
-    const flagged = items.filter((i) => i.data?.needsReview === true);
-    needsReviewCount += flagged.length;
-  }
+  const needsReviewCount = canonical.parsedDocs
+    .flatMap((doc) => doc.items)
+    .filter((item) => item.data?.needsReview === true).length;
   if (needsReviewCount === 0) {
     console.log('  ✓  No items flagged needsReview');
   } else {

@@ -9,6 +9,7 @@ import { validateItem } from '../src/lib/schemas.mjs';
 import { checkBidirectional, findDependencyCycles, findDuplicateIds, findOrphans } from '../src/lib/crosslinks.mjs';
 import { auditApplyContract } from '../src/lib/apply-contract.mjs';
 import { MEMORY_CATALOG, auditMemoryCatalogDirectory } from '../src/lib/memory-catalog.mjs';
+import { parseDoc } from '../src/lib/frontmatter.mjs';
 
 const execFileAsync = promisify(execFile);
 const ref = (id, name, url) => ({ id, name, url });
@@ -54,6 +55,35 @@ test('defines and dogfoods one complete durable-memory catalogue', async () => {
   assert.deepEqual(await auditMemoryCatalogDirectory('.'), []);
 });
 
+test('keeps named consumers out of framework product and agent surfaces', async () => {
+  const decisions = parseDoc(await readFile('DECISIONS.md', 'utf8')).items;
+  const boundary = decisions.find((item) => item.data?.id === 'DEC-005');
+  assert(boundary, 'DEC-005 must define the consumer boundary');
+  assert(Array.isArray(boundary.data.consumer_names) && boundary.data.consumer_names.length > 0);
+
+  const surfaces = [
+    'VISION.md',
+    'ROADMAP.md',
+    'ARCHITECTURE.md',
+    'README.md',
+    'index.md',
+    'CLAUDE.md',
+    'AGENTS.md',
+    'templates/VISION.md',
+    'templates/ROADMAP.md',
+    'templates/ARCHITECTURE.md',
+    'templates/index.md',
+    'templates/CLAUDE.md',
+    'templates/AGENTS.md'
+  ];
+  for (const surface of surfaces) {
+    const content = await readFile(surface, 'utf8');
+    for (const name of boundary.data.consumer_names) {
+      assert.equal(content.toLowerCase().includes(name.toLowerCase()), false, `${surface} must not name consumer ${name}`);
+    }
+  }
+});
+
 test('init creates lowercase OKF files with truthful provenance and a validated memory catalogue', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'vef-init-'));
   try {
@@ -61,6 +91,13 @@ test('init creates lowercase OKF files with truthful provenance and a validated 
     const names = await readdir(dir);
     assert(names.includes('index.md'));
     assert(names.includes('log.md'));
+    assert(names.includes('.vef'));
+    assert(names.includes('docs'));
+    const docNames = await readdir(join(dir, 'docs'));
+    assert(docNames.includes('tasks'));
+    assert(docNames.includes('roadmap'));
+    assert(docNames.includes('decisions'));
+    assert(docNames.includes('vision'));
     assert(!names.includes('INDEX.md'));
     assert(!names.includes('LOG.md'));
     const index = await readFile(join(dir, 'index.md'), 'utf8');
@@ -69,6 +106,9 @@ test('init creates lowercase OKF files with truthful provenance and a validated 
     const claude = await readFile(join(dir, 'CLAUDE.md'), 'utf8');
     assert.match(claude, /vef why TASK-001/);
     assert.match(claude, /versioned automation contract/);
+    const manifest = JSON.parse(await readFile(join(dir, '.vef', 'storage.json'), 'utf8'));
+    assert.deepEqual({ schemaVersion: manifest.schemaVersion, layout: manifest.layout }, { schemaVersion: 1, layout: 'per-item' });
+    assert.equal(manifest.canonical.tasks.directory, 'docs/tasks');
     const { stdout: doctorOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]);
     assert.match(doctorOutput, /✓  \/apply trust contract/);
     assert.match(doctorOutput, /✓  Canonical records and document surfaces align/);

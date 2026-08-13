@@ -29,6 +29,15 @@
 
 import yaml from 'js-yaml';
 
+function normalizeYamlValue(value) {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) return value.map(normalizeYamlValue);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, normalizeYamlValue(entry)]));
+  }
+  return value;
+}
+
 /**
  * Parse a single `---\n...\n---` frontmatter block.
  * @param {string} text — text that may start with a frontmatter block
@@ -52,7 +61,7 @@ export function parseFrontmatter(text) {
  * @returns {string}
  */
 export function stringifyFrontmatter(data, content = '') {
-  const yamlStr = yaml.dump(data, { lineWidth: 120, noRefs: true, sortKeys: false });
+  const yamlStr = yaml.dump(normalizeYamlValue(data), { lineWidth: 120, noRefs: true, sortKeys: false });
   return `---\n${yamlStr}---\n${content}`;
 }
 
@@ -117,7 +126,7 @@ export function parseDoc(text) {
  */
 export function stringifyItem(item) {
   const { heading, data, body } = item;
-  const yamlStr = yaml.dump(data, { lineWidth: 120, noRefs: true, sortKeys: false });
+  const yamlStr = yaml.dump(normalizeYamlValue(data), { lineWidth: 120, noRefs: true, sortKeys: false });
   return `## ${heading}\n\n---\n${yamlStr}---\n\n${body}\n`;
 }
 

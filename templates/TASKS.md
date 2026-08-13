@@ -1,6 +1,6 @@
 # Tasks
 
-Work breakdown — tasks with status, owners, dependencies. Each task is a markdown section with YAML frontmatter.
+Work breakdown — tasks with status, owners, dependencies. Canonical task items live in `docs/tasks/`; this generated ledger is the complete reading view.
 
 > All related references use the **`id + name + url`** pattern. Same-repo URLs are relative (`/ROADMAP.md#ROADMAP-001`); cross-repo/external are absolute.
 
@@ -42,7 +42,7 @@ Full description, acceptance criteria, implementation notes.
 
 ---
 
-## Open tasks
+## Task records
 
 <!--
 ## TASK-001 — Example task
@@ -63,7 +63,3 @@ last_updated: 2026-01-01
 
 Describe the task, acceptance criteria, and implementation notes here.
 -->
-
-## Completed tasks
-
-<!-- Move completed tasks here. Set status to `completed`. -->

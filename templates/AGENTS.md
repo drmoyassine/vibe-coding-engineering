@@ -10,6 +10,15 @@ This repo uses the [vibe-engineering-framework](https://github.com/drmoyassine/v
 
 Use `vef list`, `show`, `refs`, `why`, `graph`, and `search` for read-only project retrieval. Every query supports versioned JSON through `--json`; none modifies files or invokes an agent.
 
+## Canonical record storage
+
+Structured records live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each collection's `_index.md` owns ledger-level prose. The root `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` files are generated committed ledgers. Never edit their generated item blocks directly. After canonical item changes, run:
+
+```bash
+vef project
+vef validate --strict
+```
+
 ## Editing workflow
 
 1. **Read before you write** — never patch a file you haven't seen this session.
@@ -38,5 +47,6 @@ npm test
   - `/roadmap reconcile` — validate roadmap schemas
   - `/decisions reconcile` — validate decision schemas + cross-links
 - Run `/apply` to migrate scattered content into the canonical schema.
+- If `vef doctor` reports legacy monolithic or retired root-directory storage, preview with `vef migrate`, apply with `vef migrate --apply --update-adapters`, and commit `.vef/`, `docs/`, regenerated ledgers, and upgraded skills together.
 
 <!-- PROJECT: Add your project-specific conventions here. -->

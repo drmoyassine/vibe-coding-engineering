@@ -12,6 +12,7 @@
 import { readdir, readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { join, dirname, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { migrateLegacyStorage, projectLedgers } from '../lib/record-store.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, '..', '..', 'templates');
@@ -80,6 +81,7 @@ export async function initCommand(opts) {
   const templateFiles = await walkDir(TEMPLATES_DIR);
   let created = 0;
   let skipped = 0;
+  const createdPaths = new Set();
 
   for (const relPath of templateFiles) {
     const srcPath = join(TEMPLATES_DIR, relPath);
@@ -108,14 +110,24 @@ export async function initCommand(opts) {
     await writeFile(destPath, processed, 'utf-8');
     console.log(`  CREATE ${relPath}`);
     created++;
+    createdPaths.add(relPath);
+  }
+
+  const structuredLedgers = ['VISION.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md'];
+  const initializedStructuredModel = structuredLedgers.every((path) => createdPaths.has(path));
+  if (initializedStructuredModel) {
+    const migration = await migrateLegacyStorage(targetDir);
+    if (migration.alreadyMigrated) await projectLedgers(targetDir, { write: true });
+    console.log(`  CREATE ${migration.itemCount} canonical item files${migration.alreadyMigrated ? ' (existing canonical store retained)' : ' + .vef/storage.json'}`);
+    console.log('  PROJECT VISION.md, ROADMAP.md, TASKS.md, DECISIONS.md');
   }
 
   console.log(`\n  ── Done ──`);
   console.log(`  ${created} files created, ${skipped} skipped.`);
   console.log(`\n  Next steps:`);
-  console.log(`    1. Fill in VISION.md with your product vision`);
-  console.log(`    2. Add roadmap items and tasks`);
+  console.log(`    1. Fill in docs/vision/_index.md with your product vision`);
+  console.log(`    2. Edit canonical items in docs/vision/, docs/roadmap/, docs/tasks/, and docs/decisions/`);
   console.log(`    3. Run /apply in Claude Code to migrate any existing docs`);
-  console.log(`    4. Add 'vef validate' to your CI pipeline`);
+  console.log(`    4. Run 'vef project' after item edits and add 'vef validate --strict' to CI`);
   console.log('');
 }

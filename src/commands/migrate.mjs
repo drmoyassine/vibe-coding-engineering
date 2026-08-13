@@ -14,10 +14,11 @@
  */
 
 import { readdir, readFile, writeFile, mkdir, access } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDoc } from '../lib/frontmatter.mjs';
 import { getDocType } from '../lib/schemas.mjs';
+import { migrateLegacyStorage, planStorageMigration, STORAGE_MANIFEST } from '../lib/record-store.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, '..', '..', 'templates');
@@ -29,15 +30,28 @@ async function exists(path) {
   try {
     await access(path);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
   }
 }
 
 /**
  * Copy a skill directory from templates into the target.
  */
-async function copySkill(skillName, destSkillsDir, dryRun) {
+function renderAdapterTemplate(content, existing, targetDir) {
+  const projectMatch = String(existing || '').match(/^Manage (?:canonical )?(.+?) (?:task records|roadmap records|decision records|tasks|roadmap|architectural|bugs)/m);
+  const issueMatch = String(existing || '').match(/https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/);
+  const projectName = projectMatch?.[1] || basename(targetDir) || 'project';
+  const githubOwner = issueMatch?.[1] || 'example';
+  const repoName = issueMatch?.[2] || basename(targetDir) || 'project';
+  return content
+    .split('{{PROJECT_NAME}}').join(projectName)
+    .split('{{GITHUB_OWNER}}').join(githubOwner)
+    .split('{{REPO_NAME}}').join(repoName);
+}
+
+async function copySkill(skillName, destSkillsDir, dryRun, { overwrite = false, targetDir = '.' } = {}) {
   const srcDir = join(TEMPLATES_DIR, '.claude', 'skills', skillName);
   try {
     const entries = await readdir(srcDir, { withFileTypes: true });
@@ -48,7 +62,9 @@ async function copySkill(skillName, destSkillsDir, dryRun) {
       if (dryRun) continue;
       await mkdir(dirname(dest), { recursive: true });
       const content = await readFile(src, 'utf-8');
-      await writeFile(dest, content, 'utf-8');
+      let existing = '';
+      if (overwrite && await exists(dest)) existing = await readFile(dest, 'utf8');
+      await writeFile(dest, renderAdapterTemplate(content, existing, targetDir), 'utf-8');
     }
     return true;
   } catch {
@@ -63,6 +79,8 @@ export async function migrateCommand(opts) {
   const targetDir = opts.dir;
   const dryRun = !opts.apply;
   const mode = dryRun ? '[DRY RUN]' : '[APPLY]';
+  const storagePlan = await planStorageMigration(targetDir);
+  const skillDryRun = dryRun || !storagePlan.ready;
 
   console.log(`\n  ${mode} Analyzing: ${targetDir}\n`);
 
@@ -71,17 +89,20 @@ export async function migrateCommand(opts) {
   const skillsDir = join(targetDir, '.claude', 'skills');
   let skillsInstalled = 0;
   let skillsAlready = 0;
+  let skillsUpdated = 0;
 
   for (const skill of SKILLS) {
     const skillPath = join(skillsDir, skill, 'SKILL.md');
-    if (await exists(skillPath)) {
+    const present = await exists(skillPath);
+    if (present) skillsAlready++;
+    if (present && !opts.updateAdapters) {
       console.log(`  ✓  /${skill} (already installed)`);
-      skillsAlready++;
     } else {
-      const copied = await copySkill(skill, skillsDir, dryRun);
+      const updating = present;
+      const copied = await copySkill(skill, skillsDir, skillDryRun, { overwrite: updating, targetDir });
       if (copied) {
-        console.log(`  +  /${skill} ${dryRun ? '(would install)' : '(installed)'}`);
-        skillsInstalled++;
+        console.log(`  +  /${skill} ${updating ? (skillDryRun ? '(would update)' : '(updated)') : (skillDryRun ? '(would install)' : '(installed)')}`);
+        if (updating) skillsUpdated++; else skillsInstalled++;
       } else {
         console.log(`  !  /${skill} (template not found)`);
       }
@@ -156,10 +177,31 @@ export async function migrateCommand(opts) {
   console.log('\n  ── Summary ──');
   console.log(`  Docs found:      ${foundDocs.length}/${FRAMEWORK_DOCS.length}`);
   console.log(`  Skills present:  ${skillsAlready}/${SKILLS.length}`);
-  console.log(`  Skills ${dryRun ? 'to install' : 'installed'}: ${skillsInstalled}`);
+  console.log(`  Skills ${skillDryRun ? 'to install' : 'installed'}: ${skillsInstalled}`);
+  if (opts.updateAdapters) console.log(`  Skills ${skillDryRun ? 'to update' : 'updated'}: ${skillsUpdated}`);
   console.log(`  Total items:     ${totalItems}`);
   console.log(`  No frontmatter:  ${itemsWithoutFm}`);
   console.log(`  Needs review:    ${itemsWithNeedsReview}`);
+
+  // ── Canonical storage migration ──
+  console.log('\n  ── Canonical storage ──');
+  if (storagePlan.alreadyMigrated) {
+    console.log(`  ✓  Per-item storage already enabled (${STORAGE_MANIFEST})`);
+  } else if (!storagePlan.ready) {
+    console.log('  ✗  Storage migration is blocked:');
+    for (const issue of storagePlan.issues) console.log(`     • ${issue}`);
+    process.exitCode = 1;
+  } else if (dryRun) {
+    console.log(`  +  Would ${storagePlan.fromRootLayout ? 'relocate' : 'extract'} ${storagePlan.itemCount} canonical item file(s)`);
+    console.log('  +  Would create docs/vision/, docs/roadmap/, docs/tasks/, docs/decisions/, and .vef/storage.json');
+    if (storagePlan.fromRootLayout) console.log('  +  Would remove the retired root record directories after verified copies are written');
+    console.log('  +  Would regenerate VISION.md, ROADMAP.md, TASKS.md, and DECISIONS.md deterministically');
+  } else {
+    await migrateLegacyStorage(targetDir);
+    console.log(`  ✓  ${storagePlan.fromRootLayout ? 'Relocated' : 'Extracted'} ${storagePlan.itemCount} canonical item file(s) under docs/`);
+    console.log(`  ✓  Enabled per-item storage with ${STORAGE_MANIFEST}`);
+    console.log('  ✓  Regenerated the four committed ledgers');
+  }
 
   if (itemsWithoutFm > 0 || missingDocs.length > 0) {
     console.log('\n  Next steps:');
@@ -171,10 +213,12 @@ export async function migrateCommand(opts) {
     }
   }
 
-  if (dryRun) {
-    console.log('\n  (Dry run — no changes made. Re-run with --apply to install skills.)');
+  if (!storagePlan.ready) {
+    console.log(`\n  Storage migration was not applied. Resolve the reported conflicts and re-run the preview.`);
+  } else if (dryRun) {
+    console.log(`\n  (Dry run — no changes made. Re-run with --apply${opts.updateAdapters ? ' --update-adapters' : ''} to apply this plan.)`);
   } else {
-    console.log('\n  Skills installed. Run /apply in Claude Code for AI-powered migration.');
+    console.log('\n  Migration applied. Run vef validate --strict and vef doctor, then review and commit the complete diff.');
   }
   console.log('');
 }

@@ -1,7 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { parseDoc } from './frontmatter.mjs';
-import { ALL_DOC_FILES, getDocType, relationshipFields } from './schemas.mjs';
+import { relationshipFields } from './schemas.mjs';
+import { loadCanonicalDocuments } from './record-store.mjs';
 
 export const QUERY_SCHEMA_VERSION = 1;
 export const PROJECT_TYPES = ['vision', 'roadmap', 'tasks', 'decisions'];
@@ -94,28 +92,19 @@ function publicEdge(edge) {
 /** Load canonical project records and derive typed graph edges from SCHEMAS. */
 export async function loadProject(projectDir = '.') {
   const records = [];
-  const parsedDocs = [];
+  const loaded = await loadCanonicalDocuments(projectDir);
+  if (loaded.storageIssues.length > 0) throw new ProjectQueryError(`Canonical storage is invalid: ${loaded.storageIssues.join('; ')}`);
+  const parsedDocs = loaded.parsedDocs;
 
-  for (const filename of ALL_DOC_FILES) {
-    let content;
-    try {
-      content = await readFile(join(projectDir, filename), 'utf8');
-    } catch (error) {
-      if (error?.code === 'ENOENT') continue;
-      throw error;
-    }
-
-    const docType = getDocType(filename);
-    const parsed = parseDoc(content);
-    parsedDocs.push({ docType, filename, items: parsed.items });
-    for (const item of parsed.items) {
+  for (const { docType, filename, items } of parsedDocs) {
+    for (const item of items) {
       const frontmatter = normalizeValue(item.data || {});
       const id = String(frontmatter.id || item.id || '').trim();
       if (!id) continue;
       records.push({
         id,
         type: docType,
-        file: filename,
+        file: item.sourceFile || filename,
         title: String(frontmatter.title || item.title || id),
         frontmatter,
         body: item.body || '',
@@ -162,7 +151,7 @@ export async function loadProject(projectDir = '.') {
   }
   edges.sort(compareEdges);
 
-  return { projectDir, parsedDocs, records, byKey, byId, edges };
+  return { projectDir, parsedDocs, records, byKey, byId, edges, storage: loaded.storage, projectionIssues: loaded.projectionIssues };
 }
 
 export function resolveRecord(project, selector) {

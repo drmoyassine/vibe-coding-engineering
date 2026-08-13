@@ -8,10 +8,10 @@ When working with docs in a repo that adopts this framework, invoke these skills
 
 | Skill | What it does | Invocation examples |
 |---|---|---|---|
-| **`/tasks`** | Manage TASKS.md | `/tasks list`<br>`/tasks list status:pending`<br>`/tasks add`<br>`/tasks complete TASK-001`<br>`/tasks reconcile` |
-| **`/roadmap`** | Manage ROADMAP.md | `/roadmap list`<br>`/roadmap list quarter:Q1`<br>`/roadmap add`<br>`/roadmap graduate "Q1 — PowerPoint"`<br>`/roadmap reconcile` |
-| **`/bugs`** | Manage GitHub Issues + product_failures | `/bugs list`<br>`/bugs list status:open`<br>`/bugs create`<br>`/bugs resolve 42`<br>`/bugs sync` |
-| **`/decisions`** | Manage DECISIONS.md | `/decisions list`<br>`/decisions list status:accepted`<br>`/decisions add`<br>`/decisions supersede DEC-001`<br>`/decisions reconcile` |
+| **`/tasks`** | Manage canonical task records and project TASKS.md | `/tasks list`<br>`/tasks list status:pending`<br>`/tasks add`<br>`/tasks complete TASK-001`<br>`/tasks reconcile` |
+| **`/roadmap`** | Manage canonical roadmap records and project ROADMAP.md | `/roadmap list`<br>`/roadmap list quarter:Q1`<br>`/roadmap add`<br>`/roadmap graduate "Q1 — PowerPoint"`<br>`/roadmap reconcile` |
+| **`/bugs`** | Manage canonical external bug references through GitHub Issues | `/bugs list`<br>`/bugs list status:open`<br>`/bugs create`<br>`/bugs resolve 42` |
+| **`/decisions`** | Manage canonical decision records and project DECISIONS.md | `/decisions list`<br>`/decisions list status:accepted`<br>`/decisions add`<br>`/decisions supersede DEC-001`<br>`/decisions reconcile` |
 
 **Skills are manual invoke only** — type `/skillname command` to run. No auto-trigger.
 
@@ -38,7 +38,7 @@ An **agent** is a Claude instance with a specific profile (system prompt, tools,
 
 The framework defines:
 1. **Agent profiles** — reusable agent configurations (system prompt, toolset, skillset)
-2. **Tool catalog** — tools agents can invoke (Supabase MCP, file operations, etc.)
+2. **Tool catalog** — portable tools agents can invoke
 3. **Skill catalog** — skills agents can invoke (`/tasks`, `/roadmap`, `/bugs`, `/decisions`)
 4. **Context-gating rules** — which tools/skills activate in which contexts (routes, entities, channels)
 
@@ -51,8 +51,8 @@ The framework defines:
 **System prompt:**
 ```markdown
 You are the product-docs agent. Your job is to:
-1. Validate frontmatter schemas across roadmap and task fragments
-2. Assemble ROADMAP.md and TASKS.md from their fragment files
+1. Validate frontmatter schemas across canonical roadmap and task item files
+2. Reconcile canonical items and regenerate ROADMAP.md and TASKS.md without inventing records
 3. Detect orphans and inconsistencies
 4. Commit changes with structured messages
 
@@ -60,8 +60,8 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 ```
 
 **Tools:**
-- `Glob` — find fragment files (`roadmap/*.md`, `tasks/*.md`)
-- `Read` — read fragment files and existing docs
+- `Glob` — find canonical item files, framework documents, and adapters
+- `Read` — read canonical item files and singleton documents
 - `Write` — write regenerated docs
 - `Bash` — run `git add` and `git commit` (no force-pushes)
 
@@ -72,23 +72,7 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - Manually via the per-doc skills (`/tasks reconcile`, `/roadmap reconcile`, `/decisions reconcile`, `/bugs sync`)
 - Automatically by GitHub Actions when docs change (planned)
 
-### `studygram-agent`
-
-**Purpose:** General-purpose agent for Studygram product development. The primary worker for `studygram-app`.
-
-**See:** `studygram-app` repo's AGENTS.md (this framework is the substrate; that repo is the consumer).
-
 ## Tool catalog
-
-### Supabase MCP tools
-
-- `mcp__supabase__execute_sql` — execute SQL against the Studygram database
-- `mcp__supabase__apply_migration` — apply schema migrations
-- `mcp__supabase__deploy_edge_function` — deploy edge functions via Management API
-
-**Context gating:**
-- Always active for `studygram-agent` (DB ops are core to the product)
-- Never active for `product-docs-agent` (docs only)
 
 ### File operations
 
@@ -108,8 +92,8 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - **NO rewrites** — never use `git rebase` or `git reset --hard` without explicit user confirmation
 
 **Context gating:**
-- Active for `studygram-agent` (ship features)
-- Active for `product-docs-agent` (commit docs)
+- Active for `product-docs-agent` when committing reconciled documentation
+- Consumer repositories define their own application-development agents and tool permissions
 - **Commit messages must end with** `Co-Authored-By: Claude <noreply@anthropic.com>`
 
 ### GitHub integration
@@ -118,8 +102,8 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - Future: direct GitHub MCP server (when available)
 
 **Context gating:**
-- Active for `product-docs-agent` (sync Issues → BUGS view)
-- Active for `studygram-agent` (comment on PRs, reference Issues)
+- Active for `product-docs-agent` when reconciling external issue references
+- Consumer-specific GitHub workflows belong in the consumer repository
 
 ## Skill catalog
 
@@ -137,10 +121,11 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - `/tasks reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Reads TASKS.md
+1. Reads canonical `docs/tasks/*.md` files
 2. Validates frontmatter schemas
 3. Reports inconsistencies
-4. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+4. Runs `vef project` and strict validation after accepted changes
+5. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
 
 **Schema rules:**
 ```yaml
@@ -180,10 +165,11 @@ last_updated: 2026-08-12
 - `/roadmap reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Reads ROADMAP.md
+1. Reads canonical `docs/roadmap/*.md` files
 2. Validates frontmatter schemas
 3. Reports inconsistencies
-4. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+4. Runs `vef project` and strict validation after accepted changes
+5. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
 
 **Schema rules:**
 ```yaml
@@ -210,28 +196,17 @@ last_updated: 2026-08-12
 
 ### `/bugs`
 
-**Purpose:** Manage bugs via GitHub Issues + product_failures table.
+**Purpose:** Manage bugs through GitHub Issues, the canonical external bug tracker.
 
 **When invoked:**
 - `/bugs list` — show bugs (filter by status/label)
-- `/bugs create` — create GitHub Issue + product_failures row
-- `/bugs resolve 42` — close Issue + update product_failures
-- `/bugs sync` — cross-reference Issues ↔ product_failures
+- `/bugs create` — create a GitHub Issue
+- `/bugs resolve 42` — close a GitHub Issue
 
 **What it does:**
-1. Queries GitHub Issues with `bug` label
-2. Queries product_failures table (source = 'github')
-3. Reports discrepancies
-4. Creates/updates Issues and table rows
-
-**product_failures schema:**
-```sql
-source TEXT -- 'github'
-kind TEXT -- 'issue'
-severity TEXT -- 'P0' | 'P1' | 'P2' | 'P3'
-status TEXT -- 'open' | 'resolved' | 'ignored'
-details JSONB -- issue_number, title, labels
-```
+1. Queries GitHub Issues with the `bug` label
+2. Creates, lists, or resolves issues through the repository's configured GitHub access
+3. Preserves issue URLs in VEF relationship fields when a durable record needs the reference
 
 ### `/decisions`
 
@@ -245,10 +220,11 @@ details JSONB -- issue_number, title, labels
 - `/decisions reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Reads DECISIONS.md
+1. Reads canonical `docs/decisions/*.md` files
 2. Validates frontmatter schemas
 3. Reports inconsistencies
-4. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+4. Runs `vef project` and strict validation after accepted changes
+5. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
 
 **Schema rules:**
 ```yaml
@@ -274,31 +250,11 @@ related_roadmap_items:
 last_updated: 2026-08-12
 ```
 
-### `/studygram-check-failures`
-
-**Purpose:** Triage the Studygram agent platform's failure log (`product_failures` table).
-
-**See:** `studygram-app/.claude/skills/studygram-check-failures/`
-
-**When invoked:**
-- User runs `/studygram-check-failures`
-- Scheduled cron job (planned)
-
-**What it does:**
-1. Pulls open failures from `product_failures`
-2. Presents triage summary (escalations, hotspots, volume)
-3. Offers follow-ups (show detail, resolve/ignore, prune)
-
-**Context gating:**
-- Active for `studygram-agent` only (product-specific)
-
 ## Context-gating framework
 
 ### Problem
 
-Today, all tools and skills are **always active** for an agent. But some tools should only activate in specific contexts:
-- `link_document` tool should only surface when viewing a contact/institution/provider (entity has a document scope)
-- `/studygram-check-failures` should only run when the channel is `agent` (not `http` or `frontend`)
+An adopter may need tools or skills to activate only for particular entities, routes, or channels. Those predicates are consumer configuration; VEF defines the portable shape without embedding a consumer's domain model.
 
 ### Solution: `activeWhen` predicate
 
@@ -306,7 +262,7 @@ Add an `activeWhen` predicate to each tool + skill:
 
 ```typescript
 type ActiveWhen = {
-  entityTypes?: string[]     // ['contact', 'institution', 'provider']
+  entityTypes?: string[]     // consumer-defined entity type names
   routes?: string[]          // glob patterns for route paths
   channels?: string[]        // ['agent', 'http', 'frontend']
 }
@@ -314,57 +270,33 @@ type ActiveWhen = {
 
 Absence/empty = always active (backward compatible).
 
-Lives on the `agent_profile_tools` / `agent_profile_skills` JOIN (per-profile gating) so the same tool can gate differently per agent.
+The predicate belongs to the per-profile tool/skill assignment so the same capability can be gated differently by different adopters. VEF does not prescribe a consumer database or runtime filter function.
 
-**Filter location:** `buildToolset(toolCtx, profile, subjectContactId, onFailure)` in agent-runtime.
+## Framework implementation status
 
-### Inaugural consumer: `link_document` tool
-
-**Purpose:** Agent proposes a `documents` row (applicant_id/org_id/provider_id) via `resolveDocumentScope(userCtx, viewing)`.
-
-**Activation:**
-```typescript
-activeWhen: {
-  entityTypes: ['contact', 'institution', 'provider']
-}
-```
-
-Only surfaces where a doc target exists; silent on list/dashboard routes.
-
-**Rescope confirm:** When proposed target ≠ uploader's own context (non-lead on a lead), agent asks "file this under <lead>?" — confirmed rescope carries the target's org_id.
-
-**Capability-gated:** Proposal only; RLS is the backstop. Client pre-check `canWriteDocumentFor(targetId)` via `contact_in_my_scope` RPC avoids proposing scopes RLS rejects.
-
-## Implementation status (studygram-app)
-
-**Skills shipped (2026-08-12):**
-- ✅ /tasks — manages TASKS.md
-- ✅ /roadmap — manages ROADMAP.md
-- ✅ /bugs — manages GitHub Issues + product_failures
-- ✅ /decisions — manages DECISIONS.md
-
-**Docs created (2026-08-12):**
-- ✅ ROADMAP.md — Q1 pptx, Q2 sandboxed dev, Q4 context-gated tools
-- ✅ TASKS.md — 6 open tasks (TASK-001 to TASK-006)
-- ✅ DECISIONS.md — template with frontmatter schema
-- ✅ BUGS — GitHub Issues (existing)
+**Interfaces shipped:**
+- ✅ `/tasks`, `/roadmap`, `/bugs`, `/decisions`, and `/apply` agent adapters
+- ✅ `vef init`, `migrate`, `project`, `validate`, and `doctor`
+- ✅ Deterministic read-only query commands
 
 **Schema patterns proven:**
 - ✅ URL-based cross-linking (tasks → roadmap, roadmap → vision, etc.)
-- ✅ Frontmatter per item (not separate fragment files)
+- ✅ Canonical one-file-per-item storage with deterministic committed ledgers
 - ✅ Bidirectional linking via URLs
 
-**Schema status (2026-08-12):**
+> **Storage topology shipped (DEC-004 / TASK-012).** Edit canonical records under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; edit collection prose in each `_index.md`; then run `vef project`. Root structured ledgers are generated, and strict validation rejects drift. Legacy consumers run `vef doctor`, preview with `vef migrate`, and apply with `vef migrate --apply --update-adapters`.
+
+**Schema status:**
 - ✅ `description` present on Task + Roadmap schemas
 - ✅ All related_ fields use the `id + name + url` pattern (relative same-repo, absolute cross-repo)
 - ✅ `roadmap_item` / `vision_theme` / `superseded_by` are singular objects; `depends_on` / `related_*` are arrays
-- ⬜ VISION.md needs frontmatter per theme (TASK-006 — deferred)
+- ✅ Vision themes are supported by the canonical structured schema
 
 ## Next steps for the framework
 
-1. **VISION.md frontmatter** — Add frontmatter per theme with cross-links to ROADMAP (TASK-006)
-2. **External tool integrations** — Wire Fider or GitHub Discussions for ROADMAP proposals
-3. **GitHub Actions** — Auto-reconcile on doc changes
-4. **Generalize to other repos** — Package framework for reuse
+1. Publish the verified package and public adoption materials.
+2. Implement the lightweight human review workspace against the canonical loader.
+3. Add transactional writes after the storage contract is stable in consumer use.
+4. Add optional Obsidian and wiki review adapters after the shared review contract is proven.
 
 This AGENTS.md is the **manual** for your agent workforce. When you add a new tool or skill, document it here. When you change a gating rule, update it here. When you debug an agent behavior, start here.

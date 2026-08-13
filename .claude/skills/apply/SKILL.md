@@ -92,7 +92,8 @@ Agent validators report likely schema, content, duplicate, and relationship prob
 
 ### 5. Render proposals
 
-Pure rendering returns `proposedDocuments[]` and `proposedEntries[]`. The workflow has no filesystem write authority.
+Pure rendering returns `proposedItemFiles[]` and `proposedEntries[]`. Canonical structured records target `docs/vision/`,
+`docs/roadmap/`, `docs/tasks/`, or `docs/decisions/`; root ledgers are never proposal write targets. The workflow has no filesystem write authority.
 It always returns `acceptance.accepted:false` because only deterministic staging can accept a candidate.
 
 ### 6. Alignment review
@@ -105,12 +106,12 @@ automatically or mix them into the canonical-document write gate.
 The caller performs these steps only when `--write` was explicit:
 
 1. Stop if agent checks report blocking errors, orphans, or any `needsReview` item.
-2. Snapshot the exact target documents so a failed post-write check can restore only those files.
-3. Build a temporary staging directory containing the complete current canonical document set.
-4. Apply `proposedDocuments[]` to that staging copy, preserving each document's non-entry header.
+2. Snapshot the exact target item files and the four generated ledgers so a failed post-write check can restore only those files.
+3. Build a temporary staging directory containing the complete current canonical item store and singleton documents.
+4. Apply `proposedItemFiles[]` to that staging copy, then run `vef project --dir <staging-directory>`.
 5. Run `vef validate --strict --dir <staging-directory>`.
 6. If validation fails, report the diagnostics and leave the repository untouched.
-7. If validation passes, write the exact staged target documents into the repository.
+7. If validation passes, write the exact staged canonical item files and generated ledgers into the repository.
 8. Run `vef validate --strict` in the repository. If it fails, restore the target-document snapshots and report the
    failure. Do not alter unrelated working-tree changes.
 9. Show the resulting diff for human review. Do not commit, push, delete sources, or apply alignment proposals.

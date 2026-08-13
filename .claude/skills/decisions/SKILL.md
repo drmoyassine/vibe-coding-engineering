@@ -1,6 +1,6 @@
 # /decisions
 
-Manage vibe-engineering-framework architectural, product, and technical decisions in DECISIONS.md.
+Manage canonical decision records in `docs/decisions/`. `DECISIONS.md` is a generated, committed ledger for reading and stable public links.
 
 ## Commands
 
@@ -8,7 +8,7 @@ Manage vibe-engineering-framework architectural, product, and technical decision
 - `add` — Add a new decision (prompts for required fields)
 - `update` — Update an existing decision (change status, add context)
 - `supersede` — Mark a decision as superseded by a newer one
-- `reconcile` — Validate DECISIONS.md schema and regenerate if needed
+- `reconcile` — Validate canonical decision files and regenerate DECISIONS.md
 
 ## Decision schema
 
@@ -71,7 +71,7 @@ Full prose expansion of the decision, discussion, alternatives considered.
 
 ## Cross-linking philosophy
 
-Decisions are the **central ledger** — they link bidirectionally to all vision/roadmap/tasks, and `log.md` links to them (not the reverse). This ensures the decision is the single source of truth for "what we decided."
+Decision records are the **central decision collection** — they link bidirectionally to all vision/roadmap/tasks, and `log.md` links to them (not the reverse). This ensures each canonical decision item is the source of truth for "what we decided."
 
 ## How to use
 
@@ -114,15 +114,17 @@ Creates a new decision (DEC-XXX), sets this decision's `status: superseded` and 
 ```
 /decisions reconcile
 ```
-1. Reads DECISIONS.md
+1. Reads canonical `docs/decisions/*.md` item files
 2. Validates every frontmatter block against the schema above
 3. Checks all `id + name + url` refs resolve (no orphans), bidirectionally with TASKS/ROADMAP/DECISION (decision↔decision links included)
 4. Flags any `status: superseded` decision missing a `superseded_by` (and vice versa)
-5. Reports inconsistencies; asks before regenerating
+5. Reports inconsistencies; asks before changing canonical items
+6. Runs `vef project` after accepted item changes, then `vef validate --strict`
 
 ## Implementation notes
 
-- Decisions are stored in `DECISIONS.md` at the repo root, each a markdown section with YAML frontmatter.
+- Each decision is stored canonically in `docs/decisions/<ID>.md`; `docs/decisions/_index.md` owns ledger-level prose.
+- Never edit generated item blocks in `DECISIONS.md`. Run `vef project` to regenerate the committed ledger.
 - The `id` field is the unique identifier (DEC-XXX format).
 - Same-repo refs use **relative** URLs (`/TASKS.md#TASK-001`), not full GitHub blob URLs.
 - When superseding, the old decision's `superseded_by` points to the new decision (singular object).

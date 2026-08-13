@@ -12,6 +12,7 @@ const REQUIRED_SKILL_RULES = [
   ['classifies non-project memory', /`project`, `personal`, `sensitive`,\s*or `transient`/i],
   ['forbids invented graph targets', /Do not invent graph targets/i],
   ['requires deterministic staged validation', /vef validate --strict --dir <staging-directory>/i],
+  ['projects ledgers from staged canonical items', /vef project --dir <staging-directory>/i],
   ['requires post-write deterministic validation', /Run `vef validate --strict` in the repository/i],
   ['forbids automatic commits', /No automatic commit/i],
 ];
@@ -27,8 +28,9 @@ const REQUIRED_WORKFLOW_RULES = [
   ['filters ineligible memory before reconciliation', /eligibleDiscoveries[\s\S]*memoryClass === 'project'[\s\S]*importEligible === true/],
   ['enforces selected document types', /if \(!selectedDocTypes\.has\(dt\)\) continue/],
   ['forbids placeholder targets', /Never invent a missing target or placeholder entity/i],
+  ['sanitizes proposed item filenames', /path: `\$\{directory\}\/\$\{itemFilename\(entry\.id\)\}`/],
   ['blocks invalid advisory reports', /proposalBlocked = advisoryInvalid \|\| blockingErrors\.length > 0/],
-  ['returns proposals rather than accepted records', /proposedDocuments: documents/],
+  ['returns canonical item-file proposals rather than accepted records', /proposedItemFiles/],
   ['keeps agent acceptance false', /accepted: false/],
   ['requires deterministic validation', /deterministicValidationRequired: true/],
 ];

@@ -489,31 +489,40 @@ const validations = await parallel(validators)
 
 phase('Render')
 
-const DOC_PATHS = {
-  tasks: 'TASKS.md',
-  roadmap: 'ROADMAP.md',
-  decisions: 'DECISIONS.md',
-  bugs: 'BUGS.md',
-  vision: 'VISION.md',
+const ITEM_DIRS = {
+  tasks: 'docs/tasks',
+  roadmap: 'docs/roadmap',
+  decisions: 'docs/decisions',
+  vision: 'docs/vision',
 }
 
-function renderEntry(e) {
+function renderItemFile(e) {
   const fm = String(e.frontmatter || '').replace(/^---\s*/, '').replace(/\s*---\s*$/, '').trim()
   const fmBlock = `---\n${fm}\n---`
   const m = fm.match(/^title:\s*["']?(.+?)["']?\s*$/m)
   const title = (m && m[1]) || e.id
   const body = String(e.body || '').trim()
-  return `## ${e.id} — ${title}\n\n${fmBlock}\n\n${body}\n\n---`
+  return `${fmBlock}\n# ${e.id} — ${title}\n\n${body}\n`
 }
 
-const documents = Object.entries(byDocType).map(([dt, entries]) => ({
-  docType: dt,
-  path: DOC_PATHS[dt] || `${dt}.md`,
-  count: entries.length,
-  entryMarkdown: entries.map(renderEntry).join('\n\n'),
-}))
+function itemFilename(id) {
+  const value = String(id || '').trim()
+  if (/^[A-Za-z0-9._-]+$/.test(value)) return `${value}.md`
+  return `${encodeURIComponent(value).replace(/%/g, '~')}.md`
+}
 
-log(`Rendered ${documents.reduce((n, d) => n + d.count, 0)} entries across ${documents.length} documents`)
+const proposedItemFiles = Object.entries(byDocType).flatMap(([dt, entries]) => {
+  const directory = ITEM_DIRS[dt]
+  if (!directory) return []
+  return entries.map(entry => ({
+    docType: dt,
+    id: entry.id,
+    path: `${directory}/${itemFilename(entry.id)}`,
+    markdown: renderItemFile(entry),
+  }))
+})
+
+log(`Rendered ${proposedItemFiles.length} canonical item-file proposals`)
 
 // ================================================================================
 // PHASE 6 — Framework Alignment Review
@@ -604,7 +613,7 @@ const result = {
   frameworkEdits: alignment.frameworkEdits,
   driftReport: alignment.driftReport,
   proposedEntries: Object.values(byDocType).flat(),
-  proposedDocuments: documents,
+  proposedItemFiles,
   acceptance: {
     accepted: false,
     proposalBlocked,

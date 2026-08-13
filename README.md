@@ -19,7 +19,7 @@ conversation, code, issues, git history
 
 VEF is for teams that want an AI agent to inherit a project, not merely a prompt.
 
-> **Status:** early but operational. The Integrity Core, cross-platform CI gate, safe migration boundary, and deterministic query layer are implemented and dogfooded here. See [ROADMAP.md](ROADMAP.md).
+> **Status:** early but operational. The Integrity Core, canonical per-item store, deterministic ledgers and queries, consumer migration path, and cross-platform CI gate are implemented and dogfooded here. See [ROADMAP.md](ROADMAP.md).
 
 ## Why this exists
 
@@ -82,6 +82,22 @@ This creates useful answers that a plain document pile cannot reliably provide:
 
 The model is deliberately denormalized for local readability: backlinks live near the thing they describe. The Integrity Core validates every declared inverse so that convenience does not become silent graph drift.
 
+Structured records use one canonical file per item under the documentation namespace:
+
+```text
+docs/
+  vision/       roadmap/       tasks/         decisions/
+    <id>.md       <id>.md        <id>.md         <id>.md
+    _index.md     _index.md      _index.md       _index.md
+        │             │              │               │
+        └─────────────┴──── vef project ─────────────┘
+                                │
+              VISION.md · ROADMAP.md · TASKS.md · DECISIONS.md
+                    generated, committed reading ledgers
+```
+
+The root ledgers preserve stable public links and convenient sequential reading, but their generated item blocks are not edited directly. `.vef/storage.json` activates the layout, and strict validation rejects projection drift.
+
 ## Core documents
 
 | Document | Role |
@@ -100,11 +116,12 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 
 - `vef init` scaffolds a project with the docs, templates, and current agent skills.
 - `vef migrate` detects existing structure and prepares a repository for adoption.
+- `vef project` deterministically regenerates committed ledgers from canonical item files; `--check` is read-only.
 - `vef validate --strict` checks field contracts, typed targets, dangling links, inverse relationships, duplicates, dependency cycles, and the canonical durable-memory catalogue.
 - `vef doctor` checks expected docs and skills, catalogue alignment, migration review state, casing, and the `/apply` trust contract.
 - `vef list`, `show`, `refs`, `why`, `graph`, and `search` expose the canonical model without an LLM.
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
-- The framework is dogfooded in this repository and first adopted by [studygram-app](https://github.com/drmoyassine/studygram-app).
+- The framework is dogfooded in this repository and designed for adoption by independent product repositories.
 
 ## Deterministic contract
 
@@ -153,8 +170,20 @@ all document types; use `tasks:TASK-009`-style selectors if an invalid repositor
 For an existing repository:
 
 ```bash
-vef migrate                 # inspect; does not rewrite docs
-vef migrate --apply         # install the adapter/templates and structural fixes
+vef doctor                  # identifies legacy storage and prints this path
+vef migrate                 # preview; does not rewrite docs
+vef migrate --apply --update-adapters  # extract items, regenerate ledgers, and opt in to adapter upgrade
+vef validate --strict
+vef doctor
+```
+
+Commit `.vef/`, `docs/`, the four regenerated root ledgers, and upgraded installed skills together. The migration checks schemas and typed relationships before writing, refuses conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. Adapter replacement is explicit through `--update-adapters`, so customized skills are not overwritten by an ordinary migration.
+
+For normal record maintenance, edit the canonical item file and project the public views:
+
+```bash
+vef project
+vef validate --strict
 ```
 
 Then use the installed agent adapter to maintain the model. In Claude Code, for example:
@@ -185,11 +214,11 @@ VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform
 
 ## Roadmap
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. No additional framework milestone is currently committed. FRAMEWORK-006 tracks consumer-specific adoption work in `studygram-app`; it does not define this framework's next priority.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, and [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage with generated ledgers and consumer migration. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020), VEF's public package and launch, and [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015), its lightweight review workspace, are the active tracks. Transaction commands are deferred to FRAMEWORK-022.
 
 ## Contributing and status
 
-This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks, versioned queries, and CI gate as the current contract. Deterministic day-to-day mutation commands remain future work; `/apply` is the guarded agent-assisted migration path.
+This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks, versioned queries, per-item storage contract, deterministic projections, consumer migration path, and CI gate as the current contract. Transactional day-to-day mutations remain deferred under FRAMEWORK-022. `/apply` remains the guarded agent-assisted semantic migration path.
 
 The most valuable contribution is helping make this statement literally true:
 

@@ -1,0 +1,453 @@
+import { access, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { basename, dirname, extname, join, relative } from 'node:path';
+import { parseDoc, parseFrontmatter, stringifyFrontmatter, stringifyItem } from './frontmatter.mjs';
+import { validateItem } from './schemas.mjs';
+import { checkBidirectional, findDependencyCycles, findDuplicateIds, findOrphans } from './crosslinks.mjs';
+
+export const STORAGE_SCHEMA_VERSION = 1;
+export const STORAGE_LAYOUT = 'per-item';
+export const STORAGE_MANIFEST = '.vef/storage.json';
+export const COLLECTION_TEMPLATE = '_index.md';
+export const ITEM_MARKER = '<!-- VEF:ITEMS -->';
+export const RECORDS_ROOT = 'docs';
+
+export const RECORD_LAYOUTS = [
+  { docType: 'vision', directory: `${RECORDS_ROOT}/vision`, ledger: 'VISION.md' },
+  { docType: 'roadmap', directory: `${RECORDS_ROOT}/roadmap`, ledger: 'ROADMAP.md' },
+  { docType: 'tasks', directory: `${RECORDS_ROOT}/tasks`, ledger: 'TASKS.md' },
+  { docType: 'decisions', directory: `${RECORDS_ROOT}/decisions`, ledger: 'DECISIONS.md' },
+];
+
+const LEGACY_ROOT_LAYOUTS = RECORD_LAYOUTS.map((layout) => ({
+  ...layout,
+  directory: layout.docType,
+}));
+
+const manifestValue = {
+  schemaVersion: STORAGE_SCHEMA_VERSION,
+  layout: STORAGE_LAYOUT,
+  canonical: Object.fromEntries(RECORD_LAYOUTS.map(({ docType, directory, ledger }) => [docType, { directory, ledger }])),
+};
+
+const ensureFinalNewline = (value) => `${String(value).replace(/\r\n/g, '\n').trimEnd()}\n`;
+const normalizedText = (value) => ensureFinalNewline(value);
+
+async function exists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readOptional(path) {
+  try {
+    return await readFile(path, 'utf8');
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function writeRecoverably(target, content) {
+  await mkdir(dirname(target), { recursive: true });
+  const temporary = `${target}.vef-${process.pid}-${randomUUID()}.tmp`;
+  await writeFile(temporary, ensureFinalNewline(content), 'utf8');
+  try {
+    await rename(temporary, target);
+  } catch (error) {
+    await rm(temporary, { force: true });
+    throw error;
+  }
+}
+
+function normalizeForYaml(value) {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) return value.map(normalizeForYaml);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, normalizeForYaml(entry)]));
+  }
+  return value;
+}
+
+function headingParts(heading, fallbackId = null, fallbackTitle = null) {
+  const value = String(heading || '').trim();
+  const match = value.match(/^(.+?)\s*[—–:]\s*(.+)$/);
+  if (match) return { id: match[1].trim(), title: match[2].trim() };
+  return { id: fallbackId, title: fallbackTitle || value || fallbackId };
+}
+
+export function itemFilename(id) {
+  const value = String(id || '').trim();
+  if (/^[A-Za-z0-9._-]+$/.test(value)) return `${value}.md`;
+  return `${encodeURIComponent(value).replace(/%/g, '~')}.md`;
+}
+
+export function parseItemFile(text, sourceFile = '') {
+  const parsed = parseFrontmatter(String(text));
+  const data = parsed.data || {};
+  const content = parsed.content || '';
+  const headingMatch = content.match(/^#\s+(.+?)\s*(?:\r?\n|$)/);
+  const heading = headingMatch?.[1]?.trim() || '';
+  const parts = headingParts(heading, data.id || basename(sourceFile, extname(sourceFile)), data.title);
+  const body = headingMatch ? content.slice(headingMatch[0].length).trim() : content.trim();
+  return {
+    id: parts.id || data.id || null,
+    title: parts.title || data.title || parts.id || '',
+    heading: heading || `${data.id || parts.id} — ${data.title || parts.title}`,
+    data,
+    body,
+    hasFrontmatter: !parsed._parseError && Object.keys(data).length > 0,
+    sourceFile,
+  };
+}
+
+export function renderItemFile(item) {
+  const data = normalizeForYaml(item.data || {});
+  const id = String(data.id || item.id || '').trim();
+  const title = String(data.title || item.title || id).trim();
+  const body = String(item.body || '').trim();
+  const content = `# ${id} — ${title}${body ? `\n\n${body}` : ''}\n`;
+  return ensureFinalNewline(stringifyFrontmatter(data, content));
+}
+
+function compareItems(left, right) {
+  const leftId = String(left.data?.id || left.id || '');
+  const rightId = String(right.data?.id || right.id || '');
+  return leftId.localeCompare(rightId, 'en', { numeric: true, sensitivity: 'base' });
+}
+
+function generatedItems(layout, items) {
+  const rendered = [...items].sort(compareItems).map((item) => stringifyItem({
+    ...item,
+    heading: `${item.data?.id || item.id} — ${item.data?.title || item.title}`,
+    data: normalizeForYaml(item.data || {}),
+  }).trimEnd()).join('\n\n---\n\n');
+  const banner = `<!-- Generated by VEF from ${layout.directory}/. Edit canonical item files and ${layout.directory}/${COLLECTION_TEMPLATE}, then run \`vef project\`. -->`;
+  const end = '<!-- End VEF generated items. -->';
+  return rendered ? `${banner}\n\n${rendered}\n\n${end}` : `${banner}\n\n${end}`;
+}
+
+export function renderLedger(layout, template, items) {
+  const markerCount = String(template).split(ITEM_MARKER).length - 1;
+  if (markerCount !== 1) throw new Error(`${layout.directory}/${COLLECTION_TEMPLATE} must contain exactly one ${ITEM_MARKER} marker`);
+  return ensureFinalNewline(String(template).replace(ITEM_MARKER, generatedItems(layout, items)));
+}
+
+function stripTrailingSeparator(value) {
+  return String(value).replace(/\r\n/g, '\n').replace(/\n?---\s*\n?\s*$/, '\n').trimEnd();
+}
+
+/**
+ * Preserve ledger-level prose while replacing item sections with one projection marker.
+ * Non-item level-two sections that appeared between records are retained after the marker.
+ */
+export function extractCollectionTemplate(content) {
+  const text = String(content).replace(/\r\n/g, '\n');
+  const parsed = parseDoc(text);
+  if (parsed.items.length === 0) return ensureFinalNewline(`${text.trimEnd()}\n\n${ITEM_MARKER}`);
+
+  const headings = [];
+  const pattern = /^##\s+(.+)$/gm;
+  const structuralText = text.replace(/<!--[\s\S]*?-->/g, (comment) => comment.replace(/[^\n]/g, ' '));
+  let match;
+  while ((match = pattern.exec(structuralText)) !== null) headings.push({ heading: match[1].trim(), start: match.index });
+  const itemHeadings = new Set(parsed.items.map((item) => item.heading));
+  const itemIndexes = headings.map((entry, index) => itemHeadings.has(entry.heading) ? index : -1).filter((index) => index >= 0);
+  if (itemIndexes.length === 0) return ensureFinalNewline(`${text.trimEnd()}\n\n${ITEM_MARKER}`);
+
+  const first = itemIndexes[0];
+  const last = itemIndexes[itemIndexes.length - 1];
+  const prefix = stripTrailingSeparator(text.slice(0, headings[first].start));
+  const suffixStart = headings[last + 1]?.start ?? text.length;
+  const suffix = text.slice(suffixStart).trim();
+  const retainedMiddle = [];
+  for (let index = first + 1; index < last; index++) {
+    if (itemIndexes.includes(index)) continue;
+    const end = headings[index + 1]?.start ?? suffixStart;
+    retainedMiddle.push(text.slice(headings[index].start, end).trim());
+  }
+  const tail = [...retainedMiddle, suffix].filter(Boolean).join('\n\n');
+  return ensureFinalNewline(`${prefix}\n\n${ITEM_MARKER}${tail ? `\n\n${tail}` : ''}`);
+}
+
+export async function inspectStorage(projectDir = '.') {
+  const manifestPath = join(projectDir, STORAGE_MANIFEST);
+  const raw = await readOptional(manifestPath);
+  const partialDirectories = [];
+  for (const layout of RECORD_LAYOUTS) if (await exists(join(projectDir, layout.directory))) partialDirectories.push(layout.directory);
+  const legacyLedgers = [];
+  for (const layout of RECORD_LAYOUTS) if (await exists(join(projectDir, layout.ledger))) legacyLedgers.push(layout.ledger);
+
+  if (raw === null) {
+    let mode = 'legacy';
+    if (partialDirectories.length > 0) mode = 'legacy-partial';
+    else if (legacyLedgers.length === 0) mode = 'uninitialized';
+    else if (legacyLedgers.length < RECORD_LAYOUTS.length) mode = 'legacy-incomplete';
+    return { mode, manifest: null, issues: [], partialDirectories, legacyLedgers };
+  }
+
+  try {
+    const manifest = JSON.parse(raw);
+    const issues = [];
+    if (manifest.schemaVersion !== STORAGE_SCHEMA_VERSION) issues.push(`Unsupported storage schemaVersion ${manifest.schemaVersion}`);
+    if (manifest.layout !== STORAGE_LAYOUT) issues.push(`Unsupported storage layout "${manifest.layout}"`);
+    const matches = (layouts) => layouts.every((layout) => {
+      const declared = manifest.canonical?.[layout.docType];
+      return declared?.directory === layout.directory && declared?.ledger === layout.ledger;
+    });
+    if (issues.length === 0 && matches(RECORD_LAYOUTS)) {
+      return { mode: 'per-item', manifest, issues, partialDirectories, legacyLedgers };
+    }
+    if (issues.length === 0 && matches(LEGACY_ROOT_LAYOUTS)) {
+      return {
+        mode: 'per-item-root',
+        manifest,
+        issues: [],
+        partialDirectories: LEGACY_ROOT_LAYOUTS.map((layout) => layout.directory),
+        legacyLedgers,
+      };
+    }
+    for (const layout of RECORD_LAYOUTS) {
+      const declared = manifest.canonical?.[layout.docType];
+      if (declared?.directory !== layout.directory || declared?.ledger !== layout.ledger) {
+        issues.push(`${STORAGE_MANIFEST} has an invalid ${layout.docType} canonical mapping`);
+      }
+    }
+    return { mode: 'invalid', manifest, issues, partialDirectories, legacyLedgers };
+  } catch (error) {
+    return { mode: 'invalid', manifest: null, issues: [`${STORAGE_MANIFEST} is not valid JSON: ${error.message}`], partialDirectories };
+  }
+}
+
+async function loadLegacyDocuments(projectDir) {
+  const parsedDocs = [];
+  for (const layout of RECORD_LAYOUTS) {
+    const content = await readOptional(join(projectDir, layout.ledger));
+    if (content === null) continue;
+    const parsed = parseDoc(content);
+    for (const item of parsed.items) item.sourceFile = layout.ledger;
+    parsedDocs.push({ docType: layout.docType, filename: layout.ledger, items: parsed.items, header: parsed.header });
+  }
+  return parsedDocs;
+}
+
+async function loadPerItemDocuments(projectDir, layouts = RECORD_LAYOUTS) {
+  const parsedDocs = [];
+  const storageIssues = [];
+  const projectionIssues = [];
+  const projections = [];
+
+  for (const layout of layouts) {
+    const collectionPath = join(projectDir, layout.directory, COLLECTION_TEMPLATE);
+    const template = await readOptional(collectionPath);
+    if (template === null) storageIssues.push(`Missing canonical collection file ${layout.directory}/${COLLECTION_TEMPLATE}`);
+
+    let entries = [];
+    try {
+      entries = await readdir(join(projectDir, layout.directory), { withFileTypes: true });
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+      storageIssues.push(`Missing canonical record directory ${layout.directory}/`);
+    }
+
+    const items = [];
+    for (const entry of entries.filter((candidate) => candidate.isFile() && candidate.name.endsWith('.md') && candidate.name !== COLLECTION_TEMPLATE).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }))) {
+      const relativeFile = `${layout.directory}/${entry.name}`;
+      const content = await readFile(join(projectDir, layout.directory, entry.name), 'utf8');
+      const item = parseItemFile(content, relativeFile);
+      const id = String(item.data?.id || item.id || '').trim();
+      if (!id) storageIssues.push(`${relativeFile} has no record id`);
+      else if (entry.name !== itemFilename(id)) storageIssues.push(`${relativeFile} must be named ${itemFilename(id)} for record ${id}`);
+      items.push(item);
+    }
+    items.sort(compareItems);
+    parsedDocs.push({ docType: layout.docType, filename: layout.ledger, items, header: template || '' });
+
+    if (template !== null) {
+      try {
+        const expected = renderLedger(layout, template, items);
+        const actual = await readOptional(join(projectDir, layout.ledger));
+        const stale = actual === null || normalizedText(actual) !== normalizedText(expected);
+        if (stale) projectionIssues.push(`${layout.ledger} is missing or stale; run vef project`);
+        projections.push({ ...layout, expected, actual, stale });
+      } catch (error) {
+        storageIssues.push(error.message);
+      }
+    }
+  }
+
+  return { parsedDocs, storageIssues, projectionIssues, projections };
+}
+
+/** One canonical loader used by validation, queries, projection, doctor, and future mutations. */
+export async function loadCanonicalDocuments(projectDir = '.') {
+  const storage = await inspectStorage(projectDir);
+  if (storage.mode === 'per-item') {
+    const loaded = await loadPerItemDocuments(projectDir);
+    return { ...loaded, storage };
+  }
+  if (storage.mode === 'per-item-root') {
+    const loaded = await loadPerItemDocuments(projectDir, LEGACY_ROOT_LAYOUTS);
+    return { ...loaded, storage };
+  }
+  if (storage.mode === 'invalid') {
+    return { parsedDocs: [], storageIssues: storage.issues, projectionIssues: [], projections: [], storage };
+  }
+  const parsedDocs = await loadLegacyDocuments(projectDir);
+  return { parsedDocs, storageIssues: [], projectionIssues: [], projections: [], storage };
+}
+
+async function buildMigrationPlan(projectDir) {
+  const storage = await inspectStorage(projectDir);
+  if (storage.mode === 'per-item') return { ready: true, alreadyMigrated: true, storage, files: [], ledgers: [], itemCount: 0, issues: [] };
+  if (storage.mode === 'invalid') return { ready: false, alreadyMigrated: false, storage, files: [], ledgers: [], itemCount: 0, issues: storage.issues };
+
+  if (storage.mode === 'per-item-root') {
+    const loaded = await loadPerItemDocuments(projectDir, LEGACY_ROOT_LAYOUTS);
+    // Root ledgers are derived and may legitimately be stale. Validate the
+    // canonical item store, then regenerate projections in the new layout.
+    const issues = [...loaded.storageIssues];
+    const files = [];
+    const ledgers = [];
+    let itemCount = 0;
+    for (const layout of RECORD_LAYOUTS) {
+      const legacyLayout = LEGACY_ROOT_LAYOUTS.find((candidate) => candidate.docType === layout.docType);
+      const document = loaded.parsedDocs.find((candidate) => candidate.docType === layout.docType);
+      const template = await readOptional(join(projectDir, legacyLayout.directory, COLLECTION_TEMPLATE));
+      if (template === null || !document) continue;
+      files.push({ relativeFile: `${layout.directory}/${COLLECTION_TEMPLATE}`, content: template });
+      for (const item of document.items) {
+        const id = String(item.data?.id || item.id || '').trim();
+        const validation = validateItem(layout.docType, item.data || {}, item);
+        for (const error of validation.errors) issues.push(`${item.sourceFile || legacyLayout.directory}:${id}: ${error}`);
+        for (const warning of validation.warnings) issues.push(`${item.sourceFile || legacyLayout.directory}:${id}: ${warning}`);
+        files.push({ relativeFile: `${layout.directory}/${itemFilename(id)}`, content: renderItemFile(item) });
+        itemCount++;
+      }
+      ledgers.push({ relativeFile: layout.ledger, content: renderLedger(layout, template, document.items) });
+    }
+
+    for (const orphan of findOrphans(loaded.parsedDocs)) issues.push(`${orphan.fromItem}.${orphan.field} references missing ${orphan.expectedType}:${orphan.refId}`);
+    for (const duplicate of findDuplicateIds(loaded.parsedDocs)) issues.push(`Duplicate ${duplicate.docType} id ${duplicate.id}`);
+    for (const cycle of findDependencyCycles(loaded.parsedDocs)) issues.push(`Task dependency cycle: ${cycle.join(' -> ')}`);
+    for (const issue of checkBidirectional(loaded.parsedDocs)) issues.push(issue.message);
+
+    for (const file of files) {
+      const target = join(projectDir, file.relativeFile);
+      if (!(await exists(target))) continue;
+      const actual = await readFile(target, 'utf8');
+      if (normalizedText(actual) !== normalizedText(file.content)) issues.push(`Existing ${file.relativeFile} conflicts with the root-layout candidate`);
+    }
+
+    return {
+      ready: issues.length === 0,
+      alreadyMigrated: false,
+      storage,
+      files,
+      ledgers,
+      itemCount,
+      issues,
+      removeDirectories: LEGACY_ROOT_LAYOUTS.map((layout) => layout.directory),
+      fromRootLayout: true,
+    };
+  }
+
+  const issues = [];
+  const files = [];
+  const ledgers = [];
+  const parsedDocs = [];
+  let itemCount = 0;
+  for (const layout of RECORD_LAYOUTS) {
+    const ledgerPath = join(projectDir, layout.ledger);
+    const content = await readOptional(ledgerPath);
+    if (content === null) {
+      issues.push(`Missing ${layout.ledger}; initialize or reconcile the document before storage migration`);
+      continue;
+    }
+    const parsed = parseDoc(content);
+    parsedDocs.push({ docType: layout.docType, filename: layout.ledger, items: parsed.items });
+    const template = extractCollectionTemplate(content);
+    const seen = new Set();
+    for (const item of parsed.items) {
+      const id = String(item.data?.id || item.id || '').trim();
+      if (!item.hasFrontmatter) issues.push(`${layout.ledger}:${item.heading} has no valid frontmatter`);
+      if (!id) issues.push(`${layout.ledger}:${item.heading} has no id`);
+      if (!item.data?.title) issues.push(`${layout.ledger}:${id || item.heading} has no title`);
+      const validation = validateItem(layout.docType, item.data || {}, item);
+      for (const error of validation.errors) issues.push(`${layout.ledger}:${id || item.heading}: ${error}`);
+      for (const warning of validation.warnings) issues.push(`${layout.ledger}:${id || item.heading}: ${warning}`);
+      if (seen.has(id)) issues.push(`${layout.ledger} contains duplicate id ${id}`);
+      seen.add(id);
+      const relativeFile = `${layout.directory}/${itemFilename(id)}`;
+      files.push({ relativeFile, content: renderItemFile({ ...item, data: normalizeForYaml(item.data || {}) }) });
+      itemCount++;
+    }
+    const collectionFile = `${layout.directory}/${COLLECTION_TEMPLATE}`;
+    files.push({ relativeFile: collectionFile, content: template });
+    ledgers.push({ relativeFile: layout.ledger, content: renderLedger(layout, template, parsed.items) });
+  }
+
+  for (const orphan of findOrphans(parsedDocs)) issues.push(`${orphan.fromItem}.${orphan.field} references missing ${orphan.expectedType}:${orphan.refId}`);
+  for (const duplicate of findDuplicateIds(parsedDocs)) issues.push(`Duplicate ${duplicate.docType} id ${duplicate.id}`);
+  for (const cycle of findDependencyCycles(parsedDocs)) issues.push(`Task dependency cycle: ${cycle.join(' -> ')}`);
+  for (const issue of checkBidirectional(parsedDocs)) issues.push(issue.message);
+
+  const expected = new Map(files.map((file) => [file.relativeFile.replace(/\\/g, '/'), normalizedText(file.content)]));
+  for (const layout of RECORD_LAYOUTS) {
+    const directoryPath = join(projectDir, layout.directory);
+    if (!(await exists(directoryPath))) continue;
+    const entries = await readdir(directoryPath, { withFileTypes: true });
+    for (const entry of entries.filter((candidate) => candidate.isFile() && candidate.name.endsWith('.md'))) {
+      const relativeFile = `${layout.directory}/${entry.name}`;
+      const expectedContent = expected.get(relativeFile);
+      if (!expectedContent) {
+        issues.push(`Existing ${relativeFile} is not part of the migration plan`);
+        continue;
+      }
+      const actual = await readFile(join(projectDir, relativeFile), 'utf8');
+      if (normalizedText(actual) !== expectedContent) issues.push(`Existing ${relativeFile} conflicts with the ledger-derived candidate`);
+    }
+  }
+
+  return { ready: issues.length === 0, alreadyMigrated: false, storage, files, ledgers, itemCount, issues };
+}
+
+export async function planStorageMigration(projectDir = '.') {
+  return buildMigrationPlan(projectDir);
+}
+
+export async function migrateLegacyStorage(projectDir = '.') {
+  const plan = await buildMigrationPlan(projectDir);
+  if (plan.alreadyMigrated) return plan;
+  if (!plan.ready) throw new Error(`Storage migration blocked:\n- ${plan.issues.join('\n- ')}`);
+
+  for (const file of plan.files) {
+    const target = join(projectDir, file.relativeFile);
+    await writeRecoverably(target, file.content);
+  }
+  for (const ledger of plan.ledgers) await writeRecoverably(join(projectDir, ledger.relativeFile), ledger.content);
+  for (const directory of plan.removeDirectories || []) {
+    const target = join(projectDir, directory);
+    if (target === projectDir || dirname(target) !== projectDir) throw new Error(`Refusing unsafe legacy-directory removal: ${directory}`);
+    await rm(target, { recursive: true, force: true });
+  }
+  const manifestPath = join(projectDir, STORAGE_MANIFEST);
+  await writeRecoverably(manifestPath, JSON.stringify(manifestValue, null, 2));
+  return plan;
+}
+
+export async function projectLedgers(projectDir = '.', { write = false } = {}) {
+  const loaded = await loadCanonicalDocuments(projectDir);
+  if (loaded.storage.mode !== 'per-item') throw new Error('Per-item storage is not active; run vef migrate --apply first');
+  if (loaded.storageIssues.length > 0) throw new Error(`Cannot project invalid canonical storage:\n- ${loaded.storageIssues.join('\n- ')}`);
+  const stale = loaded.projections.filter((projection) => projection.stale);
+  if (write) for (const projection of stale) await writeRecoverably(join(projectDir, projection.ledger), projection.expected);
+  return { stale, written: write ? stale.length : 0, projections: loaded.projections };
+}
+
+export function relativeStoragePath(projectDir, absolutePath) {
+  return relative(projectDir, absolutePath).replace(/\\/g, '/');
+}

@@ -8,6 +8,7 @@
  *   vef migrate [--dir] [--apply]                    Adopt an existing repo (alias: --migrate)
  *   vef validate [--dir] [--strict]                  Schema + graph + catalogue validation (alias: --validate)
  *   vef doctor [--dir]                               Health check (alias: --doctor)
+ *   vef project [--dir] [--check]                    Generate committed ledgers from canonical items
  *   vef list|show|refs|why|graph|search               Deterministic project queries
  */
 
@@ -59,6 +60,7 @@ program
   .description('Adopt the framework in an existing repo')
   .option('--dir <path>', 'target directory', '.')
   .option('--apply', 'apply structural fixes (default: dry-run report)')
+  .option('--update-adapters', 'replace installed VEF skills with this package version (explicit opt-in)')
   .action(async (opts) => {
     const { migrateCommand } = await import('../src/commands/migrate.mjs');
     await migrateCommand(opts);
@@ -81,6 +83,21 @@ program
   .action(async (opts) => {
     const { doctorCommand } = await import('../src/commands/doctor.mjs');
     await doctorCommand(opts);
+  });
+
+program
+  .command('project')
+  .description('Generate committed ledgers from canonical per-item records')
+  .option('--dir <path>', 'target directory', '.')
+  .option('--check', 'check projection drift without writing')
+  .action(async (opts) => {
+    try {
+      const { projectCommand } = await import('../src/commands/project.mjs');
+      await projectCommand(opts);
+    } catch (error) {
+      console.error(`Error: ${error?.message || String(error)}`);
+      process.exitCode = 1;
+    }
   });
 
 async function runQuery(command, json, action) {

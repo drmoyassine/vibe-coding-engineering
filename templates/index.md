@@ -25,6 +25,8 @@ Navigation hub for {{PROJECT_NAME}} documentation.
 | [CLAUDE.md](CLAUDE.md) | Repo-level instructions for Claude Code |
 | [AGENTS.md](AGENTS.md) | Working conventions for AI agents |
 
+Structured items live canonically in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`. The linked root ledgers are generated, committed views; run `vef project` after item changes.
+
 ## Query project state
 
 Use `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search` for deterministic read-only retrieval. Add `--json` for the versioned automation contract.
