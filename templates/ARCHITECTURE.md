@@ -76,5 +76,5 @@ Key architectural decisions and their rationale. Each should link to its canonic
 - When you add a new component or service, document it in **System overview**.
 - When you make an architectural decision, record it in DECISIONS.md (`/decisions add`) and link it from the relevant section above.
 - When you change the data model, update **Data model**.
-- Run `vef validate --strict` to check schemas and cross-links.
+- Run `vef setup` after direct canonical edits and `vef check` as the strict local/CI acceptance gate.
 - Use `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search` to inspect canonical project state without an agent.

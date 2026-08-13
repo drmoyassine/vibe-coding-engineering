@@ -38,7 +38,7 @@ Full description, acceptance criteria, implementation notes.
 
 | ID | Title | Status | Priority |
 |---|---|---|---|
-| TASK-001 | Publish the VEF CLI package to npm | in-progress | P0 |
+| TASK-001 | Publish the VEF CLI package to npm | completed | P0 |
 | TASK-002 | Write ARCHITECTURE.md | ✅ completed | P2 |
 | TASK-003 | Install 4 management skills (dogfood) | ✅ completed | P2 |
 | TASK-004 | Integrity Core test suite | completed | P0 |
@@ -63,5 +63,7 @@ Full description, acceptance criteria, implementation notes.
 | TASK-027 | Obsidian and wiki review adapters | pending | P2 |
 | TASK-028 | One-command doctor remediation | completed | P0 |
 | TASK-029 | Core enforcement and adapter separation | completed | P0 |
+| TASK-030 | Simplify the complete VEF adoption lifecycle | completed | P0 |
+| TASK-031 | Release and prove the VEF 0.2 adoption lifecycle | in-progress | P0 |
 
-**Next priority:** TASK-018 and TASK-019 own adoption examples, public feedback, and distribution now that TASK-001 and TASK-017 have completed the verified public `0.1.0` npm release. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** Complete TASK-031 by releasing and proving DEC-009's `0.2.0` two-command lifecycle. Only then do TASK-018 and TASK-019 resume adoption examples, feedback, and distribution. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.

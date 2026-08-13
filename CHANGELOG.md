@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Engineering Framework are recorded here. Durable architectural context remains in `DECISIONS.md`; this file is the public release history.
 
+## 0.2.0 — Unreleased
+
+### Added
+
+- `vef setup` as the idempotent installation, adoption, upgrade, repair, projection, validation, and enforcement lifecycle.
+- `vef check` as the single strict read-only local and CI acceptance gate.
+- Safe fresh-setup preflight and managed, version-pinned GitHub enforcement deployment with custom-CI preservation.
+
+### Changed
+
+- Normal CLI help now presents only setup, check, doctor troubleshooting, and read-only queries.
+- Legacy lifecycle commands and flags remain callable for compatibility but are hidden from the normal adoption path.
+- Public docs and install templates teach one update path: run the latest setup, reconcile meaning only when reported, then check.
+
 ## 0.1.0 — 2026-08-13
 
 ### Added

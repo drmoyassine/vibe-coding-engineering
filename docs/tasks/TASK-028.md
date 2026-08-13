@@ -41,3 +41,5 @@ Acceptance criteria:
 The implementation preflights the storage graph, required singleton documents, durable-memory catalogue, semantic relationships, and unresolved review flags before structural writes. It delegates to the existing recoverable migration and projector, runs strict validation, and finishes by rerunning the read-only health check. It never commits automatically. Package acquisition remains a bootstrap responsibility because an obsolete CLI cannot execute behavior it does not contain.
 
 TASK-029 corrected the initial adapter coupling: core enforcement and optional adapter compatibility are now separate results, existing adapters are never overwritten, and the former adapter-update flag is retired.
+
+DEC-009 and TASK-030 later absorbed this mechanical repair into `vef setup`. `doctor --fix` remains callable for 0.1 compatibility but is no longer advertised as a user lifecycle.

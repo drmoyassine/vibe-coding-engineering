@@ -10,6 +10,8 @@ import { extractCollectionTemplate, ITEM_MARKER } from '../src/lib/record-store.
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 const cli = join(root, 'bin', 'vef.mjs');
+const packageVersion = JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version;
+const packageVersionPattern = packageVersion.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 async function run(dir, args) {
   return execFileAsync(process.execPath, [cli, ...args, '--dir', dir], { cwd: root });
@@ -36,7 +38,7 @@ test('doctor distinguishes an uninitialized repository from a legacy consumer', 
       run(dir, ['doctor']),
       (error) => error.code === 1
         && /VEF structured storage is not initialized/.test(error.stdout)
-        && /Adopt: vef init/.test(error.stdout)
+        && /Adopt: vef setup/.test(error.stdout)
         && /NOT ADOPTED/.test(error.stdout)
         && !/Legacy monolithic ledgers are still canonical/.test(error.stdout),
     );
@@ -53,7 +55,7 @@ test('doctor classifies a coherent legacy consumer as structurally repairable', 
       (error) => error.code === 1
         && /Legacy monolithic ledgers are still canonical/.test(error.stdout)
         && /STRUCTURALLY REPAIRABLE/.test(error.stdout)
-        && /vef doctor --fix/.test(error.stdout),
+        && /vef setup/.test(error.stdout),
     );
 
     const { stdout } = await run(dir, ['migrate']);
@@ -81,7 +83,7 @@ test('doctor --fix performs the complete supported consumer remediation', async 
     assert.match(stdout, /Valid: 1   Errors: 0   Warnings: 0/);
     assert.match(stdout, /CORE ENFORCED/);
     assert.match(stdout, /Core repair complete/);
-    assert.match(stdout, /\/bugs \(installed\)/);
+    assert.match(stdout, /Installed 1 missing adapter/);
     assert.equal(await readFile(applySkillPath, 'utf8'), existingApplySkill);
     await access(join(dir, '.claude', 'skills', 'bugs', 'SKILL.md'));
     await access(join(dir, 'docs', 'decisions', 'DEC-001.md'));
@@ -89,7 +91,7 @@ test('doctor --fix performs the complete supported consumer remediation', async 
     assert.equal(manifest.canonical.decisions.directory, 'docs/decisions');
     await run(dir, ['doctor']);
     const second = await run(dir, ['doctor', '--fix']);
-    assert.match(second.stdout, /Per-item storage already enabled/);
+    assert.match(second.stdout, /Canonical storage is current/);
     assert.match(second.stdout, /Core repair complete/);
   } finally {
     await rm(dir, { recursive: true, force: true });
@@ -237,7 +239,7 @@ test('doctor upgrades the retired root-directory layout into docs/', async () =>
       run(dir, ['doctor']),
       (error) => error.code === 1
         && /retired root-directory layout/.test(error.stdout)
-        && /vef doctor --fix/.test(error.stdout),
+        && /vef setup/.test(error.stdout),
     );
     const preview = await run(dir, ['migrate']);
     assert.match(preview.stdout, /Would relocate 1 canonical item file\(s\)/);
@@ -304,7 +306,7 @@ test('doctor --fix fills absent adapter files without overwriting a partial adap
     await rm(applySkillPath);
 
     const fixed = await run(dir, ['doctor', '--fix']);
-    assert.match(fixed.stdout, /\/apply \(installed\)/);
+    assert.match(fixed.stdout, /Installed 1 missing adapter/);
     assert.match(fixed.stdout, /CORE ENFORCED/);
     await access(applySkillPath);
     assert.equal(await readFile(applyWorkflowPath, 'utf8'), customWorkflow);
@@ -323,7 +325,7 @@ test('validation rejects ledger drift and project repairs only the derived ledge
 
     await assert.rejects(
       run(dir, ['validate', '--strict']),
-      (error) => error.code === 1 && /DECISIONS\.md is missing or stale; run vef project/.test(error.stdout),
+      (error) => error.code === 1 && /DECISIONS\.md is missing or stale; run vef setup/.test(error.stdout),
     );
     await assert.rejects(
       run(dir, ['project', '--check']),
@@ -334,6 +336,168 @@ test('validation rejects ledger drift and project repairs only the derived ledge
     assert.match(projected.stdout, /DECISIONS\.md regenerated/);
     assert.equal(await readFile(canonicalPath, 'utf8'), beforeCanonical);
     await run(dir, ['validate', '--strict']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup and check are the complete public lifecycle for a fresh repository', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-setup-fresh-'));
+  try {
+    const setup = await run(dir, ['setup', '--name', 'Lifecycle Test']);
+    assert.match(setup.stdout, /No VEF state detected/);
+    assert.match(setup.stdout, /CI NOT AUTO-DETECTED/);
+    assert.match(setup.stdout, new RegExp(`vibe-engineering-framework@${packageVersionPattern} check`));
+    assert.match(setup.stdout, /SETUP COMPLETE — VEF CORE ENFORCED/);
+    await access(join(dir, '.vef', 'storage.json'));
+    await access(join(dir, 'docs', 'decisions', 'DEC-001.md'));
+
+    const check = await run(dir, ['check']);
+    assert.match(check.stdout, /CHECK PASSED — VEF CORE ENFORCED/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup deploys and refreshes pinned GitHub enforcement without adding a command', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-setup-ci-'));
+  try {
+    const first = await run(dir, ['setup', '--name', 'CI Test', '--github', 'example/project']);
+    assert.match(first.stdout, /CI ENFORCEMENT DEPLOYED/);
+    const workflowPath = join(dir, '.github', 'workflows', 'vef.yml');
+    const workflow = await readFile(workflowPath, 'utf8');
+    assert.match(workflow, /^# Managed by VEF/);
+    assert.match(workflow, new RegExp(`vibe-engineering-framework@${packageVersionPattern} check`));
+    assert.doesNotMatch(workflow, /doctor --fix|validate --strict|migrate --apply/);
+
+    const second = await run(dir, ['setup', '--github', 'example/project']);
+    assert.match(second.stdout, /CI ENFORCEMENT CURRENT/);
+    assert.equal(await readFile(workflowPath, 'utf8'), workflow);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup preserves a custom enforcement workflow', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-setup-custom-ci-'));
+  try {
+    const workflowPath = join(dir, '.github', 'workflows', 'project-checks.yml');
+    const custom = 'name: Project checks\non:\n  push:\njobs:\n  vef:\n    steps:\n      - run: npx vef validate --strict\n';
+    await mkdir(join(dir, '.github', 'workflows'), { recursive: true });
+    await writeFile(workflowPath, custom, 'utf8');
+    const setup = await run(dir, ['setup', '--name', 'Custom CI']);
+    assert.match(setup.stdout, /CI ENFORCEMENT DETECTED/);
+    assert.equal(await readFile(workflowPath, 'utf8'), custom);
+    await assert.rejects(access(join(dir, '.github', 'workflows', 'vef.yml')));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup upgrades a coherent legacy repository and is idempotent', async () => {
+  const dir = await legacyFixture();
+  try {
+    const first = await run(dir, ['setup']);
+    assert.match(first.stdout, /Core repair preflight passed/);
+    assert.match(first.stdout, /Extracted 1 canonical item file\(s\) under docs\//);
+    assert.match(first.stdout, /SETUP COMPLETE — VEF CORE ENFORCED/);
+
+    const second = await run(dir, ['setup']);
+    assert.match(second.stdout, /Canonical storage is current/);
+    assert.match(second.stdout, /SETUP COMPLETE — VEF CORE ENFORCED/);
+    await run(dir, ['check']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup preflights fresh-repository conflicts before writing', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-setup-conflict-'));
+  try {
+    const architecturePath = join(dir, 'ARCHITECTURE.md');
+    await writeFile(architecturePath, 'Consumer architecture\n', 'utf8');
+    await assert.rejects(
+      run(dir, ['setup']),
+      (error) => error.code === 1
+        && /SETUP BLOCKED/.test(error.stdout)
+        && /ARCHITECTURE\.md/.test(error.stdout)
+        && /No files were changed/.test(error.stdout),
+    );
+    assert.equal(await readFile(architecturePath, 'utf8'), 'Consumer architecture\n');
+    await assert.rejects(access(join(dir, 'VISION.md')));
+    await assert.rejects(access(join(dir, '.vef', 'storage.json')));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup preserves existing optional agent surfaces during fresh adoption', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-setup-agent-surface-'));
+  try {
+    const agentsPath = join(dir, 'AGENTS.md');
+    await writeFile(agentsPath, 'Consumer-owned agent instructions\n', 'utf8');
+    const setup = await run(dir, ['setup', '--name', 'Agent Surface']);
+    assert.match(setup.stdout, /SETUP COMPLETE — VEF CORE ENFORCED/);
+    assert.equal(await readFile(agentsPath, 'utf8'), 'Consumer-owned agent instructions\n');
+    await access(join(dir, '.vef', 'storage.json'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('setup reports semantic reconciliation and makes no structural changes', async () => {
+  const dir = await legacyFixture();
+  try {
+    await appendFile(join(dir, 'ROADMAP.md'), `
+## FRAMEWORK-001 — Missing vision relationship
+
+---
+id: FRAMEWORK-001
+title: Missing vision relationship
+description: A structurally valid record whose declared meaning is unresolved
+status: In Progress
+priority: P1
+vision_theme:
+  id: missing-vision-theme
+  name: Missing vision theme
+  url: /VISION.md#missing-vision-theme
+related_tasks: []
+related_decisions: []
+last_updated: 2026-08-13
+---
+
+This item intentionally references a vision theme that does not exist.
+`, 'utf8');
+    await assert.rejects(
+      run(dir, ['setup']),
+      (error) => error.code === 1
+        && /SETUP PAUSED/.test(error.stdout)
+        && /missing-vision-theme/.test(error.stdout)
+        && /No structural repair was attempted/.test(error.stdout),
+    );
+    await assert.rejects(access(join(dir, '.vef', 'storage.json')));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('check reports projection drift and setup repairs it', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-setup-drift-'));
+  try {
+    await run(dir, ['setup', '--name', 'Drift Test']);
+    await appendFile(join(dir, 'DECISIONS.md'), '\nHand-edited generated content.\n', 'utf8');
+    await assert.rejects(
+      run(dir, ['check']),
+      (error) => error.code === 1
+        && /CHECK FAILED/.test(error.stdout),
+    );
+    await assert.rejects(
+      run(dir, ['doctor']),
+      (error) => error.code === 1 && /DECISIONS\.md is missing or stale; run vef setup/.test(error.stdout),
+    );
+    const setup = await run(dir, ['setup']);
+    assert.match(setup.stdout, /Regenerated 1 stale ledger projection/);
+    await run(dir, ['check']);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

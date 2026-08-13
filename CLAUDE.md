@@ -94,8 +94,8 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 - All docs use YAML frontmatter for machine-readable metadata (id, status, links, etc.)
 - Prose lives in the markdown body below the frontmatter
 - Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each directory's `_index.md` owns ledger-level prose.
-- `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are generated committed ledgers. Never edit their generated item blocks directly; run `vef project` after canonical item changes.
-- `.vef/storage.json` versions the storage layout. `vef validate --strict` rejects stale projections; plain `vef doctor` reports core enforcement and optional adapter compatibility separately, while `vef doctor --fix` explicitly authorizes supported core migration, projection, strict validation, and a final health check. Existing adapter files are never overwritten.
+- `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are generated committed ledgers. Never edit their generated item blocks directly. Agent adapters may call the internal projector while composing a candidate; the public lifecycle is `vef setup` followed by `vef check`.
+- `.vef/storage.json` versions the storage layout. `vef setup` initializes or upgrades, repairs, projects, validates, and enforces; `vef check` is the strict read-only gate; `vef doctor` explains blockers. Existing adapter files are never overwritten.
 - Cross-linking uses the `id + name + url` pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`)
 
 ### Frontmatter schemas
@@ -269,9 +269,9 @@ Automations (GitHub Actions, n8n) can watch these tools and trigger skills to up
 This framework is **not**:
 - A project management tool (no kanban, no burndown)
 - A team collaboration platform (no chat, no real-time editing)
-- A CI/CD system (no pipelines, no deployments)
+- A general CI/CD or application-deployment system (the only managed workflow enforces VEF project memory)
 
-It's a **documentation substrate** for AI-assisted engineering. One job: keep canonical product context in sync, queryable, and discoverable.
+It's a **durable project-memory and integrity layer** for AI-assisted engineering. One job: keep canonical product context coherent, queryable, reviewable, and enforced.
 
 ## When in doubt
 

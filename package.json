@@ -1,6 +1,6 @@
 {
   "name": "vibe-engineering-framework",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Git-native durable project memory and integrity for AI-assisted engineering.",
   "type": "module",
   "bin": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "verify": "npm test && node bin/vef.mjs validate --strict && node bin/vef.mjs doctor",
+    "verify": "npm test && node bin/vef.mjs check",
     "release:smoke": "node scripts/release-smoke.mjs",
     "release:check": "npm run verify && npm run release:smoke && npm pack --dry-run --ignore-scripts",
     "prepublishOnly": "npm run release:check"

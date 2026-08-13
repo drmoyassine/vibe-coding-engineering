@@ -68,6 +68,6 @@ VEF is not a project-management SaaS, chat platform, issue tracker, or CI/CD sys
 
 [FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the VEF Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. Together they establish the current product foundation: a canonical schema, typed graph validation, safe migration boundaries, cross-platform CI, and project-memory retrieval without an LLM.
 
-[FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) has now delivered DEC-004's per-item canonical storage, deterministic ledgers, projection drift checks, and consumer migration path. The active product tracks are [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) public release and [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) lightweight human review. General-purpose mutations are deferred to FRAMEWORK-022. Consumer implementations and commercial uses remain outside VEF's product strategy.
+[FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered DEC-004's per-item canonical storage, deterministic ledgers, projection drift checks, and consumer migration path. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) now prioritizes DEC-009's two-command installation-through-enforcement lifecycle and its `0.2.0` consumer proof before examples and distribution. [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) continues lightweight human review in parallel. General-purpose mutations are deferred to FRAMEWORK-022. Consumer implementations and commercial uses remain outside VEF's product strategy.
 
 <!-- VEF:ITEMS -->

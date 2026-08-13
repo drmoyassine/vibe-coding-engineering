@@ -15,6 +15,9 @@ depends_on:
   - id: TASK-017
     name: Prepare the public VEF release and launch narrative
     url: /TASKS.md#TASK-017
+  - id: TASK-031
+    name: Release and prove the VEF 0.2 adoption lifecycle
+    url: /TASKS.md#TASK-031
 related_decisions:
   - id: DEC-003
     name: Make the Integrity Core authoritative and keep agent adapters portable
@@ -23,4 +26,4 @@ last_updated: '2026-08-13'
 ---
 # TASK-018 — Publish adoption examples and a public feedback loop
 
-Publish a compact sample repository or walkthrough covering init, structured records, validation, queries, and agent-adapter boundaries. Establish GitHub Issues/Discussions or an equally explicit public feedback path without creating a duplicate internal bug ledger.
+Publish a compact sample repository or walkthrough covering the `setup` → semantic-reconciliation-if-needed → `check` lifecycle, structured records, queries, managed CI enforcement, and agent-adapter boundaries. Establish GitHub Issues/Discussions or an equally explicit public feedback path without creating a duplicate internal bug ledger.

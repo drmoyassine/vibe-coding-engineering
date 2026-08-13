@@ -63,5 +63,5 @@ tags: [docs, framework]
 last_updated: 2026-01-01
 ---
 
-Adopt the framework via `vef init`. Scaffolds VISION.md, ROADMAP.md, TASKS.md, DECISIONS.md, log.md, index.md, CLAUDE.md, AGENTS.md + 5 Claude Code skills.
+Adopt the framework via `vef setup`. It initializes or upgrades, repairs, projects, validates, and enforces the durable project model; `vef check` is the repeatable acceptance gate.
 -->

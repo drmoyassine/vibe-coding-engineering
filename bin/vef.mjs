@@ -4,12 +4,13 @@
  * vef — Vibe Engineering Framework CLI
  *
  * Commands:
- *   vef init [--dir] [--name] [--github] [--force]   Scaffold the framework (alias: --new)
- *   vef migrate [--dir] [--apply]                    Adopt an existing repo (alias: --migrate)
- *   vef validate [--dir] [--strict]                  Schema + graph + catalogue validation (alias: --validate)
- *   vef doctor [--dir] [--fix]                       Health check or explicitly authorized repair (alias: --doctor)
- *   vef project [--dir] [--check]                    Generate committed ledgers from canonical items
+ *   vef setup [--dir] [--name] [--github]            Adopt or upgrade and reach enforced state
+ *   vef check [--dir]                                Strict read-only local/CI enforcement gate
+ *   vef doctor [--dir]                               Detailed troubleshooting report
  *   vef list|show|refs|why|graph|search               Deterministic project queries
+ *
+ * Legacy init/migrate/validate/project commands and doctor --fix remain
+ * callable for compatibility, but are intentionally absent from normal help.
  */
 
 import { createRequire } from 'node:module';
@@ -20,9 +21,7 @@ const require = createRequire(import.meta.url);
 const { version } = require('../package.json');
 
 // ── Flag-to-subcommand shim ──────────────────────────────────────────────
-// The user's mental model is `vef --new` / `vef --migrate`. Commander uses
-// subcommands (`vef init`). Translate the top-level flags before parsing so
-// both forms work identically.
+// Retained only for compatibility with pre-0.2 callers.
 const flagMap = {
   '--new': 'init',
   '--migrate': 'migrate',
@@ -44,12 +43,40 @@ for (const [flag, cmd] of Object.entries(flagMap)) {
 
 program
   .name('vef')
-  .description('Vibe Engineering Framework — scaffold, validate, and query durable project memory.')
-  .version(version);
+  .description('Vibe Engineering Framework — set up, enforce, and query durable project memory.')
+  .version(version)
+  .addHelpText('after', `
+Adopt or upgrade a repository:
+  npx --yes vibe-engineering-framework@latest setup
+
+Verify full core enforcement locally or in CI:
+  npx vef check
+
+Normal adoption requires only setup and check. Run vef doctor for detailed troubleshooting.`);
 
 program
-  .command('init')
-  .description('Scaffold the framework into a new or empty directory')
+  .command('setup')
+  .description('Adopt or upgrade VEF and reach the strongest provable enforced state')
+  .option('--dir <path>', 'target directory', '.')
+  .option('--name <project>', 'project name when initializing')
+  .option('--github <owner/repo>', 'GitHub owner/repo when initializing')
+  .action(async (opts) => {
+    const { setupCommand } = await import('../src/commands/setup.mjs');
+    await setupCommand(opts);
+  });
+
+program
+  .command('check')
+  .description('Fail unless the deterministic VEF core is fully enforced')
+  .option('--dir <path>', 'target directory', '.')
+  .action(async (opts) => {
+    const { checkCommand } = await import('../src/commands/check.mjs');
+    await checkCommand(opts);
+  });
+
+program
+  .command('init', { hidden: true })
+  .description('Compatibility: scaffold the framework into a new or empty directory')
   .option('--dir <path>', 'target directory', '.')
   .option('--name <project>', 'project name (default: directory name)')
   .option('--github <owner/repo>', 'GitHub owner/repo for bug URLs')
@@ -60,7 +87,7 @@ program
   });
 
 program
-  .command('migrate')
+  .command('migrate', { hidden: true })
   .description('Advanced: inspect or apply canonical-storage migration')
   .option('--dir <path>', 'target directory', '.')
   .option('--apply', 'apply structural fixes (default: dry-run report)')
@@ -71,7 +98,7 @@ program
   });
 
 program
-  .command('validate')
+  .command('validate', { hidden: true })
   .description('Advanced/CI: validate schemas, graph relationships, and durable-memory catalogue')
   .option('--dir <path>', 'target directory', '.')
   .option('--strict', 'exit 1 on warnings too')
@@ -82,16 +109,16 @@ program
 
 program
   .command('doctor')
-  .description('Report core enforcement and optional adapter compatibility')
+  .description('Explain core enforcement and optional adapter compatibility')
   .option('--dir <path>', 'target directory', '.')
-  .option('--fix', 'explicitly repair supported core storage and projection drift without overwriting adapters')
+  .addOption(new Option('--fix').hideHelp())
   .action(async (opts) => {
     const { doctorCommand } = await import('../src/commands/doctor.mjs');
     await doctorCommand(opts);
   });
 
 program
-  .command('project')
+  .command('project', { hidden: true })
   .description('Advanced: generate committed ledgers from canonical per-item records')
   .option('--dir <path>', 'target directory', '.')
   .option('--check', 'check projection drift without writing')

@@ -52,4 +52,4 @@ last_updated: 2026-08-12
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
 
-**Next priority:** FRAMEWORK-020 can now publish the verified storage and non-destructive enforcement contract while FRAMEWORK-015 defines and implements the lightweight review workspace against the same canonical loader. Adapter-specific UI work remains deferred under FRAMEWORK-016, and transaction commands remain deferred to FRAMEWORK-022. Named consumer implementations and commercial programs remain canonical in their own repositories rather than VEF's roadmap.
+**Next priority:** FRAMEWORK-020 must publish and prove DEC-009's simplified `setup`/`check` adoption lifecycle before adoption examples or distribution resume. FRAMEWORK-015 continues the parallel lightweight review workspace against the same canonical loader. Adapter-specific UI work remains deferred under FRAMEWORK-016, and transaction commands remain deferred to FRAMEWORK-022. Named consumer implementations and commercial programs remain canonical in their own repositories rather than VEF's roadmap.
