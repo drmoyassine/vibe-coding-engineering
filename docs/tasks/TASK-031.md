@@ -35,7 +35,7 @@ last_updated: '2026-08-13'
 - staged OIDC publication and human 2FA approval through DEC-008;
 - public-registry verification of `setup`, `check`, and the exact package integrity;
 - clean fresh-repository setup plus check from npm;
-- upgrade proof on representative independently owned consumer repositories using only `npx --yes vibe-engineering-framework@latest setup`, semantic reconciliation when explicitly reported, and `check`;
+- upgrade proof on representative independently owned consumer repositories using only `npx vibe-engineering-framework@latest setup`, semantic reconciliation when explicitly reported, and `check`;
 - final README/release notes that distinguish core enforcement from optional adapter compatibility and state that no CLI can invent missing product meaning.
 
 TASK-018 and TASK-019 remain blocked behind this proof. Public examples and launch distribution must teach the simplified lifecycle rather than the obsolete 0.1 command sequence.

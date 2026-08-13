@@ -66,12 +66,17 @@ test('CLI presents one setup command and one strict check command for adoption',
   assert.match(stdout, /setup \[options\]/);
   assert.match(stdout, /check \[options\]/);
   assert.match(stdout, /Normal adoption requires only setup and check/);
+  assert.doesNotMatch(stdout, /npx --yes/);
   for (const internal of ['init [options]', 'migrate [options]', 'validate [options]', 'project [options]']) {
     assert.doesNotMatch(stdout, new RegExp(internal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 
   const { stdout: doctorHelp } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--help']);
   assert.doesNotMatch(doctorHelp, /--fix/);
+
+  for (const humanSurface of ['README.md', 'docs/releases/v0.2.0.md']) {
+    assert.doesNotMatch(await readFile(humanSurface, 'utf8'), /npx --yes/);
+  }
 });
 
 test('release metadata and workflow preserve the verified publication boundary', async () => {

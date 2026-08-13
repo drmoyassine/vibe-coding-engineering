@@ -30,6 +30,8 @@ Completed 2026-08-13. The normal CLI now presents two lifecycle commands:
 - `vef doctor` explains blockers but no longer advertises a competing repair flag;
 - `init`, `migrate`, `project`, `validate`, `doctor --fix`, and the former top-level aliases remain callable but are hidden from normal help.
 
+Human-facing `npx` commands deliberately omit npm's `--yes` approval flag. It is not a VEF option and is reserved only for generated non-interactive CI commands.
+
 Fresh setup preflights every template-owned surface before writing. Existing VEF repositories stop before structural mutation when schemas, links, catalogue meaning, or review flags are unresolved. GitHub setup installs or refreshes a clearly marked workflow pinned to the running framework version; custom enforcement is preserved; other CI systems receive the exact portable command.
 
 Tests cover fresh adoption, legacy upgrade, already-enforced idempotency, preflight conflicts, semantic blockers, projection drift repair, managed CI deployment, custom compatibility paths, help visibility, and installed-tarball smoke behavior.

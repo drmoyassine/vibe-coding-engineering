@@ -47,7 +47,7 @@ program
   .version(version)
   .addHelpText('after', `
 Adopt or upgrade a repository:
-  npx --yes vibe-engineering-framework@latest setup
+  npx vibe-engineering-framework@latest setup
 
 Verify full core enforcement locally or in CI:
   npx vef check

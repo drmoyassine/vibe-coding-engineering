@@ -156,7 +156,7 @@ LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence,
 VEF requires Node.js 18 or newer. New repositories, existing repositories, and upgrades all begin with the same command:
 
 ```bash
-npx --yes vibe-engineering-framework@latest setup
+npx vibe-engineering-framework@latest setup
 ```
 
 That invocation includes package acquisition. `setup` detects the repository's state and performs the strongest safe lifecycle it can prove:
@@ -180,7 +180,7 @@ Existing adapters are consumer-owned and are never overwritten. Missing adapters
 There is one strict read-only acceptance command:
 
 ```bash
-npx --yes vibe-engineering-framework@latest check
+npx vibe-engineering-framework@latest check
 ```
 
 `check` fails unless storage, generated ledgers, schemas, typed targets, inverse relationships, duplicates, cycles, review state, and the durable-memory catalogue all satisfy the implemented contract. Use the same command locally and in CI.
@@ -192,7 +192,7 @@ When setup detects GitHub, it creates or refreshes a clearly marked VEF-managed 
 Updating uses the same lifecycle command—there is no separate upgrade flag or migration sequence:
 
 ```bash
-npx --yes vibe-engineering-framework@latest setup
+npx vibe-engineering-framework@latest setup
 ```
 
 The current CLI upgrades mechanically compatible storage and managed CI, validates the complete candidate, and stops on semantic ambiguity. An obsolete local dependency never controls the upgrade because the command explicitly acquires `@latest`.
@@ -202,7 +202,7 @@ The current CLI upgrades mechanically compatible storage and managed CI, validat
 If setup or check stops, use the read-only explanation surface:
 
 ```bash
-npx --yes vibe-engineering-framework@latest doctor
+npx vibe-engineering-framework@latest doctor
 ```
 
 Normal adoption requires only `setup` and `check`. The former `init`, `migrate --apply`, `project`, `validate --strict`, and `doctor --fix` surfaces remain callable for compatibility and framework maintenance but are intentionally hidden from normal help.

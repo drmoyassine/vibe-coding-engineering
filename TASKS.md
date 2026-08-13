@@ -847,6 +847,8 @@ Completed 2026-08-13. The normal CLI now presents two lifecycle commands:
 - `vef doctor` explains blockers but no longer advertises a competing repair flag;
 - `init`, `migrate`, `project`, `validate`, `doctor --fix`, and the former top-level aliases remain callable but are hidden from normal help.
 
+Human-facing `npx` commands deliberately omit npm's `--yes` approval flag. It is not a VEF option and is reserved only for generated non-interactive CI commands.
+
 Fresh setup preflights every template-owned surface before writing. Existing VEF repositories stop before structural mutation when schemas, links, catalogue meaning, or review flags are unresolved. GitHub setup installs or refreshes a clearly marked workflow pinned to the running framework version; custom enforcement is preserved; other CI systems receive the exact portable command.
 
 Tests cover fresh adoption, legacy upgrade, already-enforced idempotency, preflight conflicts, semantic blockers, projection drift repair, managed CI deployment, custom compatibility paths, help visibility, and installed-tarball smoke behavior.
@@ -891,7 +893,7 @@ last_updated: '2026-08-13'
 - staged OIDC publication and human 2FA approval through DEC-008;
 - public-registry verification of `setup`, `check`, and the exact package integrity;
 - clean fresh-repository setup plus check from npm;
-- upgrade proof on representative independently owned consumer repositories using only `npx --yes vibe-engineering-framework@latest setup`, semantic reconciliation when explicitly reported, and `check`;
+- upgrade proof on representative independently owned consumer repositories using only `npx vibe-engineering-framework@latest setup`, semantic reconciliation when explicitly reported, and `check`;
 - final README/release notes that distinguish core enforcement from optional adapter compatibility and state that no CLI can invent missing product meaning.
 
 TASK-018 and TASK-019 remain blocked behind this proof. Public examples and launch distribution must teach the simplified lifecycle rather than the obsolete 0.1 command sequence.
