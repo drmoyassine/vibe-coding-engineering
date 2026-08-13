@@ -11,7 +11,7 @@ conversation, code, issues, git history
                  │
                  ▼
      VEF canonical project memory
-  Vision ─ Roadmap ─ Tasks ─ Decisions ─ Log
+  Vision ─ Architecture ─ Roadmap ─ Tasks ─ Decisions ─ Log
                  │
                  ▼
        humans, agents, CLI, future views
@@ -100,8 +100,8 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 
 - `vef init` scaffolds a project with the docs, templates, and current agent skills.
 - `vef migrate` detects existing structure and prepares a repository for adoption.
-- `vef validate --strict` checks field contracts, typed targets, dangling links, inverse relationships, duplicates, and dependency cycles.
-- `vef doctor` checks expected docs and skills, migration review state, casing, and the `/apply` trust contract.
+- `vef validate --strict` checks field contracts, typed targets, dangling links, inverse relationships, duplicates, dependency cycles, and the canonical durable-memory catalogue.
+- `vef doctor` checks expected docs and skills, catalogue alignment, migration review state, casing, and the `/apply` trust contract.
 - `vef list`, `show`, `refs`, `why`, `graph`, and `search` expose the canonical model without an LLM.
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
 - The framework is dogfooded in this repository and first adopted by [studygram-app](https://github.com/drmoyassine/studygram-app).
@@ -111,6 +111,7 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 The Integrity Core makes deterministic code authoritative for:
 
 - one machine-readable canonical schema;
+- one machine-readable durable-memory catalogue spanning Vision, Architecture, Roadmap, Tasks, Decisions, Log, and external issues;
 - reference shape, target type, cardinality, duplicate IDs, and cycles;
 - every direction of every declared inverse relationship;
 - heading/frontmatter agreement, dates, enums, URLs, and provenance structure;
@@ -184,7 +185,7 @@ VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform
 
 ## Roadmap
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. FRAMEWORK-006 remains active consumer-migration work in `studygram-app`; the framework has no additional core milestone committed yet.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. No additional framework milestone is currently committed. FRAMEWORK-006 tracks consumer-specific adoption work in `studygram-app`; it does not define this framework's next priority.
 
 ## Contributing and status
 

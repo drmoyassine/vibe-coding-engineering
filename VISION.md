@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Vibe Engineering Framework exists to make AI-assisted software engineering cumulative. It gives a project durable memory: a shared, inspectable model of why the product exists, what it intends to do, what was decided, and what work follows.
+Vibe Engineering Framework exists to make AI-assisted software engineering cumulative. It gives a project durable memory: a shared, inspectable model of why the product exists, how the system is structured, what it intends to do, what was decided, and what work follows.
 
 ## The problem
 
@@ -23,6 +23,7 @@ The core record types capture a project's enduring state:
 | Record | Question it answers |
 |---|---|
 | Vision | Why does this project exist? |
+| Architecture | How is the system structured, and what constraints shape it? |
 | Roadmap | Where are we going next? |
 | Tasks | What concrete work remains? |
 | Decisions | What did we choose, and why? |
@@ -65,4 +66,6 @@ VEF is not a project-management SaaS, chat platform, issue tracker, or CI/CD sys
 
 ## Current strategic priority
 
-The next milestone is the [VEF Integrity Core](ROADMAP.md#FRAMEWORK-017): one canonical schema, complete typed graph validation, safe migration boundaries, tests, and CI dogfooding. Expansion features come after the foundation can substantiate the product promise.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the VEF Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. Together they establish the current product foundation: a canonical schema, typed graph validation, safe migration boundaries, cross-platform CI, and project-memory retrieval without an LLM.
+
+No additional framework milestone is currently committed. Consumer-specific adoption work may provide compatibility evidence and product feedback, but it does not define this framework's strategic priority. The next framework milestone should be added explicitly to ROADMAP.md and linked to concrete tasks before implementation begins.

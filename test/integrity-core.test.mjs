@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFile } from 'node:child_process';
@@ -8,6 +8,7 @@ import test from 'node:test';
 import { validateItem } from '../src/lib/schemas.mjs';
 import { checkBidirectional, findDependencyCycles, findDuplicateIds, findOrphans } from '../src/lib/crosslinks.mjs';
 import { auditApplyContract } from '../src/lib/apply-contract.mjs';
+import { MEMORY_CATALOG, auditMemoryCatalogDirectory } from '../src/lib/memory-catalog.mjs';
 
 const execFileAsync = promisify(execFile);
 const ref = (id, name, url) => ({ id, name, url });
@@ -46,7 +47,14 @@ test('detects dependency cycles', () => {
   assert.equal(findDependencyCycles(docs).length, 1);
 });
 
-test('init creates lowercase OKF files with truthful generated provenance', async () => {
+test('defines and dogfoods one complete durable-memory catalogue', async () => {
+  assert.deepEqual(MEMORY_CATALOG.map((record) => record.label), [
+    'Vision', 'Architecture', 'Roadmap', 'Tasks', 'Decisions', 'Log', 'External issues',
+  ]);
+  assert.deepEqual(await auditMemoryCatalogDirectory('.'), []);
+});
+
+test('init creates lowercase OKF files with truthful provenance and a validated memory catalogue', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'vef-init-'));
   try {
     await execFileAsync(process.execPath, ['bin/vef.mjs', 'init', '--dir', dir, '--name', 'Test Project']);
@@ -63,7 +71,39 @@ test('init creates lowercase OKF files with truthful generated provenance', asyn
     assert.match(claude, /versioned automation contract/);
     const { stdout: doctorOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]);
     assert.match(doctorOutput, /✓  \/apply trust contract/);
+    assert.match(doctorOutput, /✓  Canonical records and document surfaces align/);
     assert.match(doctorOutput, /✓ All checks passed/);
+    const { stdout: validateOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'validate', '--strict', '--dir', dir]);
+    assert.match(validateOutput, /✓  All canonical records and document surfaces align/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('validate and doctor reject a VISION table that omits Architecture', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'vef-memory-catalog-'));
+  try {
+    await execFileAsync(process.execPath, ['bin/vef.mjs', 'init', '--dir', dir, '--name', 'Broken Project']);
+    const visionPath = join(dir, 'VISION.md');
+    const vision = await readFile(visionPath, 'utf8');
+    await writeFile(visionPath, vision.replace(/^\| Architecture \|.*\r?\n/m, ''), 'utf8');
+
+    await assert.rejects(
+      execFileAsync(process.execPath, ['bin/vef.mjs', 'validate', '--strict', '--dir', dir]),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stdout, /VISION\.md: missing durable-memory record "Architecture"/);
+        return true;
+      },
+    );
+    await assert.rejects(
+      execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stdout, /VISION\.md: missing durable-memory record "Architecture"/);
+        return true;
+      },
+    );
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

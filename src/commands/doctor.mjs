@@ -3,14 +3,15 @@
  *
  * Health check — is the framework properly installed?
  *
- *  ✓/✗ for: all expected docs present, all 5 skills installed,
- *  CLAUDE.md references the framework, zero needsReview items.
+ *  ✓/✗ for: expected docs, durable-memory catalogue, all 5 skills,
+ *  CLAUDE.md integration, and zero needsReview items.
  */
 
 import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseDoc } from '../lib/frontmatter.mjs';
 import { auditApplyContract } from '../lib/apply-contract.mjs';
+import { auditMemoryCatalogDirectory } from '../lib/memory-catalog.mjs';
 
 const EXPECTED_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md', 'CLAUDE.md'];
 const EXPECTED_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
@@ -40,6 +41,16 @@ export async function doctorCommand(opts) {
     const found = await exists(join(targetDir, doc));
     console.log(`  ${found ? '✓' : '✗'}  ${doc}`);
     if (!found) allGood = false;
+  }
+
+  // ── Durable-memory catalogue ──
+  console.log('\n  ── Durable-memory catalogue ──');
+  const memoryIssues = await auditMemoryCatalogDirectory(targetDir);
+  if (memoryIssues.length === 0) {
+    console.log('  ✓  Canonical records and document surfaces align');
+  } else {
+    for (const issue of memoryIssues) console.log(`  ✗  ${issue.surface}: ${issue.message}`);
+    allGood = false;
   }
 
   // ── Skills ──

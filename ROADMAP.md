@@ -8,7 +8,7 @@ Last updated: 2026-08-13
 
 ## Roadmap item schema
 
-Each roadmap item uses YAML frontmatter. The current field contract is implemented in `src/lib/schemas.mjs`; FRAMEWORK-017 will consolidate it into the canonical machine-readable schema. Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
+Each roadmap item uses YAML frontmatter. `src/lib/schemas.mjs` is the canonical machine-readable field contract delivered by FRAMEWORK-017. Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
 
 ```yaml
 ---
@@ -363,6 +363,9 @@ related_tasks:
   - id: TASK-008
     name: "Harden /apply migration trust boundaries"
     url: /TASKS.md#TASK-008
+  - id: TASK-010
+    name: "Enforce durable-memory catalogue coherence"
+    url: /TASKS.md#TASK-010
 related_decisions:
   - id: DEC-003
     name: "Make the Integrity Core authoritative and keep agent adapters portable"
@@ -370,7 +373,7 @@ related_decisions:
 last_updated: 2026-08-13
 ---
 
-Completed 2026-08-13. Validation knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, and heading/frontmatter agreement. Tests and CI enforce the contract on Ubuntu and Windows. `/apply` now uses proposal-first migration boundaries: untrusted evidence, explicit optional sources and writes, classified memory, blocked orphan invention, and deterministic staged validation.
+Completed 2026-08-13. Validation knows allowed source/target types, inverse fields, cardinality, duplicates, cycles, malformed references, scalar types, heading/frontmatter agreement, and the canonical durable-memory catalogue. Tests and CI enforce the contract on Ubuntu and Windows. `/apply` now uses proposal-first migration boundaries: untrusted evidence, explicit optional sources and writes, classified memory, blocked orphan invention, and deterministic staged validation.
 
 The work also resolves dogfooding drift (filenames, stale claims, templates, provenance), makes strict validation a complete CI contract, and makes migration conservative when evidence is uncertain.
 
@@ -412,4 +415,4 @@ Completed 2026-08-13. `vef list`, `show`, `refs`, `why`, `graph`, and `search` d
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -015, -016 |
 
-**Next priority:** FRAMEWORK-006 remains active consumer migration work. No additional framework-core milestone is committed yet.
+**Next priority:** No additional framework milestone is currently committed. FRAMEWORK-006 tracks consumer-specific adoption work in `studygram-app`; it may provide compatibility evidence but is not this framework's next priority.

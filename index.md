@@ -22,9 +22,9 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 | [CLAUDE.md](CLAUDE.md) | Current Claude Code adapter instructions |
 | [AGENTS.md](AGENTS.md) | Framework workforce manual and conventions |
 
-## Current priority
+## Current strategic state
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. [DEC-003](DECISIONS.md#DEC-003) records the architectural decision. FRAMEWORK-006 remains active consumer migration work.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, and [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries. [DEC-003](DECISIONS.md#DEC-003) records the architectural decision. No additional framework milestone is currently committed; FRAMEWORK-006 is consumer-specific adoption work, not this framework's next priority.
 
 ## Current interfaces
 

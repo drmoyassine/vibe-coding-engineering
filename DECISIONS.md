@@ -145,6 +145,9 @@ related_tasks:
   - id: TASK-009
     name: "Design and implement deterministic query commands"
     url: /TASKS.md#TASK-009
+  - id: TASK-010
+    name: "Enforce durable-memory catalogue coherence"
+    url: /TASKS.md#TASK-010
 related_roadmap_items:
   - id: FRAMEWORK-017
     name: "Build the VEF Integrity Core"

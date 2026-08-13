@@ -7,7 +7,8 @@
  *  1. Parse all framework docs (TASKS, ROADMAP, DECISIONS, VISION)
  *  2. Validate each item's frontmatter against canonical schema
  *  3. Check cross-links: orphans (dangling refs) + bidirectionality
- *  4. Report + set exit code
+ *  4. Audit the project-level durable-memory catalogue
+ *  5. Report + set exit code
  */
 
 import { readFile } from 'node:fs/promises';
@@ -15,6 +16,7 @@ import { join } from 'node:path';
 import { parseDoc } from '../lib/frontmatter.mjs';
 import { getDocType, validateItem, ALL_DOC_FILES } from '../lib/schemas.mjs';
 import { findOrphans, findDuplicateIds, findDependencyCycles, checkBidirectional } from '../lib/crosslinks.mjs';
+import { auditMemoryCatalogDirectory } from '../lib/memory-catalog.mjs';
 
 /**
  * @param {{ dir: string, strict: boolean }} opts
@@ -106,6 +108,15 @@ export async function validateCommand(opts) {
       console.log('  ✓  All cross-links resolve');
     }
   }
+
+  // Project-level durable-memory contract
+  console.log('\n  ── Durable-memory catalogue ──');
+  const memoryIssues = await auditMemoryCatalogDirectory(targetDir);
+  for (const issue of memoryIssues) {
+    console.log(`  ✗  ${issue.surface}: ${issue.message}`);
+    totalErrors++;
+  }
+  if (memoryIssues.length === 0) console.log('  ✓  All canonical records and document surfaces align');
 
   // Summary
   console.log(`\n  ── Result ──`);

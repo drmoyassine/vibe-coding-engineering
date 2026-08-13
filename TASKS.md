@@ -8,7 +8,7 @@ Last updated: 2026-08-13
 
 ## Task schema
 
-Each task uses YAML frontmatter. The current field contract is implemented in `src/lib/schemas.mjs`; FRAMEWORK-017 will consolidate it into the canonical machine-readable schema. Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
+Each task uses YAML frontmatter. `src/lib/schemas.mjs` is the canonical machine-readable field contract delivered by FRAMEWORK-017. Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
 
 ```yaml
 ---
@@ -264,6 +264,34 @@ Integration tests cover text and JSON output, repeatability, filters and aliases
 
 ---
 
+## TASK-010 — Enforce durable-memory catalogue coherence
+
+---
+id: TASK-010
+title: "Enforce durable-memory catalogue coherence"
+description: "Prevent project-level records such as Architecture from disappearing across vision, navigation, public documentation, templates, and health checks."
+status: completed
+priority: P0
+roadmap_item:
+  id: FRAMEWORK-017
+  name: "Build the VEF Integrity Core"
+  url: /ROADMAP.md#FRAMEWORK-017
+assignee:
+depends_on:
+  - id: TASK-006
+    name: "Define canonical schema and typed relationship model"
+    url: /TASKS.md#TASK-006
+related_decisions:
+  - id: DEC-003
+    name: "Make the Integrity Core authoritative and keep agent adapters portable"
+    url: /DECISIONS.md#DEC-003
+last_updated: 2026-08-13
+---
+
+Completed 2026-08-13. `src/lib/memory-catalog.mjs` now defines the seven project-level record types once. `vef validate --strict` and `vef doctor` enforce exact canonical document casing, the VISION record/question table, navigation links, external-issue representation, and framework-source README/template alignment. A regression fixture removes Architecture and proves that both commands fail explicitly.
+
+---
+
 ## Summary
 
 | ID | Title | Status | Priority |
@@ -277,5 +305,6 @@ Integration tests cover text and JSON output, repeatability, filters and aliases
 | TASK-007 | Filename conventions and provenance | completed | P0 |
 | TASK-008 | /apply migration trust boundaries | completed | P0 |
 | TASK-009 | Deterministic query commands | completed | P1 |
+| TASK-010 | Durable-memory catalogue coherence | completed | P0 |
 
 **Next priority:** TASK-001 is the only remaining local task and remains intentionally P3/cosmetic. New framework product work should start as an explicit roadmap item and linked task.

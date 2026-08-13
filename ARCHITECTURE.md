@@ -16,7 +16,7 @@ VEF is a portable project model with a deterministic integrity core and optional
                                 │
                                 ▼
                  Canonical project model (Git)
-  VISION · ROADMAP · TASKS · DECISIONS · log · external issue refs
+  VISION · ARCHITECTURE · ROADMAP · TASKS · DECISIONS · log · external issue refs
                                 │
                                 ▼
                          Integrity Core
@@ -41,6 +41,7 @@ VEF deliberately keeps useful backlinks in the documents so local reading remain
 FRAMEWORK-017 delivered the current Integrity Core:
 
 - a single machine-readable schema definition used by validation, docs, templates, CLI help, and agent prompts;
+- a canonical durable-memory catalogue that keeps project-level records, public documentation, navigation, and install templates aligned;
 - typed relationship declarations and complete two-way validation;
 - strict validation of reference shape, target type, cardinality, duplicates, cycles, IDs, dates, URLs, headings, and provenance;
 - a cross-platform CI contract covering tests, strict validation, health, and package contents;

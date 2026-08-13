@@ -6,7 +6,7 @@
  * Commands:
  *   vef init [--dir] [--name] [--github] [--force]   Scaffold the framework (alias: --new)
  *   vef migrate [--dir] [--apply]                    Adopt an existing repo (alias: --migrate)
- *   vef validate [--dir] [--strict]                  Schema + cross-link validation (alias: --validate)
+ *   vef validate [--dir] [--strict]                  Schema + graph + catalogue validation (alias: --validate)
  *   vef doctor [--dir]                               Health check (alias: --doctor)
  *   vef list|show|refs|why|graph|search               Deterministic project queries
  */
@@ -66,7 +66,7 @@ program
 
 program
   .command('validate')
-  .description('Validate docs against canonical schemas + cross-links')
+  .description('Validate canonical schemas, graph relationships, and durable-memory catalogue')
   .option('--dir <path>', 'target directory', '.')
   .option('--strict', 'exit 1 on warnings too')
   .action(async (opts) => {

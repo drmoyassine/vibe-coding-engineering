@@ -18,6 +18,22 @@ generated:
 
 ---
 
+## Durable project memory
+
+VEF keeps the following record types coherent across the project:
+
+| Record | Question it answers |
+|---|---|
+| Vision | Why does this project exist? |
+| Architecture | How is the system structured, and what constraints shape it? |
+| Roadmap | Where are we going next? |
+| Tasks | What concrete work remains? |
+| Decisions | What did we choose, and why? |
+| Log | What materially changed or was learned? |
+| External issues | What problems have been reported? |
+
+---
+
 ## Themes
 
 <!-- Vision themes are long-running strategic directions. Each gets a slug id. -->

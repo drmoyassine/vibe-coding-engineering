@@ -8,6 +8,12 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### Strategic priority reconciled
+- Updated VISION.md after completion of FRAMEWORK-017 and FRAMEWORK-018. No additional framework milestone is currently committed.
+- Clarified that FRAMEWORK-006 tracks consumer-specific adoption work in `studygram-app` and does not define this framework's next priority.
+- Corrected VISION.md's durable-project-memory model to include Architecture: how the system is structured and which constraints shape it.
+- Completed TASK-010: made that model executable through one machine-readable durable-memory catalogue. `vef validate --strict` and `vef doctor` now reject missing records, incorrect filename casing, or missing document links; audit install templates; and include a regression test for an omitted Architecture row.
+
 ### Deterministic project queries shipped
 - Completed TASK-009 and FRAMEWORK-018. The CLI now exposes `list`, `show`, `refs`, `why`, `graph`, and `search` over one canonical read-only project loader.
 - Query text is stable and human-readable; `--json` uses a versioned `schemaVersion: 1` envelope for successes and failures.
