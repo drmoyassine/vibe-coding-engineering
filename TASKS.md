@@ -1292,15 +1292,17 @@ related_decisions:
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
 modified:
-  by: agent/codex-evaluation
-  at: '2026-08-14T19:35:12.353Z'
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
 ---
 
 Started 2026-08-14 after public 0.3.1 verification and completion of the frozen protocol. The pre-run harness now materializes ordinary-Markdown and VEF repositories from one fixture source, verifies all durable statements and normalized facts are equivalent, and can install the public 0.3.1 package into treatment repositories before network-disabled sessions.
 
 Hidden oracles exercise implementation behavior and final project-state constraints for cache persistence, bounded ordered retries, and privacy-safe audit export. A balanced 24-pair assignment is committed before runs, and blind evidence preparation removes condition labels, VEF commands, package names, and treatment-only paths from rater bundles. Harness tests generate all six baselines, run their visible tests, prove equivalence, check assignment balance, and exercise redaction.
 
-No participant output has been generated or inspected. The next boundary is executing 48 fresh isolated `gpt-5.6-sol` high-reasoning sessions under the frozen caps and preserving their immutable run bundles. That execution requires a session runner capable of creating independent agent contexts without sharing this planning conversation.
+No participant output has been generated or inspected. The owner has directed a fresh agent session to pick up and execute the study. The durable execution boundary, missing pre-participant gates, exact run sequence, stop conditions, and suggested pickup prompt are recorded in `docs/evaluations/inheritance-study-v1/HANDOFF.md`.
+
+TASK-040 remains the frozen Codex inheritance study. The broader VibeBench cross-platform concept is separately queued under FRAMEWORK-027 so it cannot alter, contaminate, or retrospectively expand this protocol.
 
 ---
 
@@ -1407,6 +1409,105 @@ Test a sharper descriptor such as “The validated project-memory graph for AI-a
 
 Collect audience evidence before considering a rename. Keep “Vibe Engineering Framework” unless tested confusion materially outweighs its connection to the discipline; record any naming change as a separate durable decision.
 
+---
+
+## TASK-044 — Freeze the VibeBench v0 specification and task corpus
+
+---
+id: TASK-044
+title: Freeze the VibeBench v0 specification and task corpus
+description: >-
+  Define the one-pass contract, capability matrix, neutral paired fixtures, platform policy, outcomes, sampling,
+  governance, and publication contract before comparative execution.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+roadmap_item:
+  id: FRAMEWORK-027
+  name: Establish VibeBench as a cross-platform engineering benchmark
+  url: /ROADMAP.md#FRAMEWORK-027
+depends_on:
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+modified:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+---
+
+Convert the working concept in `docs/evaluations/vibebench/README.md` into a versioned protocol. Freeze the meaning of one pass; the control/treatment equivalence rule; task and difficulty taxonomy; repository licensing; platform/model/version inclusion; tool, context, network, time, token, and cost parameters; condition-neutral acceptance oracles; blinding; sample-size rationale; failure policy; and public dataset format.
+
+Acceptance requires prospective protocol and fixtures, an executable equivalence guard, a compute estimate, documented claim thresholds, and an explicit rule that platform and capability effects are not pooled when environments are materially heterogeneous.
+
+---
+
+## TASK-045 — Build and pilot the VibeBench cross-platform runner
+
+---
+id: TASK-045
+title: Build and pilot the VibeBench cross-platform runner
+description: >-
+  Implement the platform-neutral session/evidence contract and pilot Codex and Claude Code adapters without making
+  comparative product claims.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+roadmap_item:
+  id: FRAMEWORK-027
+  name: Establish VibeBench as a cross-platform engineering benchmark
+  url: /ROADMAP.md#FRAMEWORK-027
+depends_on:
+  - id: TASK-044
+    name: Freeze the VibeBench v0 specification and task corpus
+    url: /TASKS.md#TASK-044
+modified:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+---
+
+Build one runner contract for isolated repositories, frozen prompts and budgets, ordered tool transcripts, Git trees and patches, tests and neutral oracles, final reports, token/time/cost fields, immutable bundles, blinding, and resumable failure-safe orchestration. Implement a minimum Codex and Claude Code pilot through platform adapters that preserve equivalent permissions while recording unavoidable platform differences.
+
+The pilot is for harness and fixture validation only. Freeze and publish every pilot defect and resulting prospective protocol amendment; do not reuse pilot outputs as confirmatory VibeBench v1 evidence.
+
+---
+
+## TASK-046 — Execute and publish VibeBench v1
+
+---
+id: TASK-046
+title: Execute and publish VibeBench v1
+description: >-
+  Run the frozen powered cross-platform matrix and publish reproducible results, raw non-sensitive evidence,
+  uncertainty, failures, and bounded claims.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+roadmap_item:
+  id: FRAMEWORK-027
+  name: Establish VibeBench as a cross-platform engineering benchmark
+  url: /ROADMAP.md#FRAMEWORK-027
+depends_on:
+  - id: TASK-045
+    name: Build and pilot the VibeBench cross-platform runner
+    url: /TASKS.md#TASK-045
+modified:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+---
+
+Execute the predeclared VibeBench v1 matrix without mid-study comparative tuning. Lock blind ratings, run the frozen analysis, and publish platform-level, capability-level, and aggregate results only where pooling is justified.
+
+Completion requires every assignment and failure, immutable non-sensitive evidence, environment/version metadata, uncertainty intervals, deviations, limitations, and a claim table that clearly distinguishes VEF inheritance, task quality, structural conformance, efficiency, and platform-specific effects.
+
 <!-- End VEF generated items. -->
 
 ## Summary
@@ -1452,9 +1553,14 @@ Collect audience evidence before considering a rename. Keep “Vibe Engineering 
 | TASK-041 | Publish VEF effectiveness evidence and gate broad claims | pending | P0 |
 | TASK-042 | Decide namespaced record-type extension policy | pending | P3 |
 | TASK-043 | Test typed-graph positioning and the VEF descriptor | pending | P1 |
+| TASK-044 | Freeze the VibeBench v0 specification and task corpus | pending | P1 |
+| TASK-045 | Build and pilot the VibeBench cross-platform runner | pending | P1 |
+| TASK-046 | Execute and publish VibeBench v1 | pending | P1 |
 
 **Next priority:** Public 0.3.1 verification completed TASK-035. TASK-039 has frozen the evaluation protocol and TASK-040
 is now executing it; TASK-041 must publish
 the evidence before TASK-043 and broad distribution in TASK-019. After the hotfix, TASK-037/TASK-038 and TASK-025/
 TASK-026 can progress in parallel. TASK-036 permits only mechanically isolated repair, while TASK-042, TASK-016, and
-TASK-027 remain deferred or non-blocking. Consumer and commercial priorities stay in their owning repositories.
+TASK-027 remain deferred or non-blocking. VibeBench TASK-044 through TASK-046 remain ordered behind TASK-041 so the
+frozen inheritance study informs—but is not contaminated by—the broader benchmark. Consumer and commercial priorities
+stay in their owning repositories.

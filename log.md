@@ -8,6 +8,10 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-14
 
+### Inheritance-study handoff and VibeBench concept recorded
+- Added a durable TASK-040 pickup document with the frozen study anchors, missing pre-participant gates, exact 48-session execution sequence, immutable evidence and blinding requirements, stop conditions, and a ready-to-use opening instruction for a fresh agent session. No participant output was generated or inspected.
+- Kept the current Codex inheritance experiment unchanged and separately defined VibeBench as a future cross-platform program for matched one-pass coding tasks with and without VEF. FRAMEWORK-027 and TASK-044 through TASK-046 queue its specification, Codex/Claude Code pilot, and evidence publication behind TASK-041.
+
 ### Controlled evaluation pre-run harness frozen
 - Implemented TASK-040's pre-run boundary without generating participant results. One source manifest now materializes three ordinary-Markdown controls and three VEF treatments; generator checks prove equivalent normalized facts and durable statements, and treatment preparation successfully installs public 0.3.1 before network isolation.
 - Added hidden behavioral/project-state oracles for cache persistence, bounded ordered retry, and privacy-safe audit export; committed a balanced 24-pair order before execution; and added blind-bundle preparation that removes condition names, VEF commands, package names, and treatment-only paths from rater evidence.

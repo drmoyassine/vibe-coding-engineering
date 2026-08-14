@@ -281,6 +281,9 @@ related_roadmap_items:
   - id: FRAMEWORK-026
     name: Evaluate namespaced record-type extensions
     url: /ROADMAP.md#FRAMEWORK-026
+  - id: FRAMEWORK-027
+    name: Establish VibeBench as a cross-platform engineering benchmark
+    url: /ROADMAP.md#FRAMEWORK-027
 tags:
   - integrity
   - architecture
@@ -290,8 +293,8 @@ generated:
   at: '2026-08-13T00:00:00Z'
 last_updated: '2026-08-14'
 modified:
-  by: agent/codex-planning
-  at: '2026-08-14T16:25:57.181Z'
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
 ---
 
 This decision separates implemented product claims from intended capabilities. FRAMEWORK-017 and FRAMEWORK-018 delivered the current core; later storage, launch, and transaction milestones must continue describing shipped versus planned behavior precisely.

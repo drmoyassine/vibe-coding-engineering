@@ -80,9 +80,14 @@ Full description, acceptance criteria, implementation notes.
 | TASK-041 | Publish VEF effectiveness evidence and gate broad claims | pending | P0 |
 | TASK-042 | Decide namespaced record-type extension policy | pending | P3 |
 | TASK-043 | Test typed-graph positioning and the VEF descriptor | pending | P1 |
+| TASK-044 | Freeze the VibeBench v0 specification and task corpus | pending | P1 |
+| TASK-045 | Build and pilot the VibeBench cross-platform runner | pending | P1 |
+| TASK-046 | Execute and publish VibeBench v1 | pending | P1 |
 
 **Next priority:** Public 0.3.1 verification completed TASK-035. TASK-039 has frozen the evaluation protocol and TASK-040
 is now executing it; TASK-041 must publish
 the evidence before TASK-043 and broad distribution in TASK-019. After the hotfix, TASK-037/TASK-038 and TASK-025/
 TASK-026 can progress in parallel. TASK-036 permits only mechanically isolated repair, while TASK-042, TASK-016, and
-TASK-027 remain deferred or non-blocking. Consumer and commercial priorities stay in their owning repositories.
+TASK-027 remain deferred or non-blocking. VibeBench TASK-044 through TASK-046 remain ordered behind TASK-041 so the
+frozen inheritance study informs—but is not contaminated by—the broader benchmark. Consumer and commercial priorities
+stay in their owning repositories.

@@ -52,6 +52,7 @@ last_updated: 2026-08-12
 | Phase 2 — Human Review | 🔄 In Progress | FRAMEWORK-015 (parallel, non-blocking contract and workspace) |
 | Phase 3 — Transactional Project Memory | ✅ Completed | FRAMEWORK-022 |
 | Phase 3 — Transactional Project Memory | 🔄 In Progress | FRAMEWORK-023 (0.3.1 hardening) |
+| Phase 3 — Evidence Program | ⏸ Deferred | FRAMEWORK-027 (VibeBench, queued behind TASK-041) |
 | Phase 1 — Consumer Validation | ✅ Core completed | FRAMEWORK-004, -005, -006 completed; FRAMEWORK-007 deferred |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
@@ -62,5 +63,6 @@ last_updated: 2026-08-12
 **Next priority:** FRAMEWORK-023's public 0.3.1 gate is complete; its narrower repair-classification follow-up remains.
 FRAMEWORK-025 is now executing the frozen controlled evaluation, whose published evidence gates broad promotion under
 FRAMEWORK-020. FRAMEWORK-024 and FRAMEWORK-015 follow as parallel interoperability and human-
-review tracks. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial programs
-remain canonical in their own repositories rather than VEF's roadmap.
+review tracks. FRAMEWORK-027 then expands the published inheritance study into the prospectively frozen VibeBench
+cross-platform program. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial
+programs remain canonical in their own repositories rather than VEF's roadmap.

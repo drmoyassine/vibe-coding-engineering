@@ -753,6 +753,46 @@ modified:
 
 The fixed vision, roadmap, task, and decision vocabulary is an intentional interoperability constraint, not an accidental omission. This track remains deferred until evaluation and adoption evidence identify concrete missing record types. Any future design must namespace extensions and prevent them from weakening the core graph contract.
 
+---
+
+## FRAMEWORK-027 — Establish VibeBench as a cross-platform engineering benchmark
+
+---
+id: FRAMEWORK-027
+title: Establish VibeBench as a cross-platform engineering benchmark
+description: >-
+  Build a reproducible paired benchmark of one-pass coding-agent work with and without VEF across platforms,
+  capabilities, and frozen runtime parameters.
+phase: Phase 3 — Evidence Program
+status: Deferred
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+related_tasks:
+  - id: TASK-044
+    name: Freeze the VibeBench v0 specification and task corpus
+    url: /TASKS.md#TASK-044
+  - id: TASK-045
+    name: Build and pilot the VibeBench cross-platform runner
+    url: /TASKS.md#TASK-045
+  - id: TASK-046
+    name: Execute and publish VibeBench v1
+    url: /TASKS.md#TASK-046
+modified:
+  by: agent/codex-vibebench
+  at: '2026-08-14T20:39:56.779Z'
+---
+
+VibeBench is the working name for VEF's broader evidence program: matched one-pass build, repair, refactor, migration, integration, constraint-adherence, and project-state tasks executed with and without VEF on major coding-agent platforms.
+
+The current Codex inheritance study remains the narrow precursor and must be completed and published unchanged. VibeBench begins afterward with a prospectively frozen corpus, platform adapter contract, reproducible isolation, condition-neutral oracles, blinded scoring, immutable evidence, compute/sample design, and explicit claim boundaries. Its design source is `docs/evaluations/vibebench/README.md`.
+
 <!-- End VEF generated items. -->
 
 ## Summary
@@ -768,6 +808,7 @@ The fixed vision, roadmap, task, and decision vocabulary is an intentional inter
 | Phase 2 — Human Review | 🔄 In Progress | FRAMEWORK-015 (parallel, non-blocking contract and workspace) |
 | Phase 3 — Transactional Project Memory | ✅ Completed | FRAMEWORK-022 |
 | Phase 3 — Transactional Project Memory | 🔄 In Progress | FRAMEWORK-023 (0.3.1 hardening) |
+| Phase 3 — Evidence Program | ⏸ Deferred | FRAMEWORK-027 (VibeBench, queued behind TASK-041) |
 | Phase 1 — Consumer Validation | ✅ Core completed | FRAMEWORK-004, -005, -006 completed; FRAMEWORK-007 deferred |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
@@ -778,5 +819,6 @@ The fixed vision, roadmap, task, and decision vocabulary is an intentional inter
 **Next priority:** FRAMEWORK-023's public 0.3.1 gate is complete; its narrower repair-classification follow-up remains.
 FRAMEWORK-025 is now executing the frozen controlled evaluation, whose published evidence gates broad promotion under
 FRAMEWORK-020. FRAMEWORK-024 and FRAMEWORK-015 follow as parallel interoperability and human-
-review tracks. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial programs
-remain canonical in their own repositories rather than VEF's roadmap.
+review tracks. FRAMEWORK-027 then expands the published inheritance study into the prospectively frozen VibeBench
+cross-platform program. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial
+programs remain canonical in their own repositories rather than VEF's roadmap.
