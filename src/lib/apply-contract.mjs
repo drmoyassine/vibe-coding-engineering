@@ -11,9 +11,10 @@ const REQUIRED_SKILL_RULES = [
   ['makes memory import opt-in', /Memory is opt-in and classified before import/i],
   ['classifies non-project memory', /`project`, `personal`, `sensitive`,\s*or `transient`/i],
   ['forbids invented graph targets', /Do not invent graph targets/i],
-  ['requires deterministic staged validation', /vef validate --strict --dir <staging-directory>/i],
-  ['projects ledgers from staged canonical items', /vef project --dir <staging-directory>/i],
-  ['requires post-write deterministic validation', /Run `vef validate --strict` in the repository/i],
+  ['delegates batch writes to the transaction command', /vef create batch --from <proposal>/i],
+  ['previews before explicit writes', /without `--write` and show the core-produced preview/i],
+  ['requires explicit journal recovery direction', /vef recover <id> --forward\|--rollback/i],
+  ['forbids canonical serialization in the adapter', /never renders canonical YAML, Markdown/i],
   ['forbids automatic commits', /No automatic commit/i],
 ];
 
@@ -28,9 +29,10 @@ const REQUIRED_WORKFLOW_RULES = [
   ['filters ineligible memory before reconciliation', /eligibleDiscoveries[\s\S]*memoryClass === 'project'[\s\S]*importEligible === true/],
   ['enforces selected document types', /if \(!selectedDocTypes\.has\(dt\)\) continue/],
   ['forbids placeholder targets', /Never invent a missing target or placeholder entity/i],
-  ['sanitizes proposed item filenames', /path: `\$\{directory\}\/\$\{itemFilename\(entry\.id\)\}`/],
+  ['returns structured transaction operations', /const proposedOperations =/],
+  ['does not render canonical item files', /without serializing canonical files/],
   ['blocks invalid advisory reports', /proposalBlocked = advisoryInvalid \|\| blockingErrors\.length > 0/],
-  ['returns canonical item-file proposals rather than accepted records', /proposedItemFiles/],
+  ['returns proposed operations rather than accepted records', /proposedOperations/],
   ['keeps agent acceptance false', /accepted: false/],
   ['requires deterministic validation', /deterministicValidationRequired: true/],
 ];
@@ -40,6 +42,8 @@ const FORBIDDEN_WORKFLOW_RULES = [
   ['must not default to write mode', /dryRun\s*=\s*flags\.dryRun\s*\?\?\s*false/],
   ['must not invent placeholder entities', /For orphans, create placeholder entries/i],
   ['must not propose orphan creation', /Identify ORPHANS[^\n]*Propose creation/i],
+  ['must not own a canonical Markdown renderer', /function renderItemFile\s*\(/],
+  ['must not return canonical file proposals', /proposedItemFiles/],
 ];
 
 /**

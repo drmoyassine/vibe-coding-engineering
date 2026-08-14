@@ -10,6 +10,15 @@ Manage canonical {{PROJECT_NAME}} decision records in `docs/decisions/`. `DECISI
 - `supersede` — Mark a decision as superseded by a newer one
 - `reconcile` — Validate canonical decision files and regenerate DECISIONS.md
 
+## Required writer boundary
+
+The skill decides when a durable decision is warranted and authors its context, rationale, consequences, and prose;
+it never edits or serializes canonical Markdown. Use `vef create decision --from <proposal>` for preview and rerun
+with `--write --actor <agent-id>` after acceptance. Use `vef update DEC-XXX --from <proposal>` for changes and
+relationship closure. Superseding is one batch proposal containing the new decision and old-decision update. The CLI
+owns IDs when omitted, lifecycle dates, `modified` provenance, inverse links, ledgers, validation, journaling, and
+recovery; this adapter owns no frontmatter or Markdown renderer.
+
 ## Decision schema
 
 Every decision in DECISIONS.md must follow this frontmatter schema. All related references use the **`id + name + url`** pattern — relative URLs for same-repo, absolute for cross-repo/external.
@@ -51,6 +60,9 @@ log_ref:                      # OPTIONAL — ref to log.md section (narrative hi
 generated:                    # OPTIONAL (OKF trust signal)
   by: "human:<id>"
   at: "2026-01-01T00:00:00Z"
+modified:                     # transaction-managed provenance
+  by: "agent/session"
+  at: "2026-01-01T00:00:00Z"
 verified:                     # OPTIONAL (OKF trust signal)
   - by: "human:<id>"
     at: "2026-01-01T00:00:00Z"
@@ -67,7 +79,7 @@ Full prose expansion of the decision, discussion, alternatives considered.
 - `log_ref` points to `log.md` (narrative history), but `log.md` does not link back to decisions. The decision is the canonical record.
 - Same-repo URLs are **relative** (`/TASKS.md#TASK-001`); cross-repo/external are **absolute**.
 - There is no separate `description` field; `context` + `decision` carry the summary.
-- **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. Omit when unused; unknown keys are preserved.
+- **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, transaction-managed `modified` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`.
 
 ## Cross-linking philosophy
 
@@ -108,23 +120,23 @@ You'll be prompted for fields to update.
 ```
 /decisions supersede DEC-001
 ```
-Creates a new decision (DEC-XXX), sets this decision's `status: superseded` and `superseded_by: { id, name, url }` pointing at the new one.
+Submit the new decision and old-decision status/link update together with `vef create batch --from <proposal>` so
+supersession cannot stop halfway.
 
 ### Reconcile
 ```
 /decisions reconcile
 ```
-1. Reads canonical `docs/decisions/*.md` item files
-2. Validates every frontmatter block against the schema above
-3. Checks all `id + name + url` refs resolve (no orphans), bidirectionally with TASKS/ROADMAP/DECISION (decision↔decision links included)
-4. Flags any `status: superseded` decision missing a `superseded_by` (and vice versa)
-5. Reports inconsistencies; asks before changing canonical items
-6. Runs `vef project` after accepted item changes, then `vef validate --strict`
+1. Runs `vef check` as the read-only reconciliation report.
+2. Uses `vef show`, `vef refs`, and `vef graph` to explain inconsistencies.
+3. Delegates accepted repairs to `vef update` or one batch proposal; a title/heading mismatch requires explicit human-selected `--authority frontmatter|heading`.
+4. Reruns `vef check`; unresolved transaction journals require explicit recovery direction.
 
 ## Implementation notes
 
 - Each decision is stored canonically in `docs/decisions/<ID>.md`; `docs/decisions/_index.md` owns ledger-level prose.
-- Never edit generated item blocks in `DECISIONS.md`. Run `vef project` to regenerate the committed ledger.
+- Automated agents never edit decision item files or generated blocks directly; transaction commands are the only supported writer path.
+- Direct human editing is an escape hatch: maintain inverse links, run `vef setup` to project, then require `vef check`.
 - The `id` field is the unique identifier (DEC-XXX format).
 - Same-repo refs use **relative** URLs (`/TASKS.md#TASK-001`), not full GitHub blob URLs.
 - When superseding, the old decision's `superseded_by` points to the new decision (singular object).

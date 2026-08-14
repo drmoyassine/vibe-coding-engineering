@@ -2,7 +2,7 @@
 
 **vibe-engineering-framework Roadmap** — Directional commitments for the project-memory framework and its public ecosystem.
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ---
 
@@ -30,6 +30,9 @@ related_decisions:
   - id: DEC-XXX
     name: "Decision title"
     url: /DECISIONS.md#DEC-XXX
+modified:                      # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 last_updated: 2026-08-12
 ---
 ```
@@ -160,22 +163,18 @@ id: FRAMEWORK-006
 title: Migrate consumer documents to the canonical relationship pattern
 description: Migrate an adopting repository's legacy relationship values to typed id+name+url references.
 phase: Phase 1 — Consumer validation
-status: In Progress
-priority: P1
+status: Completed
+priority: P3
 related_decisions:
   - id: DEC-002
     name: Adopt the OKF v0.2 pattern with product-doc extensions
     url: /DECISIONS.md#DEC-002
-last_updated: '2026-08-12'
+last_updated: '2026-08-14'
 ---
 
-**What needs migration:**
-- TASKS.md: `roadmap_item: Q4 — Context-gated tools/skills` → `roadmap_item: { id, name, url }`
-- TASKS.md: `depends_on: TASK-001` → `depends_on: [{ id, name, url }]`
-- TASKS.md: Add `description` field to YAML (currently prose-only)
-- ROADMAP.md: Add frontmatter (currently prose-only sections)
-- ROADMAP.md: Add `related_tasks` with id+name+url
-- DECISIONS.md: Add frontmatter to DEC-001 (currently markdown-body only)
+Completed by the generic storage migration, canonical schema, inverse validation, and public `vef setup` lifecycle.
+This framework record no longer tracks any named consumer migration; adopter-specific reconciliation remains in each
+consumer repository.
 
 ---
 
@@ -482,10 +481,13 @@ related_decisions:
   - id: DEC-004
     name: Store canonical items in per-type folders and generate the ledgers
     url: /DECISIONS.md#DEC-004
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex
+  at: '2026-08-14T15:23:13.766Z'
 ---
 
-Completed 2026-08-13. DEC-004's per-item storage contract is implemented and dogfooded: canonical records live under `docs/<record-type>/`, collection `_index.md` files own ledger prose, `.vef/storage.json` versions the layout, and root ledgers are deterministic committed projections with drift detection. Fresh projects start on the new layout. Legacy consumers retain read compatibility and safe migration mechanics; DEC-009 now composes those internals behind the public `vef setup` lifecycle. The retired root-directory preview layout is relocated safely. General-purpose transactional writes remain separated into deferred FRAMEWORK-022.
+Completed 2026-08-13. DEC-004's per-item storage contract is implemented and dogfooded: canonical records live under docs/<record-type>/, collection _index.md files own ledger prose, .vef/storage.json versions the layout, and root ledgers are deterministic committed projections with drift detection. Fresh projects start on the new layout. Legacy consumers retain read compatibility and safe migration mechanics; DEC-009 composes those internals behind the public vef setup lifecycle. The retired root-directory preview layout is relocated safely. FRAMEWORK-022 subsequently completed recoverable transactional writes on 2026-08-14.
 
 ---
 
@@ -538,10 +540,13 @@ related_decisions:
   - id: DEC-009
     name: Make setup and check the complete public adoption lifecycle
     url: /DECISIONS.md#DEC-009
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T15:47:16.538Z'
 ---
 
-This is the immediate framework priority. `0.1.0` established the verified public package and secured release path, but adoption examples and distribution are paused until the lifecycle itself is simple enough to teach truthfully. TASK-030 implements DEC-009's two-command contract: `setup` owns installation-through-enforcement orchestration and `check` is the one strict acceptance gate. TASK-031 must publish and prove that `0.2.0` flow on fresh and representative upgrading consumers before TASK-018 and TASK-019 resume. Deferred transaction work must not be advertised as shipped.
+`0.2.0` completed the verified two-command adoption lifecycle on 2026-08-14: public latest acquisition, clean setup/check, and two representative consumer upgrades all passed. `0.3.0` then made FRAMEWORK-022's transaction writer publicly available. TASK-018 and TASK-019 can now resume public examples, feedback, and distribution without teaching manual inverse-link bookkeeping as the normal authoring experience.
 
 ---
 
@@ -552,8 +557,8 @@ id: FRAMEWORK-022
 title: Build transactional project mutations
 description: Add a recoverable mutation core and two portable public write operations after the public storage contract is stable.
 phase: Phase 3 — Transactional Project Memory
-status: Deferred
-priority: P1
+status: Completed
+priority: P0
 related_tasks:
   - id: TASK-013
     name: Build the recoverable transaction engine
@@ -571,10 +576,18 @@ related_decisions:
   - id: DEC-004
     name: Store canonical items in per-type folders and generate the ledgers
     url: /DECISIONS.md#DEC-004
-last_updated: '2026-08-13'
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T15:47:16.538Z'
 ---
 
-The public write surface remains intentionally small: `vef create` creates a record and `vef update` changes scalar fields and relationships in one validated transaction. Agents retain semantic judgment and prose authorship; deterministic code owns IDs, lifecycle mechanics, typed inverse links, candidate validation, projection, and recoverable writes. Direct Markdown editing remains supported through the strict validation gate.
+Completed 2026-08-14 and released in VEF 0.3.0. VEF now has two public day-to-day mutation commands over one recoverable writer. Agents and humans continue to decide meaning; deterministic code owns mechanical structure. No separate link command or adapter-specific serializer was added.
+
+DEC-010 governs the immutable journal, additive state markers, renewable stale-tolerant lease, direct retrying Windows writes, non-fatal cleanup debris, and explicit recovery. TASK-013 through TASK-015 shipped as one boundary and the frozen 17-record engine replay reaches strict integrity without manual inverse repair. The next product track can use the candidate diff and exported transaction contract for lightweight human review.
 
 <!-- End VEF generated items. -->
 
@@ -588,10 +601,13 @@ The public write surface remains intentionally small: `vef create` creates a rec
 | Phase 2 — Public Launch | 🔄 In Progress | FRAMEWORK-020 |
 | Phase 2 — Canonical Record Storage | ✅ Completed | FRAMEWORK-019 |
 | Phase 2 — Human Review | 🔄 In Progress | FRAMEWORK-015 (parallel, non-blocking contract and workspace) |
-| Phase 3 — Transactional Project Memory | ⏸ Deferred | FRAMEWORK-022 |
-| Phase 1 — Consumer Validation | 🔄 In Progress | FRAMEWORK-004, -005 (done); FRAMEWORK-006 (in progress); FRAMEWORK-007 (deferred) |
+| Phase 3 — Transactional Project Memory | ✅ Completed | FRAMEWORK-022 |
+| Phase 1 — Consumer Validation | ✅ Core completed | FRAMEWORK-004, -005, -006 completed; FRAMEWORK-007 deferred |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
 
-**Next priority:** FRAMEWORK-020 must publish and prove DEC-009's simplified `setup`/`check` adoption lifecycle before adoption examples or distribution resume. FRAMEWORK-015 continues the parallel lightweight review workspace against the same canonical loader. Adapter-specific UI work remains deferred under FRAMEWORK-016, and transaction commands remain deferred to FRAMEWORK-022. Named consumer implementations and commercial programs remain canonical in their own repositories rather than VEF's roadmap.
+**Next priority:** FRAMEWORK-020 resumes public examples and distribution using the completed FRAMEWORK-022 authoring
+boundary. FRAMEWORK-015 continues the lightweight human-review workspace against the new candidate diff; adapter-specific
+UI remains deferred under FRAMEWORK-016. Named consumer implementations and commercial programs remain canonical in
+their own repositories rather than VEF's roadmap.

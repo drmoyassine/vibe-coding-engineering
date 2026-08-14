@@ -2,13 +2,13 @@
 
 **vibe-engineering-framework Decisions** — Architectural, product, and technical decisions with context and rationale.
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ---
 
 ## Decision schema
 
-Each decision uses YAML frontmatter (canonical source: this file + `CLAUDE.md` "Frontmatter schemas"). Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
+Each decision uses YAML frontmatter (`src/lib/schemas.mjs` is the executable canonical schema). Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
 
 ```yaml
 ---
@@ -26,6 +26,9 @@ superseded_by:                   # SINGULAR object, only when status = supersede
 generated:                       # OPTIONAL (OKF trust signal) — who wrote this, when
   by: "human:<id>" | "<producer>/<version>" | "process:<id>"
   at: "2026-08-12T00:00:00Z"
+modified:                        # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 verified:                        # OPTIONAL (OKF trust signal) — who confirmed this
   - by: "human:<id>"
     at: "2026-08-12T00:00:00Z"
@@ -307,10 +310,13 @@ generated:
 verified:
   - by: human:drmoy
     at: '2026-08-13T00:00:00Z'
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex
+  at: '2026-08-14T15:23:13.766Z'
 ---
 
-Implemented by TASK-012, TASK-028, and the safety correction in TASK-029 on 2026-08-13. The framework now dogfoods canonical collections under `docs/`, deterministic projection, drift checks, fresh-init behavior, and preflighted migrations for both monolithic ledgers and the retired root-directory preview layout. DEC-009 subsequently made `vef setup` the public orchestrator over initialization, migration, projection, strict validation, and final enforcement; the older `doctor --fix` path remains hidden compatibility behavior. General-purpose transaction commands remain deferred under FRAMEWORK-022.
+Implemented by TASK-012, TASK-028, and the safety correction in TASK-029 on 2026-08-13. The framework now dogfoods canonical collections under docs/, deterministic projection, drift checks, fresh-init behavior, and preflighted migrations for both monolithic ledgers and the retired root-directory preview layout. DEC-009 subsequently made vef setup the public orchestrator over initialization, migration, projection, strict validation, and final enforcement; the older doctor --fix path remains hidden compatibility behavior. FRAMEWORK-022 subsequently completed the general-purpose transaction commands on 2026-08-14.
 
 ---
 
@@ -631,6 +637,68 @@ npx vibe-engineering-framework@latest check
 `--yes` is deliberately absent from the human workflow because it is an npm package-runner approval control, not part of VEF. Generated non-interactive CI may use it so installation cannot pause for input.
 
 Setup is a deterministic lifecycle orchestrator, not an agent. It stops when project meaning is unresolved and points to reviewed reconciliation. Check proves only the implemented project-memory contract; optional adapter compatibility remains a separate reported dimension.
+
+---
+
+## DEC-010 — Use a versioned VEF journal and stale-tolerant lease lock for mutations
+
+---
+id: DEC-010
+title: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+status: accepted
+context: >-
+  A single relationship change can update multiple canonical item files and generated ledgers, but filesystems do not
+  provide a portable multi-file atomic commit. VEF must work in dirty Git worktrees and on Windows paths synchronized by
+  OneDrive or similar clients, where rename, unlink, and lock cleanup can fail even after the intended write succeeds.
+decision: >-
+  Journal every transaction under .vef/transactions before the first project-file write. An immutable versioned manifest
+  records intent, before/after hashes, actor, and timestamps; hash-verified before/after content and additive state
+  markers complete the journal without truncating the manifest. An unresolved journal blocks later writes until an
+  explicit roll-forward or rollback succeeds and verifies the resulting hashes. Git is evidence after a transaction, not
+  the transaction journal. Serialize writers through a tokenized lease lock containing PID, host, transaction id,
+  acquisition time, and expiry; stale or released locks may be reclaimed without requiring successful unlink.
+  Transaction-scoped debris is reclaimable, and cleanup failure is reported as attention rather than changing a
+  successful transaction into a failure.
+rationale: >-
+  A .vef journal works in legitimately dirty repositories, makes recovery independent of commit policy, and provides a
+  portable contract that future CLI versions can read. Intent-first journaling makes interruption behavior testable at
+  every write boundary. A renewable token/lease is more resilient than assuming lock deletion works on synchronized or
+  scanned Windows folders, while token verification still detects competing writers.
+consequences: >-
+  Positive — deterministic recovery, explicit operator choice, stale-lock handling, concurrency protection, and a
+  testable Windows/OneDrive contract. Negative — VEF owns a small write-ahead-log protocol, must preserve backward
+  readers for journal schema versions, and cannot claim filesystem or database atomicity. Sync software can still
+  interfere, so every recovery and completion path must verify hashes and refuse uncertain state.
+related_tasks:
+  - id: TASK-013
+    name: Build the recoverable transaction engine
+    url: /TASKS.md#TASK-013
+  - id: TASK-014
+    name: Expose vef create and vef update
+    url: /TASKS.md#TASK-014
+  - id: TASK-015
+    name: Migrate agent adapters and complete mutation tests
+    url: /TASKS.md#TASK-015
+related_roadmap_items:
+  - id: FRAMEWORK-022
+    name: Build transactional project mutations
+    url: /ROADMAP.md#FRAMEWORK-022
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+  - id: DEC-004
+    name: Store canonical items in per-type folders and generate the ledgers
+    url: /DECISIONS.md#DEC-004
+generated:
+  by: process:codex
+  at: '2026-08-14T00:00:00Z'
+last_updated: '2026-08-14'
+---
+
+Accepted while TASK-013 was still uncommitted, after independent QA identified Windows synchronization, interruption,
+and concurrent-agent failure modes in the first transaction-engine draft. The implementation must prove this contract
+before `create`, `update`, or agent adapters become supported write paths.
 
 <!-- End VEF generated items. -->
 

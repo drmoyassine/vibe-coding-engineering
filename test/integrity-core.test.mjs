@@ -61,6 +61,15 @@ test('CLI version is sourced from package metadata', async () => {
   assert.equal(stdout.trim(), packageJson.version);
 });
 
+test('publishes executable schema and transaction contracts through stable package exports', async () => {
+  const schema = await import('vibe-engineering-framework/schema');
+  const transactions = await import('vibe-engineering-framework/transactions');
+  assert.equal(schema.SCHEMAS.tasks.fields.roadmap_item.inverse, 'related_tasks');
+  assert.equal(schema.SCHEMAS.tasks.fields.modified.kind, 'provenance');
+  assert.equal(typeof transactions.planTransaction, 'function');
+  assert.equal(typeof transactions.recoverTransaction, 'function');
+});
+
 test('CLI presents one setup command and one strict check command for adoption', async () => {
   const { stdout } = await execFileAsync(process.execPath, ['bin/vef.mjs', '--help']);
   assert.match(stdout, /setup \[options\]/);
@@ -74,7 +83,7 @@ test('CLI presents one setup command and one strict check command for adoption',
   const { stdout: doctorHelp } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--help']);
   assert.doesNotMatch(doctorHelp, /--fix/);
 
-  for (const humanSurface of ['README.md', 'docs/releases/v0.2.0.md']) {
+  for (const humanSurface of ['README.md', 'docs/releases/v0.2.0.md', 'docs/releases/v0.3.0.md']) {
     assert.doesNotMatch(await readFile(humanSurface, 'utf8'), /npx --yes/);
   }
 });
@@ -127,7 +136,8 @@ test('keeps named consumers out of framework product and agent surfaces', async 
     'SECURITY.md',
     'RELEASING.md',
     'docs/releases/v0.1.0.md',
-    'docs/releases/v0.2.0.md'
+    'docs/releases/v0.2.0.md',
+    'docs/releases/v0.3.0.md'
   ];
   for (const surface of surfaces) {
     const content = await readFile(surface, 'utf8');
@@ -162,6 +172,7 @@ test('init creates lowercase OKF files with truthful provenance and a validated 
     const manifest = JSON.parse(await readFile(join(dir, '.vef', 'storage.json'), 'utf8'));
     assert.deepEqual({ schemaVersion: manifest.schemaVersion, layout: manifest.layout }, { schemaVersion: 1, layout: 'per-item' });
     assert.equal(manifest.canonical.tasks.directory, 'docs/tasks');
+    assert.equal(await readFile(join(dir, '.vef', 'transactions', '.gitignore'), 'utf8'), '*\n!.gitignore\n');
     const { stdout: doctorOutput } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--dir', dir]);
     assert.match(doctorOutput, /✓  Claude adapter contract is compatible/);
     assert.match(doctorOutput, /✓  Canonical records and document surfaces align/);

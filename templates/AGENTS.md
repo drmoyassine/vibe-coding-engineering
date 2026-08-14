@@ -12,7 +12,13 @@ Use `vef list`, `show`, `refs`, `why`, `graph`, and `search` for read-only proje
 
 ## Canonical record storage
 
-Structured records live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each collection's `_index.md` owns ledger-level prose. The root `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` files are generated committed ledgers. Never edit their generated item blocks directly. After canonical item changes, run:
+Structured records live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each collection's `_index.md` owns ledger-level prose. The root `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` files are generated committed ledgers. Never edit their generated item blocks directly.
+
+Automated agents must author semantic proposal data and use `vef create`/`vef update`; they must not serialize
+canonical item Markdown, inverse links, or ledgers. Preview is the default and writes require `--write --actor <id>`.
+VEF owns IDs when omitted, dates, `modified` provenance, relationship closure, journaling, and validation. If a write
+is interrupted, stop for an explicit `vef recover <id> --forward|--rollback` direction. Direct human item editing is
+an escape hatch; after it, run:
 
 ```bash
 vef setup
@@ -47,6 +53,6 @@ npm test
   - `/roadmap reconcile` — validate roadmap schemas
   - `/decisions reconcile` — validate decision schemas + cross-links
 - Run `/apply` to migrate scattered content into the canonical schema.
-- `vef setup` is the only normal lifecycle write: it initializes or upgrades, repairs, projects, validates, and enforces. `vef check` is the strict read-only local/CI gate; `vef doctor` explains blockers. Review and commit `.vef/`, `docs/`, regenerated ledgers, any newly installed adapters, and the managed enforcement workflow together. Existing adapter files are never overwritten.
+- `vef setup` is the adoption/upgrade lifecycle write; `vef create` and `vef update` are the day-to-day record writers. `vef check` is the strict read-only local/CI gate; `vef doctor` explains blockers. Review and commit `.vef/`, `docs/`, regenerated ledgers, adapters, and the managed enforcement workflow together. Existing adapter files are never overwritten.
 
 <!-- PROJECT: Add your project-specific conventions here. -->

@@ -2,7 +2,7 @@
 
 **vibe-engineering-framework Roadmap** — Directional commitments for the project-memory framework and its public ecosystem.
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ---
 
@@ -30,6 +30,9 @@ related_decisions:
   - id: DEC-XXX
     name: "Decision title"
     url: /DECISIONS.md#DEC-XXX
+modified:                      # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 last_updated: 2026-08-12
 ---
 ```
@@ -46,10 +49,13 @@ last_updated: 2026-08-12
 | Phase 2 — Public Launch | 🔄 In Progress | FRAMEWORK-020 |
 | Phase 2 — Canonical Record Storage | ✅ Completed | FRAMEWORK-019 |
 | Phase 2 — Human Review | 🔄 In Progress | FRAMEWORK-015 (parallel, non-blocking contract and workspace) |
-| Phase 3 — Transactional Project Memory | ⏸ Deferred | FRAMEWORK-022 |
-| Phase 1 — Consumer Validation | 🔄 In Progress | FRAMEWORK-004, -005 (done); FRAMEWORK-006 (in progress); FRAMEWORK-007 (deferred) |
+| Phase 3 — Transactional Project Memory | ✅ Completed | FRAMEWORK-022 |
+| Phase 1 — Consumer Validation | ✅ Core completed | FRAMEWORK-004, -005, -006 completed; FRAMEWORK-007 deferred |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
 
-**Next priority:** FRAMEWORK-020 must publish and prove DEC-009's simplified `setup`/`check` adoption lifecycle before adoption examples or distribution resume. FRAMEWORK-015 continues the parallel lightweight review workspace against the same canonical loader. Adapter-specific UI work remains deferred under FRAMEWORK-016, and transaction commands remain deferred to FRAMEWORK-022. Named consumer implementations and commercial programs remain canonical in their own repositories rather than VEF's roadmap.
+**Next priority:** FRAMEWORK-020 resumes public examples and distribution using the completed FRAMEWORK-022 authoring
+boundary. FRAMEWORK-015 continues the lightweight human-review workspace against the new candidate diff; adapter-specific
+UI remains deferred under FRAMEWORK-016. Named consumer implementations and commercial programs remain canonical in
+their own repositories rather than VEF's roadmap.

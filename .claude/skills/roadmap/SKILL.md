@@ -9,6 +9,16 @@ Manage canonical roadmap records in `docs/roadmap/`. `ROADMAP.md` is a generated
 - `graduate` — Graduate a roadmap item into one or more tasks
 - `reconcile` — Validate canonical roadmap files and regenerate ROADMAP.md
 
+## Required writer boundary
+
+The skill interprets direction and authors semantic fields/body, but it never edits or serializes canonical Markdown.
+For `add`, use `vef create roadmap --from <proposal>` for preview and rerun with `--write --actor <agent-id>` only
+after acceptance. For scalar or relationship changes, use `vef update ROADMAP-XXX --from <proposal>`. Put scalar
+changes under `set`, body prose under `body`, and link additions/removals under `relationships`. Graduation proposals
+are submitted together through the transaction engine's batch proposal mode so the roadmap/task graph changes as
+one candidate. The CLI owns lifecycle dates, `modified` provenance, inverse links, ledgers, validation, journaling,
+and recovery; this adapter owns no frontmatter or Markdown renderer.
+
 ## Roadmap item schema
 
 Every roadmap item in ROADMAP.md must follow this frontmatter schema. All related references use the **`id + name + url`** pattern — relative URLs for same-repo, absolute for cross-repo/external.
@@ -41,6 +51,9 @@ log_ref:                      # OPTIONAL — ref to log.md section (narrative hi
 generated:                    # OPTIONAL (OKF trust signal)
   by: "human:<id>"
   at: "2026-01-01T00:00:00Z"
+modified:                     # transaction-managed provenance
+  by: "agent/session"
+  at: "2026-01-01T00:00:00Z"
 verified:                     # OPTIONAL (OKF trust signal)
   - by: "human:<id>"
     at: "2026-01-01T00:00:00Z"
@@ -56,7 +69,7 @@ Problem, solution, dependencies, open decisions.
 - `related_decisions` links to DECISIONS.md (the canonical decision record), NOT to log.md.
 - `log_ref` points to log.md (narrative history) but is optional.
 - Same-repo URLs are **relative** (`/TASKS.md#TASK-001`); cross-repo/external are **absolute**.
-- **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. Omit when unused; unknown keys are preserved.
+- **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, transaction-managed `modified` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`.
 
 ## Cross-linking philosophy
 
@@ -98,22 +111,23 @@ You'll be prompted for:
 - Priority for each task
 - Assignee (optional)
 
-This creates TASK-XXX entries in TASKS.md, each with `roadmap_item: { id: ROADMAP-001, name, url }` linking back, and adds the new task ids into this item's `related_tasks` (bidirectional).
+Submit the task creates and roadmap update as one `operations` proposal through `vef create batch --from <proposal>`;
+the engine allocates/validates records and closes every inverse relationship in the same transaction.
 
 ### Reconcile
 ```
 /roadmap reconcile
 ```
-1. Reads canonical `docs/roadmap/*.md` item files
-2. Validates every frontmatter block against the schema above
-3. Checks all `id + name + url` refs resolve (no orphans), bidirectionally with TASKS/DECISIONS
-4. Reports inconsistencies; asks before changing canonical items
-5. Runs `vef project` after accepted item changes, then `vef validate --strict`
+1. Runs `vef check` as the read-only reconciliation report.
+2. Uses `vef show`, `vef refs`, and `vef graph` to explain inconsistencies.
+3. Delegates accepted repairs to `vef update` or one batch proposal; a title/heading mismatch requires explicit human-selected `--authority frontmatter|heading`.
+4. Reruns `vef check`; unresolved transaction journals require explicit recovery direction.
 
 ## Implementation notes
 
 - Each roadmap item is stored canonically in `docs/roadmap/<ID>.md`; `docs/roadmap/_index.md` owns ledger-level prose.
-- Never edit generated item blocks in `ROADMAP.md`. Run `vef project` to regenerate the committed ledger.
+- Automated agents never edit roadmap item files or generated blocks directly; the transaction commands are the only supported writer path.
+- Direct human editing is an escape hatch: maintain inverse links, run `vef setup` to project, then require `vef check`.
 - The `id` field is the unique identifier (ROADMAP-XXX format).
 - Status is one of: Deferred, In Progress, Completed, Blocked.
 - `related_tasks` ↔ TASK `roadmap_item` must be bidirectional.

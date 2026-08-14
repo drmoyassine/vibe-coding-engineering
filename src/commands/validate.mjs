@@ -15,6 +15,7 @@ import { validateItem } from '../lib/schemas.mjs';
 import { findOrphans, findDuplicateIds, findDependencyCycles, checkBidirectional } from '../lib/crosslinks.mjs';
 import { auditMemoryCatalogDirectory } from '../lib/memory-catalog.mjs';
 import { loadCanonicalDocuments, STORAGE_MANIFEST } from '../lib/record-store.mjs';
+import { inspectTransactionState } from '../lib/transactions.mjs';
 
 /**
  * @param {{ dir: string, strict: boolean }} opts
@@ -37,6 +38,15 @@ export async function validateCommand(opts) {
   log(`\n  Validating: ${targetDir}\n`);
 
   const loaded = await loadCanonicalDocuments(targetDir);
+
+  const transactionState = await inspectTransactionState(targetDir);
+  log('  ── Transaction recovery ──');
+  if (transactionState.unresolved.length === 0) log('  ✓  No unresolved mutation journal');
+  for (const journal of transactionState.unresolved) {
+    const message = `Transaction ${journal.id} is ${journal.state}; explicit forward or rollback recovery is required`;
+    log(`  ✗  ${message}`);
+    recordIssue('error', 'transactions', message);
+  }
 
   log('  ── Canonical storage ──');
   if (loaded.storage.mode === 'per-item') {

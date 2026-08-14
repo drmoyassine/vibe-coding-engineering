@@ -10,6 +10,16 @@ Manage canonical task records in `docs/tasks/`. `TASKS.md` is a generated, commi
 - `complete` — Mark a task as completed
 - `reconcile` — Validate canonical task files and regenerate TASKS.md
 
+## Required writer boundary
+
+The skill interprets intent and authors semantic fields/body, but it never edits or serializes canonical Markdown.
+For `add`, write a temporary YAML/JSON proposal and run `vef create task --from <proposal>` to preview, then rerun
+with `--write --actor <agent-id>` only after the preview is accepted. For `update` and `complete`, use
+`vef update TASK-XXX --from <proposal>` and the same explicit `--write` gate. Put scalar changes under `set`, body
+prose under `body`, and relationship changes under `relationships`; the CLI owns IDs when omitted, `last_updated`,
+`modified` provenance, inverse links, ledgers, validation, journaling, and recovery. Never maintain a second YAML
+frontmatter or Markdown renderer in this adapter.
+
 ## Task schema
 
 Every task in TASKS.md must follow this frontmatter schema. All related references use the **`id + name + url`** pattern — relative URLs for same-repo, absolute for cross-repo/external.
@@ -46,6 +56,9 @@ log_ref:                      # OPTIONAL — ref to log.md section (narrative hi
 generated:                    # OPTIONAL (OKF trust signal)
   by: "human:<id>"
   at: "2026-01-01T00:00:00Z"
+modified:                     # transaction-managed provenance
+  by: "agent/session"
+  at: "2026-01-01T00:00:00Z"
 verified:                     # OPTIONAL (OKF trust signal)
   - by: "human:<id>"
     at: "2026-01-01T00:00:00Z"
@@ -62,7 +75,7 @@ Full description, acceptance criteria, implementation notes.
 - `related_decisions` links to DECISIONS.md (the canonical decision record), NOT to log.md.
 - `log_ref` points to log.md (narrative history) but is optional.
 - Same-repo URLs are **relative** (`/ROADMAP.md#ROADMAP-001`); cross-repo/external are **absolute**.
-- **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. Omit when unused; unknown keys are preserved.
+- **OKF optional fields**: `tags`, `resource`, `log_ref`, `generated` {by, at}, transaction-managed `modified` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`.
 
 ## Cross-linking philosophy
 
@@ -105,22 +118,22 @@ You'll be prompted for fields to update.
 ```
 /tasks complete TASK-001
 ```
-Sets status to completed, updates last_updated to today.
+Submit `set: { status: completed }` through `vef update`; the transaction engine stamps dates and provenance.
 
 ### Reconcile
 ```
 /tasks reconcile
 ```
-1. Reads canonical `docs/tasks/*.md` item files
-2. Validates every frontmatter block against the schema above
-3. Checks all `id + name + url` refs resolve (no orphans), bidirectionally with ROADMAP/DECISIONS
-4. Reports inconsistencies; asks before changing canonical items
-5. Runs `vef project` after accepted item changes, then `vef validate --strict`
+1. Runs `vef check` as the read-only reconciliation report.
+2. Uses `vef show`, `vef refs`, and `vef graph` to explain any inconsistency.
+3. For an accepted repair, authors an update proposal and delegates the complete write to `vef update`; a title/heading mismatch requires explicit human-selected `--authority frontmatter|heading`.
+4. Reruns `vef check`; unresolved transaction journals require explicit `vef recover` direction.
 
 ## Implementation notes
 
 - Each task is stored canonically in `docs/tasks/<ID>.md`; `docs/tasks/_index.md` owns ledger-level prose.
-- Never edit generated item blocks in `TASKS.md`. Run `vef project` to regenerate the committed ledger.
+- Automated agents never edit task item files or generated blocks directly; `vef create`/`vef update` are the only supported writer path.
+- Direct human editing is an escape hatch: maintain all inverse links, run `vef setup` to project, then require `vef check` before acceptance.
 - The `id` field is the unique identifier (TASK-XXX format).
 - Generated ledgers use deterministic record-ID order; status filtering belongs in `vef list tasks --status ...` or a derived review view.
 - `roadmap_item` ↔ ROADMAP `related_tasks` must be bidirectional.

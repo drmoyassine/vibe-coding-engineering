@@ -4,7 +4,7 @@ title: Release and prove the VEF 0.2 adoption lifecycle
 description: >-
   Publish the two-command lifecycle and verify that real consumers can update through latest setup and reach enforced
   state without reconstructing internal commands.
-status: in-progress
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-020
@@ -25,17 +25,20 @@ related_decisions:
   - id: DEC-008
     name: Bootstrap npm manually, then use staged trusted publishing
     url: /DECISIONS.md#DEC-008
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T15:47:16.538Z'
 ---
 # TASK-031 — Release and prove the VEF 0.2 adoption lifecycle
 
-`0.2.0` is the adoption-lifecycle release candidate. Completion requires:
+Completed 2026-08-14. The adoption-lifecycle release was proven across every declared boundary:
 
-- the complete release gate and cross-platform CI on the tagged artifact;
-- staged OIDC publication and human 2FA approval through DEC-008;
-- public-registry verification of `setup`, `check`, and the exact package integrity;
-- clean fresh-repository setup plus check from npm;
-- upgrade proof on representative independently owned consumer repositories using only `npx vibe-engineering-framework@latest setup`, semantic reconciliation when explicitly reported, and `check`;
-- final README/release notes that distinguish core enforcement from optional adapter compatibility and state that no CLI can invent missing product meaning.
+- merged PR #1 after the complete release gate and eight passing Ubuntu/Windows checks, then tagged merge commit `e5b37fb` as `v0.2.0`;
+- staged the tag through GitHub OIDC, published signed provenance, and released it after human 2FA approval under DEC-008;
+- verified npm `latest` resolves to `0.2.0`, registry SHA-1 `9fa04f7f8cd235b101c83870743ccec522d486da`, and SHA-512 integrity `sha512-5/zsyx+zylpgqWTZkd2IUTGEHHkjUJTAfLvrOszk9BRR++mMosZijIG0dO9LmU0qpdLaHIa5AdSZ3h0yOVEEww==`;
+- installed public `@latest` into a clean temporary repository and passed fresh `setup` followed by `check`;
+- ran public latest `setup` and `check` against two independently governed adopted repositories: one idempotent current state and one safe regeneration of four stale derived ledgers from semantically coherent canonical records;
+- published the matching GitHub Release and retained the documented boundary between deterministic core enforcement, optional adapters, and unresolved product meaning.
 
-TASK-018 and TASK-019 remain blocked behind this proof. Public examples and launch distribution must teach the simplified lifecycle rather than the obsolete 0.1 command sequence.
+TASK-018 and TASK-019 are no longer blocked by the lifecycle release. FRAMEWORK-022 subsequently delivered deterministic day-to-day record writes so public examples no longer need to teach manual inverse-link bookkeeping.

@@ -87,6 +87,19 @@ vef search "query interface" --json
 
 Text is the default; `--json` emits the versioned automation contract. Use `type:id` selectors only to disambiguate an invalid repository containing the same ID in multiple document types.
 
+For automated structural writes, author proposal data and delegate canonical serialization to the CLI:
+
+```bash
+vef create task --from proposed-task.yml                    # preview
+vef create task --from proposed-task.yml --write --actor agent/session
+vef update TASK-009 --from task-update.yml                  # preview includes inverse links
+vef update TASK-009 --from task-update.yml --write --actor agent/session
+```
+
+Never let a skill or agent maintain its own frontmatter, inverse-link, ledger, or rollback serializer. The engine owns
+IDs when omitted, lifecycle dates, `modified` provenance, typed relationship closure, projection, validation, journal,
+and lease. An unresolved transaction requires explicit `vef recover <id> --forward|--rollback` direction.
+
 ## Key patterns
 
 ### Markdown is source of truth for prose, frontmatter for structure
@@ -94,13 +107,13 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 - All docs use YAML frontmatter for machine-readable metadata (id, status, links, etc.)
 - Prose lives in the markdown body below the frontmatter
 - Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each directory's `_index.md` owns ledger-level prose.
-- `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are generated committed ledgers. Never edit their generated item blocks directly. Agent adapters may call the internal projector while composing a candidate; the public lifecycle is `vef setup` followed by `vef check`.
+- `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` are generated committed ledgers. Never edit their generated item blocks directly. Automated adapters use `vef create`/`vef update`; direct human item edits are an escape hatch followed by `vef setup` and `vef check`.
 - `.vef/storage.json` versions the storage layout. `vef setup` initializes or upgrades, repairs, projects, validates, and enforces; `vef check` is the strict read-only gate; `vef doctor` explains blockers. Existing adapter files are never overwritten.
 - Cross-linking uses the `id + name + url` pattern: **relative URLs for same-repo** (`/TASKS.md#TASK-001`), **absolute URLs for cross-repo / external** (e.g. GitHub Issues `https://github.com/user/repo/issues/42`)
 
 ### Frontmatter schemas
 
-> **OKF v0.2 conformance (DEC-002).** Every item carries the core fields below. The optional OKF fields — `tags`, `resource`, `generated` (by/at), `verified` (by/at) — may appear on any item. The **actor convention** (§7) applies to `generated.by` / `verified.by`: `human:<id>` for people, `<producer>/<version>` for agents/tools, `process:<id>` for automated processes. Unknown keys are preserved (round-trip safe).
+> **OKF v0.2 conformance (DEC-002).** Every item carries the core fields below. The optional OKF fields — `tags`, `resource`, `generated` (by/at), transaction-managed `modified` (by/at), and `verified` (by/at) — may appear on any item. The **actor convention** (§7) applies to provenance actors: `human:<id>` for people, `<producer>/<version>` for agents/tools, `process:<id>` for automated processes.
 
 **Task (`TASKS.md`):**
 ```yaml
@@ -132,6 +145,9 @@ resource: https://github.com/user/repo/blob/main/migrations/001.sql  # OPTIONAL 
 generated:                              # OPTIONAL (OKF trust signal)
   by: "human:<id>"                      # actor convention: human:<id> | <producer>/<version> | process:<id>
   at: "2026-08-12T00:00:00Z"
+modified:                               # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 verified:                               # OPTIONAL (OKF trust signal) — repeatable
   - by: "human:<id>"
     at: "2026-08-12T00:00:00Z"
@@ -167,6 +183,9 @@ resource:                               # OPTIONAL (OKF) — canonical URI to th
 generated:                              # OPTIONAL (OKF trust signal)
   by: "human:<id>"
   at: "2026-08-12T00:00:00Z"
+modified:                               # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 verified:                               # OPTIONAL (OKF trust signal)
   - by: "human:<id>"
     at: "2026-08-12T00:00:00Z"
@@ -203,6 +222,9 @@ resource:                               # OPTIONAL (OKF)
 generated:                              # OPTIONAL (OKF trust signal)
   by: "human:<id>"
   at: "2026-08-12T00:00:00Z"
+modified:                               # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 verified:                               # OPTIONAL (OKF trust signal)
   - by: "human:<id>"
     at: "2026-08-12T00:00:00Z"
@@ -221,7 +243,8 @@ When you complete direction-changing work, invoke the appropriate skill:
 - **`/decisions reconcile`** — Validate canonical decision files, detect superseded items, and project the ledger
 - **`/bugs sync`** — Cross-reference GitHub Issues with product_failures table
 
-Skills are the **canonical definition** of the framework. If you want to change how items are structured, you edit the skill — not this file.
+`src/lib/schemas.mjs` is the executable canonical schema and is exported as `vibe-engineering-framework/schema`.
+Skills explain and invoke that contract; they must not maintain a competing writer or field definition.
 
 ### External tool integrations
 
@@ -234,22 +257,21 @@ Automations (GitHub Actions, n8n) can watch these tools and trigger skills to up
 
 ### Adding a roadmap item
 
-1. Edit `ROADMAP.md`, add a new section with frontmatter.
-2. Run `/roadmap reconcile` to validate.
-3. Commit with message: `Add ROADMAP-001: Context-gated tools/skills`.
+1. Author semantic fields, prose, and relationship target IDs in a proposal.
+2. Preview and apply it through `vef create roadmap --from <proposal>` with explicit `--write`.
+3. Run `vef check`, review the diff, then commit.
 
 ### Adding a task
 
-1. Edit `TASKS.md`, add a new section with frontmatter.
-2. Link to roadmap item via `roadmap_item` (URL).
-3. Run `/tasks reconcile` to validate.
-4. Commit with message: `Add TASK-001: Implement activeWhen predicate`.
+1. Author a task proposal and the target roadmap ID.
+2. Preview/apply with `vef create task`; the core allocates the ID and closes `roadmap_item ↔ related_tasks`.
+3. Run `vef check`, review, then commit.
 
 ### Adding a decision
 
-1. Edit `DECISIONS.md`, add a new section with frontmatter.
-2. Run `/decisions reconcile` to validate.
-3. Commit with message: `Add DEC-001: Use markdown as source of truth`.
+1. Author decision context, outcome, rationale, consequences, and relationship IDs.
+2. Preview/apply with `vef create decision`; use one batch candidate for supersession.
+3. Run `vef check`, review, then commit.
 
 ### Reporting a bug
 

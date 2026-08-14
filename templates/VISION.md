@@ -49,7 +49,6 @@ description: "Accept any document format and extract structured text"
 related_roadmap_items: []
 related_decisions: []
 tags: [documents, extraction]
-last_updated: 2026-01-01
 ---
 
 Describe the theme, its scope, and what success looks like.

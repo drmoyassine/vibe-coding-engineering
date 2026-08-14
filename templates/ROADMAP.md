@@ -28,6 +28,9 @@ log_ref:                    # OPTIONAL — ref to log.md section
 generated:                  # OPTIONAL (OKF trust signal)
   by: "human:<id>"
   at: "2026-01-01T00:00:00Z"
+modified:                   # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-01-01T00:00:00Z"
 verified:                   # OPTIONAL (OKF trust signal)
   - by: "human:<id>"
     at: "2026-01-01T00:00:00Z"

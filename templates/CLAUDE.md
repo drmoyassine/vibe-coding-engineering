@@ -34,6 +34,10 @@ vef search "customer outcome" --json
 
 Text is the default; `--json` emits the versioned automation contract. Use `type:id` only to disambiguate duplicate IDs in an invalid repository.
 
+For automated structural writes, author proposal data and delegate to `vef create` or `vef update`. Preview first;
+add `--write --actor <agent-id>` only after acceptance. Skills never render canonical frontmatter, item files, inverse
+links, or ledgers. If a journal is unresolved, stop for an explicit `vef recover <id> --forward|--rollback` choice.
+
 ## Doc framework
 
 | Doc | Purpose |
@@ -47,7 +51,7 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 | **index.md** | Navigation hub / table of contents (OKF) |
 | **BUGS** | Bug tracker — **GitHub Issues** (no markdown file — the Issues *are* the source) |
 
-Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each `_index.md` owns collection-level prose. Root structured ledgers are generated and committed for reading and stable links. After direct item edits, run `vef setup`, then `vef check`. `vef doctor` is read-only troubleshooting. Existing adapter files are never overwritten.
+Canonical structured items live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each `_index.md` owns collection-level prose. Root structured ledgers are generated and committed for reading and stable links. Automated changes use the transaction commands; direct human item edits remain an escape hatch followed by `vef setup` and `vef check`. `vef doctor` is read-only troubleshooting. Existing adapter files are never overwritten.
 
 **Before making or reversing an architectural/product decision, check DECISIONS.md** (`/decisions list`) — don't re-litigate settled decisions; record new or reversed ones via `/decisions add` / `supersede`.
 

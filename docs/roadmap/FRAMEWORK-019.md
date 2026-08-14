@@ -21,8 +21,11 @@ related_decisions:
   - id: DEC-004
     name: Store canonical items in per-type folders and generate the ledgers
     url: /DECISIONS.md#DEC-004
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex
+  at: '2026-08-14T15:23:13.766Z'
 ---
 # FRAMEWORK-019 — Adopt canonical per-item storage and ledger projections
 
-Completed 2026-08-13. DEC-004's per-item storage contract is implemented and dogfooded: canonical records live under `docs/<record-type>/`, collection `_index.md` files own ledger prose, `.vef/storage.json` versions the layout, and root ledgers are deterministic committed projections with drift detection. Fresh projects start on the new layout. Legacy consumers retain read compatibility and safe migration mechanics; DEC-009 now composes those internals behind the public `vef setup` lifecycle. The retired root-directory preview layout is relocated safely. General-purpose transactional writes remain separated into deferred FRAMEWORK-022.
+Completed 2026-08-13. DEC-004's per-item storage contract is implemented and dogfooded: canonical records live under docs/<record-type>/, collection _index.md files own ledger prose, .vef/storage.json versions the layout, and root ledgers are deterministic committed projections with drift detection. Fresh projects start on the new layout. Legacy consumers retain read compatibility and safe migration mechanics; DEC-009 composes those internals behind the public vef setup lifecycle. The retired root-directory preview layout is relocated safely. FRAMEWORK-022 subsequently completed recoverable transactional writes on 2026-08-14.

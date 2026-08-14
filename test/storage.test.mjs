@@ -261,8 +261,8 @@ test('doctor --fix enforces the core while preserving customized adapters byte-f
   try {
     const applySkillPath = join(dir, '.claude', 'skills', 'apply', 'SKILL.md');
     const applyWorkflowPath = join(dir, '.claude', 'skills', 'apply', 'workflow.mjs');
-    const customSkill = (await readFile(applySkillPath, 'utf8')).replace('vef project --dir <staging-directory>', 'consumer projection step');
-    const customWorkflow = (await readFile(applyWorkflowPath, 'utf8')).replaceAll('proposedItemFiles', 'consumerDocuments').replace('itemFilename(entry.id)', 'entry.id');
+    const customSkill = (await readFile(applySkillPath, 'utf8')).replace('vef create batch --from <proposal>', 'consumer write step');
+    const customWorkflow = (await readFile(applyWorkflowPath, 'utf8')).replaceAll('proposedOperations', 'consumerDocuments');
     await writeFile(applySkillPath, customSkill, 'utf8');
     await writeFile(applyWorkflowPath, customWorkflow, 'utf8');
 

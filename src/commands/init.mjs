@@ -13,6 +13,7 @@ import { readdir, readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { join, dirname, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { migrateLegacyStorage, projectLedgers } from '../lib/record-store.mjs';
+import { ensureTransactionRuntime } from '../lib/transactions.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, '..', '..', 'templates');
@@ -138,6 +139,8 @@ export async function initCommand(opts) {
     if (migration.alreadyMigrated) await projectLedgers(targetDir, { write: true });
     console.log(`  CREATE ${migration.itemCount} canonical item files${migration.alreadyMigrated ? ' (existing canonical store retained)' : ' + .vef/storage.json'}`);
     console.log('  PROJECT VISION.md, ROADMAP.md, TASKS.md, DECISIONS.md');
+    await ensureTransactionRuntime(targetDir);
+    console.log('  CREATE .vef/transactions/.gitignore');
   }
 
   console.log(`\n  ── Done ──`);
