@@ -1072,7 +1072,7 @@ Normal `update --help` documents `set`, `unset`, `body`, and relationship gramma
 id: TASK-035
 title: Release and publicly prove VEF 0.3.1
 description: Publish the transaction-hardening patch and independently verify every repaired public CLI path from the registry.
-status: in-progress
+status: completed
 priority: P0
 last_updated: '2026-08-14'
 generated:
@@ -1101,12 +1101,14 @@ related_decisions:
     url: /DECISIONS.md#DEC-010
 modified:
   by: agent/codex-release
-  at: '2026-08-14T16:43:48.683Z'
+  at: '2026-08-14T19:28:08.240Z'
 ---
 
-Run the complete release gate on Ubuntu and Windows, stage the tagged artifact through trusted publishing, require human 2FA approval, and verify registry hashes and provenance.
+Completed 2026-08-14. Commit `ecf4633` passed the complete release gate on Ubuntu and Windows with Node 18 and Node 24, was tagged `v0.3.1`, and was staged through the stage-only trusted GitHub OIDC publisher. Human 2FA approval made `vibe-engineering-framework@0.3.1` public as `latest`.
 
-Public-registry acceptance must include malformed-lease diagnosis/recovery, debris sweep behavior, fresh and inferred roadmap allocation, authority-only repair without a proposal, update grammar help, visible recover guidance, fresh setup, and strict check. Broad promotion remains blocked until this task completes.
+The live registry reports SHA-1 `32b1aa5ec6beab0e304b609eba350771aaf3f50d`, integrity `sha512-DPI19Cx9AuG5fAYNPtngJyst9j57Rft1YaVnjhB7W/peGsskOubF8ts/HSvsDFDuHpQAWSMRAeqmeatQa2lLbQ==`, 37 files, an empty staging queue, an npm signature, and SLSA provenance. A clean public-registry installation passed fresh setup/check, malformed-lease diagnosis and quarantine, inactive-debris sweep, fresh and inferred roadmap allocation, authority-only repair without a proposal, update grammar help, visible recovery guidance, and final strict enforcement.
+
+The matching GitHub release is public. Bugs #3, #4, and #5 were closed with registry evidence. TASK-040 may now execute the already frozen controlled inheritance protocol; broad promotion remains gated by TASK-041 and TASK-043.
 
 ---
 
@@ -1268,7 +1270,7 @@ The frozen fixture manifest covers implementation-decision, roadmap/task-intent,
 id: TASK-040
 title: Run the blinded comparative VEF effectiveness evaluation
 description: Execute equivalent bare-documentation and VEF inheritance sessions and score them without condition-aware judgment.
-status: pending
+status: in-progress
 priority: P0
 last_updated: '2026-08-14'
 generated:
@@ -1290,13 +1292,15 @@ related_decisions:
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
 modified:
-  by: agent/codex-planning
-  at: '2026-08-14T16:25:57.181Z'
+  by: agent/codex-evaluation
+  at: '2026-08-14T19:35:12.353Z'
 ---
 
-Run the frozen protocol against the public hardened transaction release. Require a repository-plus-ordinary-agent-docs condition and the equivalent VEF condition; include an ADR or Markdown-vault comparison only if equivalence can be defended.
+Started 2026-08-14 after public 0.3.1 verification and completion of the frozen protocol. The pre-run harness now materializes ordinary-Markdown and VEF repositories from one fixture source, verifies all durable statements and normalized facts are equivalent, and can install the public 0.3.1 package into treatment repositories before network-disabled sessions.
 
-Preserve raw outputs, deterministic structural results, scorer notes, tokens, elapsed time, failures, and deviations. Blinded scoring must be reproducible and limitations must be reported alongside aggregate results.
+Hidden oracles exercise implementation behavior and final project-state constraints for cache persistence, bounded ordered retries, and privacy-safe audit export. A balanced 24-pair assignment is committed before runs, and blind evidence preparation removes condition labels, VEF commands, package names, and treatment-only paths from rater bundles. Harness tests generate all six baselines, run their visible tests, prove equivalence, check assignment balance, and exercise redaction.
+
+No participant output has been generated or inspected. The next boundary is executing 48 fresh isolated `gpt-5.6-sol` high-reasoning sessions under the frozen caps and preserving their immutable run bundles. That execution requires a session runner capable of creating independent agent contexts without sharing this planning conversation.
 
 ---
 
@@ -1439,18 +1443,18 @@ Collect audience evidence before considering a rename. Keep “Vibe Engineering 
 | TASK-032 | Recover safely from malformed and accumulated lease claims | completed | P0 |
 | TASK-033 | Make roadmap ID allocation predictable | completed | P1 |
 | TASK-034 | Complete authoring help and break-glass CLI ergonomics | completed | P1 |
-| TASK-035 | Release and publicly prove VEF 0.3.1 | in-progress | P0 |
+| TASK-035 | Release and publicly prove VEF 0.3.1 | completed | P0 |
 | TASK-036 | Classify and implement isolated deterministic repairs | pending | P1 |
 | TASK-037 | Publish versioned JSON Schemas and `vef schema` | pending | P1 |
 | TASK-038 | Decide and migrate roadmap-to-vision cardinality | pending | P1 |
 | TASK-039 | Freeze the controlled VEF effectiveness evaluation | completed | P0 |
-| TASK-040 | Run the blinded VEF inheritance comparison | pending | P0 |
+| TASK-040 | Run the blinded VEF inheritance comparison | in-progress | P0 |
 | TASK-041 | Publish VEF effectiveness evidence and gate broad claims | pending | P0 |
 | TASK-042 | Decide namespaced record-type extension policy | pending | P3 |
 | TASK-043 | Test typed-graph positioning and the VEF descriptor | pending | P1 |
 
-**Next priority:** TASK-035 now releases and publicly proves 0.3.1 after TASK-032 through TASK-034 passed the full source
-and packed-artifact gates. TASK-039 has frozen the evaluation protocol; TASK-040 waits for public 0.3.1 verification and TASK-041 must publish
+**Next priority:** Public 0.3.1 verification completed TASK-035. TASK-039 has frozen the evaluation protocol and TASK-040
+is now executing it; TASK-041 must publish
 the evidence before TASK-043 and broad distribution in TASK-019. After the hotfix, TASK-037/TASK-038 and TASK-025/
 TASK-026 can progress in parallel. TASK-036 permits only mechanically isolated repair, while TASK-042, TASK-016, and
 TASK-027 remain deferred or non-blocking. Consumer and commercial priorities stay in their owning repositories.

@@ -2,7 +2,7 @@
 id: TASK-035
 title: Release and publicly prove VEF 0.3.1
 description: Publish the transaction-hardening patch and independently verify every repaired public CLI path from the registry.
-status: in-progress
+status: completed
 priority: P0
 last_updated: '2026-08-14'
 generated:
@@ -31,10 +31,12 @@ related_decisions:
     url: /DECISIONS.md#DEC-010
 modified:
   by: agent/codex-release
-  at: '2026-08-14T16:43:48.683Z'
+  at: '2026-08-14T19:28:08.240Z'
 ---
 # TASK-035 — Release and publicly prove VEF 0.3.1
 
-Run the complete release gate on Ubuntu and Windows, stage the tagged artifact through trusted publishing, require human 2FA approval, and verify registry hashes and provenance.
+Completed 2026-08-14. Commit `ecf4633` passed the complete release gate on Ubuntu and Windows with Node 18 and Node 24, was tagged `v0.3.1`, and was staged through the stage-only trusted GitHub OIDC publisher. Human 2FA approval made `vibe-engineering-framework@0.3.1` public as `latest`.
 
-Public-registry acceptance must include malformed-lease diagnosis/recovery, debris sweep behavior, fresh and inferred roadmap allocation, authority-only repair without a proposal, update grammar help, visible recover guidance, fresh setup, and strict check. Broad promotion remains blocked until this task completes.
+The live registry reports SHA-1 `32b1aa5ec6beab0e304b609eba350771aaf3f50d`, integrity `sha512-DPI19Cx9AuG5fAYNPtngJyst9j57Rft1YaVnjhB7W/peGsskOubF8ts/HSvsDFDuHpQAWSMRAeqmeatQa2lLbQ==`, 37 files, an empty staging queue, an npm signature, and SLSA provenance. A clean public-registry installation passed fresh setup/check, malformed-lease diagnosis and quarantine, inactive-debris sweep, fresh and inferred roadmap allocation, authority-only repair without a proposal, update grammar help, visible recovery guidance, and final strict enforcement.
+
+The matching GitHub release is public. Bugs #3, #4, and #5 were closed with registry evidence. TASK-040 may now execute the already frozen controlled inheritance protocol; broad promotion remains gated by TASK-041 and TASK-043.

@@ -775,9 +775,8 @@ The fixed vision, roadmap, task, and decision vocabulary is an intentional inter
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
 | Phase 5 — Extensibility | ⏸ Deferred | FRAMEWORK-026 |
 
-**Next priority:** FRAMEWORK-023 is the immediate release gate: TASK-032 through TASK-034 are complete, and TASK-035 must
-now release and publicly prove 0.3.1. FRAMEWORK-025
-may freeze its evaluation protocol in parallel, but evaluation execution waits for that hotfix and its published evidence
-gates broad promotion under FRAMEWORK-020. FRAMEWORK-024 and FRAMEWORK-015 follow as parallel interoperability and human-
+**Next priority:** FRAMEWORK-023's public 0.3.1 gate is complete; its narrower repair-classification follow-up remains.
+FRAMEWORK-025 is now executing the frozen controlled evaluation, whose published evidence gates broad promotion under
+FRAMEWORK-020. FRAMEWORK-024 and FRAMEWORK-015 follow as parallel interoperability and human-
 review tracks. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial programs
 remain canonical in their own repositories rather than VEF's roadmap.

@@ -71,18 +71,18 @@ Full description, acceptance criteria, implementation notes.
 | TASK-032 | Recover safely from malformed and accumulated lease claims | completed | P0 |
 | TASK-033 | Make roadmap ID allocation predictable | completed | P1 |
 | TASK-034 | Complete authoring help and break-glass CLI ergonomics | completed | P1 |
-| TASK-035 | Release and publicly prove VEF 0.3.1 | in-progress | P0 |
+| TASK-035 | Release and publicly prove VEF 0.3.1 | completed | P0 |
 | TASK-036 | Classify and implement isolated deterministic repairs | pending | P1 |
 | TASK-037 | Publish versioned JSON Schemas and `vef schema` | pending | P1 |
 | TASK-038 | Decide and migrate roadmap-to-vision cardinality | pending | P1 |
 | TASK-039 | Freeze the controlled VEF effectiveness evaluation | completed | P0 |
-| TASK-040 | Run the blinded VEF inheritance comparison | pending | P0 |
+| TASK-040 | Run the blinded VEF inheritance comparison | in-progress | P0 |
 | TASK-041 | Publish VEF effectiveness evidence and gate broad claims | pending | P0 |
 | TASK-042 | Decide namespaced record-type extension policy | pending | P3 |
 | TASK-043 | Test typed-graph positioning and the VEF descriptor | pending | P1 |
 
-**Next priority:** TASK-035 now releases and publicly proves 0.3.1 after TASK-032 through TASK-034 passed the full source
-and packed-artifact gates. TASK-039 has frozen the evaluation protocol; TASK-040 waits for public 0.3.1 verification and TASK-041 must publish
+**Next priority:** Public 0.3.1 verification completed TASK-035. TASK-039 has frozen the evaluation protocol and TASK-040
+is now executing it; TASK-041 must publish
 the evidence before TASK-043 and broad distribution in TASK-019. After the hotfix, TASK-037/TASK-038 and TASK-025/
 TASK-026 can progress in parallel. TASK-036 permits only mechanically isolated repair, while TASK-042, TASK-016, and
 TASK-027 remain deferred or non-blocking. Consumer and commercial priorities stay in their owning repositories.

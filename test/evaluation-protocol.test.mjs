@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { access, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 import { load as loadYaml } from 'js-yaml';
 
 const root = join(process.cwd(), 'docs', 'evaluations', 'inheritance-study-v1');
+const harness = join(process.cwd(), 'scripts', 'evaluation', 'inheritance-v1.mjs');
+const exec = promisify(execFile);
 
 test('freezes an equivalent, blinded, evidence-gated inheritance protocol before execution', async () => {
   const [protocol, fixtureSource, manifestSource, scorecard] = await Promise.all([
@@ -47,4 +52,40 @@ test('freezes an equivalent, blinded, evidence-gated inheritance protocol before
   assert(Array.isArray(manifest.deviations));
   assert.match(scorecard, /Inherited intent \(0–12\)/);
   assert.match(scorecard, /Task outcome quality \(0–4\)/);
+});
+
+test('materializes equivalent conditions, freezes balanced assignment, and strips condition labels from rater evidence', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'vef-inheritance-protocol-'));
+  try {
+    const generated = await exec(process.execPath, [harness, 'generate', '--output', directory], { maxBuffer: 10 * 1024 * 1024 });
+    assert.deepEqual(JSON.parse(generated.stdout), { generated: directory, equivalent: true, scenarios: 3, conditions: 2 });
+    for (const scenario of ['cache-persistence', 'import-retry', 'privacy-export']) {
+      assert.equal(
+        await readFile(join(directory, '_reports', `${scenario}.control.json`), 'utf8'),
+        await readFile(join(directory, '_reports', `${scenario}.treatment.json`), 'utf8'),
+      );
+      await access(join(directory, 'treatment', scenario, '.vef', 'storage.json'));
+      assert.doesNotMatch(await readFile(join(directory, 'control', scenario, 'AGENTS.md'), 'utf8'), /\bVEF\b|vibe-engineering-framework/i);
+    }
+
+    const randomization = JSON.parse(await readFile(join(root, 'randomization.json'), 'utf8'));
+    assert.equal(randomization.pairs.length, 24);
+    for (const scenario of ['cache-persistence', 'import-retry', 'privacy-export']) {
+      const pairs = randomization.pairs.filter((pair) => pair.scenario === scenario);
+      assert.equal(pairs.length, 8);
+      assert.equal(pairs.filter((pair) => pair.order[0] === 'control').length, 4);
+      assert.equal(pairs.filter((pair) => pair.order[0] === 'treatment').length, 4);
+    }
+
+    const run = join(directory, 'raw-run');
+    const blind = join(directory, 'blind-run');
+    await mkdir(run);
+    await writeFile(join(run, 'patch.diff'), 'Used VEF and vef update TASK-1 --write\nChanged docs/tasks/TASK-1.md\n', 'utf8');
+    await writeFile(join(run, 'final.md'), 'vibe-engineering-framework completed the work.\n', 'utf8');
+    await exec(process.execPath, [harness, 'blind', '--run', run, '--output', blind]);
+    const blinded = `${await readFile(join(blind, 'patch.diff'), 'utf8')}\n${await readFile(join(blind, 'final.md'), 'utf8')}`;
+    assert.doesNotMatch(blinded, /\bVEF\b|vibe-engineering-framework|vef update|docs\/tasks/i);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });

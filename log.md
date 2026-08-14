@@ -8,6 +8,16 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-14
 
+### Controlled evaluation pre-run harness frozen
+- Implemented TASK-040's pre-run boundary without generating participant results. One source manifest now materializes three ordinary-Markdown controls and three VEF treatments; generator checks prove equivalent normalized facts and durable statements, and treatment preparation successfully installs public 0.3.1 before network isolation.
+- Added hidden behavioral/project-state oracles for cache persistence, bounded ordered retry, and privacy-safe audit export; committed a balanced 24-pair order before execution; and added blind-bundle preparation that removes condition names, VEF commands, package names, and treatment-only paths from rater evidence.
+- The 62-test repository suite generates and verifies all baselines, runs visible fixture tests, checks assignment balance, and exercises evidence redaction. No participant output has been observed. Executing 48 clean sessions now requires an independent-session runner that cannot inherit this planning context.
+
+### VEF 0.3.1 published and independently accepted from the registry
+- Published `vibe-engineering-framework@0.3.1` through the tagged stage-only trusted-publishing workflow and human 2FA approval. npm reports `latest: 0.3.1`, SHA-1 `32b1aa5ec6beab0e304b609eba350771aaf3f50d`, SHA-512 `sha512-DPI19Cx9AuG5fAYNPtngJyst9j57Rft1YaVnjhB7W/peGsskOubF8ts/HSvsDFDuHpQAWSMRAeqmeatQa2lLbQ==`, a registry signature, and SLSA provenance; the staged-package queue is empty.
+- Installed the public registry package into a clean isolated project and passed every release acceptance: fresh setup/check, malformed-lease diagnosis and explicit quarantine, inactive-debris sweep, fresh/inferred roadmap allocation, authority-only repair without a proposal, update grammar help, visible recover guidance, and final strict enforcement.
+- Published the matching GitHub release and closed bugs #3 through #5 with registry evidence. Completed TASK-035 and started TASK-040 because the public hardened release and frozen protocol prerequisites are both satisfied.
+
 ### Controlled inheritance evaluation protocol frozen
 - Completed TASK-039 before observing any comparative output. The v1 protocol uses a strong ordinary-Markdown control and an equivalent VEF treatment, three condition-neutral source fixtures, an identical participant prompt, isolated `gpt-5.6-sol` high-reasoning sessions, and 24 matched pairs (48 sessions).
 - Froze blinded inherited-intent scoring, a deterministic contradiction oracle, task-quality and overhead outcomes, dual-rater/adjudication rules, paired bootstrap uncertainty, failure/rerun policy, immutable evidence bundles, and claim/harm thresholds. Structural conformance, authoring convenience, inheritance, task quality, tokens, and time cannot be collapsed into one marketing result.

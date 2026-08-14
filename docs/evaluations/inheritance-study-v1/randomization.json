@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "generatedBeforeRuns": true,
+  "method": "Precommitted balanced blocked assignment: eight pairs per scenario and four first-runs per condition",
+  "pairs": [
+    { "pairId": "CACHE-01", "scenario": "cache-persistence", "order": ["control", "treatment"] },
+    { "pairId": "CACHE-02", "scenario": "cache-persistence", "order": ["treatment", "control"] },
+    { "pairId": "CACHE-03", "scenario": "cache-persistence", "order": ["treatment", "control"] },
+    { "pairId": "CACHE-04", "scenario": "cache-persistence", "order": ["control", "treatment"] },
+    { "pairId": "CACHE-05", "scenario": "cache-persistence", "order": ["control", "treatment"] },
+    { "pairId": "CACHE-06", "scenario": "cache-persistence", "order": ["treatment", "control"] },
+    { "pairId": "CACHE-07", "scenario": "cache-persistence", "order": ["control", "treatment"] },
+    { "pairId": "CACHE-08", "scenario": "cache-persistence", "order": ["treatment", "control"] },
+    { "pairId": "IMPORT-01", "scenario": "import-retry", "order": ["treatment", "control"] },
+    { "pairId": "IMPORT-02", "scenario": "import-retry", "order": ["control", "treatment"] },
+    { "pairId": "IMPORT-03", "scenario": "import-retry", "order": ["control", "treatment"] },
+    { "pairId": "IMPORT-04", "scenario": "import-retry", "order": ["treatment", "control"] },
+    { "pairId": "IMPORT-05", "scenario": "import-retry", "order": ["treatment", "control"] },
+    { "pairId": "IMPORT-06", "scenario": "import-retry", "order": ["control", "treatment"] },
+    { "pairId": "IMPORT-07", "scenario": "import-retry", "order": ["treatment", "control"] },
+    { "pairId": "IMPORT-08", "scenario": "import-retry", "order": ["control", "treatment"] },
+    { "pairId": "PRIVACY-01", "scenario": "privacy-export", "order": ["control", "treatment"] },
+    { "pairId": "PRIVACY-02", "scenario": "privacy-export", "order": ["treatment", "control"] },
+    { "pairId": "PRIVACY-03", "scenario": "privacy-export", "order": ["control", "treatment"] },
+    { "pairId": "PRIVACY-04", "scenario": "privacy-export", "order": ["treatment", "control"] },
+    { "pairId": "PRIVACY-05", "scenario": "privacy-export", "order": ["treatment", "control"] },
+    { "pairId": "PRIVACY-06", "scenario": "privacy-export", "order": ["control", "treatment"] },
+    { "pairId": "PRIVACY-07", "scenario": "privacy-export", "order": ["treatment", "control"] },
+    { "pairId": "PRIVACY-08", "scenario": "privacy-export", "order": ["control", "treatment"] }
+  ]
+}
