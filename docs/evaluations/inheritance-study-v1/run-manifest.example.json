@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "runId": "PAIR-001-TREATMENT",
+  "pairId": "PAIR-001",
+  "scenario": "cache-persistence",
+  "condition": "treatment",
+  "conditionOrder": 2,
+  "protocolCommit": "<git-sha>",
+  "fixtureHash": "sha256:<hash>",
+  "initialTree": "<git-tree>",
+  "finalTree": "<git-tree>",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoningEffort": "high",
+    "network": false,
+    "priorContext": false
+  },
+  "environment": {
+    "os": "<runner-image>",
+    "node": "24.x",
+    "concurrencyClass": "<class>"
+  },
+  "timing": {
+    "startedAt": "<iso-time>",
+    "finishedAt": "<iso-time>",
+    "elapsedSeconds": 0
+  },
+  "tokens": {
+    "input": null,
+    "cached": null,
+    "output": null,
+    "total": null
+  },
+  "outcome": "completed",
+  "infrastructureFailure": false,
+  "rerunOf": null,
+  "deviations": [],
+  "artifacts": {
+    "patch": "patch.diff",
+    "finalResponse": "final.md",
+    "toolTranscript": "tools.jsonl",
+    "testOutput": "tests.txt",
+    "semanticReport": "semantic-report.json"
+  }
+}

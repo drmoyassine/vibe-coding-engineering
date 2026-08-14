@@ -1235,7 +1235,7 @@ title: Freeze the controlled VEF effectiveness evaluation protocol
 description: >-
   Define equivalent isolated conditions, fixtures, blinded scoring, and measurable outcomes before running the
   comparison.
-status: in-progress
+status: completed
 priority: P0
 last_updated: '2026-08-14'
 generated:
@@ -1250,13 +1250,15 @@ related_decisions:
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
 modified:
-  by: agent/codex-planning
-  at: '2026-08-14T16:25:57.181Z'
+  by: agent/codex-evaluation
+  at: '2026-08-14T16:54:39.402Z'
 ---
 
-Extend the existing 17-record authoring trace into a controlled inheritance study rather than treating engine conformance as product proof. Freeze repository fixtures, prompts, model/settings, success rubrics, raters, and analysis before observing comparative results.
+Completed 2026-08-14 before any comparative output was observed. `docs/evaluations/inheritance-study-v1/` freezes the question, strong ordinary-Markdown control, VEF treatment, condition-equivalence requirement, identical participant prompt, Codex `gpt-5.6-sol` high-reasoning runtime, clean-session restrictions, 30-minute/50,000-token run cap, and 24 matched pairs across three condition-neutral scenarios.
 
-Required measures are settled decisions inherited correctly, unnecessary re-litigation, roadmap/task intent preservation, structural errors, task outcome quality, authoring and maintenance overhead, tokens, and elapsed time. Define the minimum sample and uncertainty reporting; prohibit marketing interpretation from changing the scoring protocol after results are seen.
+Co-primary outcomes are a blinded 0–12 inherited-intent score and deterministic contradiction count. Secondary outcomes keep task quality, structural state, re-litigation, authoring/repair actions, tokens, time, and failures separate. Two blind raters, adjudication rules, 10,000-sample paired bootstrap intervals, harm boundaries, missing-run policy, immutable raw evidence, and predeclared public-claim thresholds prevent post-result marketing edits.
+
+The frozen fixture manifest covers implementation-decision, roadmap/task-intent, and privacy-architecture inheritance. A run-manifest template and blind scorecard are committed, and an executable test rejects missing conditions, scenarios, sample size, blinding, uncertainty, or anti-rewrite safeguards. TASK-040 must add the condition generator, equivalence oracle, hidden acceptance tests, randomization, and evidence preparation before the first participant run; it cannot change these endpoints after seeing results.
 
 ---
 
@@ -1441,14 +1443,14 @@ Collect audience evidence before considering a rename. Keep “Vibe Engineering 
 | TASK-036 | Classify and implement isolated deterministic repairs | pending | P1 |
 | TASK-037 | Publish versioned JSON Schemas and `vef schema` | pending | P1 |
 | TASK-038 | Decide and migrate roadmap-to-vision cardinality | pending | P1 |
-| TASK-039 | Freeze the controlled VEF effectiveness evaluation | in-progress | P0 |
+| TASK-039 | Freeze the controlled VEF effectiveness evaluation | completed | P0 |
 | TASK-040 | Run the blinded VEF inheritance comparison | pending | P0 |
 | TASK-041 | Publish VEF effectiveness evidence and gate broad claims | pending | P0 |
 | TASK-042 | Decide namespaced record-type extension policy | pending | P3 |
 | TASK-043 | Test typed-graph positioning and the VEF descriptor | pending | P1 |
 
 **Next priority:** TASK-035 now releases and publicly proves 0.3.1 after TASK-032 through TASK-034 passed the full source
-and packed-artifact gates. TASK-039 may freeze the evaluation protocol concurrently, but TASK-040 waits for 0.3.1 and TASK-041 must publish
+and packed-artifact gates. TASK-039 has frozen the evaluation protocol; TASK-040 waits for public 0.3.1 verification and TASK-041 must publish
 the evidence before TASK-043 and broad distribution in TASK-019. After the hotfix, TASK-037/TASK-038 and TASK-025/
 TASK-026 can progress in parallel. TASK-036 permits only mechanically isolated repair, while TASK-042, TASK-016, and
 TASK-027 remain deferred or non-blocking. Consumer and commercial priorities stay in their owning repositories.

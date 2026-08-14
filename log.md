@@ -8,6 +8,11 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-14
 
+### Controlled inheritance evaluation protocol frozen
+- Completed TASK-039 before observing any comparative output. The v1 protocol uses a strong ordinary-Markdown control and an equivalent VEF treatment, three condition-neutral source fixtures, an identical participant prompt, isolated `gpt-5.6-sol` high-reasoning sessions, and 24 matched pairs (48 sessions).
+- Froze blinded inherited-intent scoring, a deterministic contradiction oracle, task-quality and overhead outcomes, dual-rater/adjudication rules, paired bootstrap uncertainty, failure/rerun policy, immutable evidence bundles, and claim/harm thresholds. Structural conformance, authoring convenience, inheritance, task quality, tokens, and time cannot be collapsed into one marketing result.
+- Added an executable protocol guard plus run-manifest and scorecard templates. TASK-040 must materialize equivalent condition repositories, hidden oracles, randomization, and blind evidence preparation before execution; the public 0.3.1 release remains its prerequisite.
+
 ### VEF 0.3.1 transaction hardening implemented
 - Completed TASK-032 through TASK-034 locally. Malformed writer leases are classified and blocked instead of crashing inspection; doctor exposes the full lease inventory; explicit `vef recover leases` quarantines uncertainty additively; inactive families are boundedly swept; cleanup failure and synchronized-folder resurrection cannot restore ownership.
 - Added predictable roadmap allocation: fresh collections start at `ROADMAP-001`, one coherent numeric family is continued, mixed/non-numeric collections require an explicit ID, and vision slugs remain semantic. Authority-only title repair no longer needs an empty proposal; ordinary updates still require one, update grammar is visible, and `recover` is a normal break-glass help surface.

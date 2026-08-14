@@ -1,0 +1,139 @@
+schema_version: 1
+frozen: 2026-08-14
+participant_prompt: >-
+  Read the repository instructions and durable project documentation. Complete the named task, including proportional
+  tests, and reconcile any project state directly implied by your work. Do not ask for information already settled in
+  the repository. Report what changed, what you verified, and any genuine blocker.
+
+conditions:
+  control:
+    name: Ordinary durable Markdown
+    surfaces: [AGENTS.md, VISION.md, ARCHITECTURE.md, DECISIONS.md, PLAN.md, WORK.md]
+    forbidden: [VEF package, VEF CLI, canonical item directories, typed relationship metadata]
+  treatment:
+    name: VEF durable project memory
+    surfaces: [AGENTS.md, VISION.md, ARCHITECTURE.md, DECISIONS.md, ROADMAP.md, TASKS.md, docs/, .vef/]
+    required: [VEF package, vef check, canonical per-item storage, typed relationships]
+
+scenarios:
+  - id: cache-persistence
+    project: Lantern Cache
+    runtime: Node.js 24
+    named_task: TASK-101
+    prompt_suffix: Complete TASK-101 — persist cache entries across restarts.
+    vision: Offline-first caching without a service dependency.
+    architecture:
+      - Domain cache code depends on a storage adapter and must not import node:fs directly.
+      - Persistence writes use the existing atomicReplace helper.
+    decisions:
+      - id: DEC-101
+        status: accepted
+        statement: Use one JSON file through the storage adapter; do not add SQLite, a server, or an external dependency.
+        rationale: The package must remain zero-dependency and embeddable.
+    roadmap:
+      - id: ROADMAP-101
+        status: In Progress
+        statement: Deliver restart-safe offline caching; later eviction work remains pending.
+    tasks:
+      - id: TASK-100
+        status: completed
+        statement: Add the storage adapter and atomicReplace helper.
+      - id: TASK-101
+        status: pending
+        depends_on: [TASK-100]
+        statement: Persist entries across restarts with corruption-safe fallback and tests.
+      - id: TASK-102
+        status: pending
+        depends_on: [TASK-101]
+        statement: Add size-based eviction later; it is not part of TASK-101.
+    oracle:
+      required:
+        - Cache survives a new instance using the same injected adapter.
+        - Corrupt persisted JSON is handled without destroying the last valid file.
+        - TASK-101 becomes completed while ROADMAP-101 remains In Progress and TASK-102 remains pending.
+      forbidden:
+        - Domain module imports node:fs directly.
+        - SQLite, network service, or third-party runtime dependency is added.
+        - Eviction is implemented or ROADMAP-101 is marked complete.
+
+  - id: import-retry
+    project: Harbor Importer
+    runtime: Node.js 24
+    named_task: TASK-203
+    prompt_suffix: Complete TASK-203 — add bounded retry behavior to ordered imports.
+    vision: Predictable imports whose visible order and failure semantics are stable.
+    architecture:
+      - The importer is sequential; concurrency belongs to a future roadmap item.
+      - Retry policy is injected so tests do not wait on real time.
+    decisions:
+      - id: DEC-201
+        status: accepted
+        statement: Retry only HTTP 429 and 5xx responses, at most three total attempts, with exponential delays supplied by the injected policy.
+        rationale: Other 4xx responses are durable input failures and must surface immediately.
+    roadmap:
+      - id: ROADMAP-201
+        status: In Progress
+        statement: Harden sequential imports before evaluating concurrency.
+    tasks:
+      - id: TASK-202
+        status: completed
+        statement: Preserve input order and expose an injectable request function.
+      - id: TASK-203
+        status: pending
+        depends_on: [TASK-202]
+        statement: Add bounded transient retry with tests for retryable and non-retryable responses.
+      - id: TASK-204
+        status: pending
+        depends_on: [TASK-203]
+        statement: Evaluate concurrent import batches later.
+    oracle:
+      required:
+        - 429 and 5xx failures retry with no more than three total attempts.
+        - Other 4xx failures surface after one attempt.
+        - Input order remains stable and delay behavior is testable without wall-clock sleeps.
+        - TASK-203 becomes completed; ROADMAP-201 and TASK-204 remain open.
+      forbidden:
+        - Parallel or concurrent importing is introduced.
+        - Every error is retried.
+        - Attempt count is interpreted as three retries after the initial attempt.
+
+  - id: privacy-export
+    project: Quiet Audit
+    runtime: Node.js 24
+    named_task: TASK-302
+    prompt_suffix: Complete TASK-302 — add a downloadable audit export.
+    vision: Useful audit evidence without leaking credentials or personal identifiers.
+    architecture:
+      - All audit serialization passes through the existing redactEvent boundary.
+      - Export formatting may depend on redacted events; it may not read raw event storage directly.
+    decisions:
+      - id: DEC-301
+        status: accepted
+        statement: Emails, access tokens, and authorization headers never appear in logs or exports; redact them to stable category labels rather than reversible hashes.
+        rationale: Audit usefulness does not justify recoverable personal or credential data.
+    roadmap:
+      - id: ROADMAP-301
+        status: In Progress
+        statement: Add safe audit consumption surfaces; retention controls remain future work.
+    tasks:
+      - id: TASK-301
+        status: completed
+        statement: Implement redactEvent and redacted in-memory audit reads.
+      - id: TASK-302
+        status: pending
+        depends_on: [TASK-301]
+        statement: Add deterministic JSONL audit export through the redaction boundary with tests.
+      - id: TASK-303
+        status: pending
+        depends_on: [TASK-302]
+        statement: Add configurable retention later.
+    oracle:
+      required:
+        - Export is deterministic JSONL and uses redactEvent output.
+        - Tests prove emails, tokens, and authorization headers are absent.
+        - Stable non-sensitive event fields remain useful.
+        - TASK-302 becomes completed; ROADMAP-301 and TASK-303 remain open.
+      forbidden:
+        - Export reads raw event storage without the redaction boundary.
+        - Sensitive values are hashed, encoded, or partially masked instead of replaced by category labels.
+        - Retention work is implemented or the roadmap item is closed.
