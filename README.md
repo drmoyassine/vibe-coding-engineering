@@ -19,7 +19,7 @@ conversation, code, issues, git history
 
 VEF is for teams that want an AI agent to inherit a project, not merely a prompt.
 
-> **Status:** early but operational. The Integrity Core, canonical per-item store, deterministic ledgers and queries, consumer migration path, and cross-platform CI gate are implemented and dogfooded here. See [ROADMAP.md](ROADMAP.md).
+> **Status:** early but operational. The Integrity Core, canonical per-item store, deterministic ledgers and queries, public adoption lifecycle, and recoverable transaction engine are implemented and dogfooded here. See [ROADMAP.md](ROADMAP.md).
 
 ## Why this exists
 
@@ -119,6 +119,8 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 - `vef setup` is the one idempotent lifecycle write: initialize or upgrade, repair, project, validate, and enforce.
 - `vef check` is the one strict read-only gate for local use and CI.
 - `vef doctor` explains blockers without becoming another setup path.
+- `vef create` and `vef update` preview complete record/relationship changes by default and write only with `--write`.
+- Interrupted writes are journaled under `.vef/transactions/`; later writes stop until an explicit roll-forward or rollback.
 - Legacy `init`, `migrate`, `project`, `validate`, and `doctor --fix` remain callable for compatibility but are hidden from normal help.
 - `vef list`, `show`, `refs`, `why`, `graph`, and `search` expose the canonical model without an LLM.
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
@@ -132,10 +134,10 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 | Integrity validation and cross-platform CI | Shipped in 0.1.0 |
 | Per-item storage and deterministic ledgers | Shipped in 0.1.0 |
 | Deterministic read-only graph queries | Shipped in 0.1.0 |
-| Two-command setup and enforcement lifecycle | Prepared for 0.2.0 |
+| Two-command setup and enforcement lifecycle | Shipped in 0.2.0 |
 | Claude Code agent adapters | Shipped as optional adapters |
 | Lightweight human review workspace | Planned under FRAMEWORK-015 |
-| Transactional `vef create` and `vef update` | Deferred under FRAMEWORK-022 |
+| Recoverable `vef create` and `vef update` | Available in 0.3.0 under FRAMEWORK-022 |
 
 ## Deterministic contract
 
@@ -147,7 +149,8 @@ The Integrity Core makes deterministic code authoritative for:
 - every direction of every declared inverse relationship;
 - heading/frontmatter agreement, dates, enums, URLs, and provenance structure;
 - strict CI checks that establish a complete framework contract;
-- safe proposal/write boundaries for agent-assisted migration.
+- safe proposal/write boundaries for agent-assisted migration;
+- intent-first journals, stale-tolerant writer leases, automatic dates/provenance, and explicit recovery.
 
 LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence, and explaining conflicts. They should not be the authority for mechanical invariants. That boundary is a product principle, not an implementation detail.
 
@@ -207,6 +210,49 @@ npx vibe-engineering-framework@latest doctor
 
 Normal adoption requires only `setup` and `check`. The former `init`, `migrate --apply`, `project`, `validate --strict`, and `doctor --fix` surfaces remain callable for compatibility and framework maintenance but are intentionally hidden from normal help.
 
+### Create and update records
+
+From 0.3.0, after VEF is installed as a project dependency, day-to-day structural writes use two commands. Both
+preview by default; neither infers product meaning:
+
+```yaml
+# complete-task.yml
+set:
+  status: completed
+relationships:
+  related_decisions:
+    add: [DEC-010]
+```
+
+```bash
+npx vef update TASK-013 --from complete-task.yml
+npx vef update TASK-013 --from complete-task.yml --write --actor agent/my-session
+```
+
+`create` accepts a complete proposed record and optional initial relationship IDs. `update` combines scalar, body,
+and relationship changes, so inverse links and ledgers are part of the same validated candidate. The engine owns
+allocatable IDs, `last_updated`, `modified` provenance, canonical reference metadata, inverse closure, projection,
+and final validation. Agent adapters can submit several create/update operations together through `vef create batch`
+without maintaining their own canonical Markdown serializer.
+
+A pre-existing title/heading mismatch remains blocking unless the update names the authority explicitly with
+`--authority frontmatter` or `--authority heading`. That exception repairs only the named record's title mismatch;
+unrelated malformed state still blocks the complete transaction.
+
+VEF does not claim database-level filesystem atomicity. It records a versioned write-ahead journal before changing
+project files and serializes writers with a PID/host/timestamp lease. If a process stops, `check`, `setup`, and later
+mutations refuse to continue. Follow the reported transaction ID with exactly one explicit recovery direction:
+
+```bash
+npx vef recover <transaction-id> --rollback
+# or
+npx vef recover <transaction-id> --forward
+```
+
+Recovery is exceptional troubleshooting and therefore remains outside normal help. Cleanup failures from Windows,
+OneDrive, Dropbox, antivirus, or open editors are reported as warnings after a successful transaction; settled debris
+does not invalidate or block the project.
+
 ### Query and maintain project state
 
 Install VEF as a development dependency when you want short local query commands:
@@ -234,7 +280,7 @@ For semantic maintenance, use the installed agent adapter. In Claude Code, for e
 /apply --write               # explicit write request through the validation gate
 ```
 
-`/apply` is an adoption assistant, not a source of truth. It treats repository, Git, memory, and agent output as untrusted evidence and produces read-only proposals by default. Memory and Git are opt-in sources; memory is classified before import; unresolved references are blocked instead of invented. An explicit write request must pass deterministic validation against a staged candidate and again after writing, and it never commits automatically.
+`/apply` is an adoption assistant, not a source of truth. It treats repository, Git, memory, and agent output as untrusted evidence and produces read-only structured operations by default. Memory and Git are opt-in sources; memory is classified before import; unresolved references are blocked instead of invented. It owns no canonical frontmatter/Markdown renderer: explicit writes submit the complete operation set to the same journaled transaction engine, and it never commits automatically.
 
 ## Design principles
 
@@ -251,11 +297,11 @@ VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform
 
 ## Roadmap
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, and [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage with generated ledgers and consumer migration. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020), VEF's public package and launch, and [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015), its lightweight review workspace, are the active tracks. Transaction commands are deferred to FRAMEWORK-022.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage, [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) delivered the public `0.2.0` lifecycle proof, and [FRAMEWORK-022](ROADMAP.md#FRAMEWORK-022) delivered recoverable transaction writes. FRAMEWORK-020 now resumes public examples/distribution while [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) builds the lightweight review workspace against the candidate-diff boundary.
 
 ## Contributing and status
 
-This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating it today, treat the CLI's implemented checks, versioned queries, per-item storage contract, deterministic projections, consumer migration path, and CI gate as the current contract. Transactional day-to-day mutations remain deferred under FRAMEWORK-022. `/apply` remains the guarded agent-assisted semantic migration path.
+This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating the current source, treat its checks, versioned queries, per-item storage contract, deterministic projections, journaled mutations, consumer migration path, and CI gate as the implemented contract. The `0.3.0` package adds the verified transaction writer to the setup/check baseline. `/apply` remains the guarded agent-assisted semantic migration path.
 
 The most valuable contribution is helping make this statement literally true:
 

@@ -6,6 +6,32 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ---
 
+## 2026-08-14
+
+### VEF 0.3.0 transaction release candidate prepared
+- Versioned the package and public release notes as `0.3.0`, the backward-compatible feature release for FRAMEWORK-022 and TASK-013 through TASK-015.
+- Reconciled current framework surfaces so the transaction writer, exported schema/API, adapter writer boundary, explicit recovery, Windows/synchronized-folder behavior, and narrow title-authority repair are described as the 0.3.0 contract rather than unreleased source work.
+- Kept the DEC-008 provenance boundary: the exact tagged candidate must pass the complete release gate and enter npm through the trusted stage-only GitHub publisher before human 2FA approval makes it public.
+
+### Recoverable transaction writer completed and dogfooded
+- Completed FRAMEWORK-022 and TASK-013 through TASK-015 as one writer-boundary release unit. `vef create` and `vef update` preview complete candidates by default; explicit `--write` routes single or adapter-batch operations through the same exported transaction API.
+- Implemented DEC-010 with immutable versioned manifests, hash-verified before/after content, additive state markers, renewable PID/host/timestamp lease claims, Windows busy-write retries without rename-over-target, non-fatal cleanup debris, and explicit forward/rollback recovery. Unresolved journals now block planning, validation/check, setup, projection, migration, and later mutations.
+- Removed independent canonical serializers from `/tasks`, `/roadmap`, `/decisions`, and `/apply`. Adapters own semantic proposal data; the core owns IDs, lifecycle dates, `modified` provenance, canonical references, inverse links, ledgers, validation, and recovery.
+- Added failure tests for stale previews, malformed starting graphs/journals, invalid values, idempotency, competing and stale leases, destination-busy retries, cleanup failure, thrown interruptions, and real child-process termination at every write boundary. The 17-record engine replay reached strict integrity on its first transaction pass with no manual inverse repair; it is explicitly not presented as a controlled agent-performance evaluation.
+- Dogfooded the new writer on VEF itself: previewed and completed TASK-013, then used one batch transaction to complete TASK-014, TASK-015, and FRAMEWORK-022. Public examples/distribution and the lightweight review workspace are now the next framework tracks.
+
+### VEF 0.2.0 published and transaction work activated
+- Merged PR #1, tagged merge commit `e5b37fb` as `v0.2.0`, passed the tagged release gate, and staged the package through the trusted GitHub OIDC publisher. Human 2FA approval made `vibe-engineering-framework@0.2.0` public with signed provenance and the `latest` tag.
+- Matched npm SHA-1 `9fa04f7f8cd235b101c83870743ccec522d486da` and SHA-512 integrity to the verified candidate, published the matching GitHub Release, and passed public-registry acquisition, clean fresh `setup`, and `check`.
+- Proved representative consumer upgrades with public latest. Studygram was already current and remained idempotent; NoCodeHero was semantically coherent and public setup regenerated four stale derived ledgers without changing canonical records or consumer-owned adapters/CI. Frontbase remains independently planned but has not adopted VEF canonical storage, so it was not misrepresented as an upgrade proof.
+- Completed TASK-031. Promoted FRAMEWORK-022 to active P0 and started TASK-013 because independent end-to-end use confirmed that manual inverse-link bookkeeping is the largest remaining inconsistency between VEF's deterministic principles and its authoring experience.
+
+### Transaction recovery and writer boundary sharpened before implementation
+- Accepted corrections from the independent QA review: the executable schema was already authoritative, partial repair was not automatically safer, and the public 0.1 CI/package observations were superseded by 0.2.
+- Accepted DEC-010 before committing the first transaction-engine draft. `.vef/transactions` owns a versioned intent-first journal and stale-tolerant lease lock; Git remains post-transaction evidence because valid consumer worktrees may already be dirty.
+- Made Windows and synchronized folders part of TASK-013's initial matrix. Cleanup failure cannot reverse a successful result, unresolved journals require explicit verified recovery, and concurrent agents must serialize through token/PID/host/timestamp leases that tolerate stale files.
+- Coupled TASK-014 and TASK-015 into one release boundary so supported automated adapters become thin transaction clients rather than retaining a second YAML writer. Froze the independent 17-record manual-authoring trace under `docs/evaluations/` for a before/after transaction evaluation.
+
 ## 2026-08-13
 
 ### Two-command adoption lifecycle becomes the launch gate

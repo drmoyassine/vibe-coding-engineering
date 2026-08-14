@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { parseDoc } from '../lib/frontmatter.mjs';
 import { getDocType } from '../lib/schemas.mjs';
 import { migrateLegacyStorage, planStorageMigration, STORAGE_MANIFEST } from '../lib/record-store.mjs';
+import { inspectTransactionState, TransactionError } from '../lib/transactions.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, '..', '..', 'templates');
@@ -77,6 +78,13 @@ export async function migrateCommand(opts) {
   const dryRun = !opts.apply;
   const mode = dryRun ? '[DRY RUN]' : '[APPLY]';
   const log = opts.quiet ? () => {} : console.log;
+
+  if (!dryRun) {
+    const state = await inspectTransactionState(targetDir);
+    if (state.unresolved.length > 0) {
+      throw new TransactionError(`Migration is blocked by unresolved transaction(s): ${state.unresolved.map((journal) => journal.id).join(', ')}. Recover explicitly first.`);
+    }
+  }
 
   if (opts.updateAdapters) {
     log('\n  ✗  --update-adapters is retired because adapters are consumer-owned and may contain intentional customizations.');

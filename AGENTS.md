@@ -30,6 +30,24 @@ The skills are write/reconciliation adapters. For read-only project retrieval, p
 
 All query commands support `--json`; they do not modify files or invoke an agent.
 
+## Deterministic mutation boundary
+
+Automated adapters never edit structured item Markdown or generated ledgers directly:
+
+| Command | Result |
+|---|---|
+| `vef create <type> --from <proposal>` | Preview one complete proposed record; add `--write --actor <id>` to apply |
+| `vef update <id> --from <proposal>` | Preview scalar/body/relationship changes with inverse closure; add `--write` to apply |
+| `vef create batch --from <proposal>` | Adapter-only multi-operation candidate through the same transaction engine |
+
+If—and only if—pre-existing frontmatter and heading titles disagree, `vef update` accepts explicit
+`--authority frontmatter` or `--authority heading`. It does not relax any other preflight failure.
+
+The agent owns interpretation and semantic prose. VEF owns allocatable IDs, dates, `modified` provenance, canonical
+reference metadata, inverse links, ledgers, validation, journaling, and leases. If an interrupted journal exists,
+stop and ask for an explicit `vef recover <id> --forward` or `--rollback` choice. Direct human editing remains an
+escape hatch followed by `vef setup` and `vef check`.
+
 ---
 
 ## Conceptual model
@@ -52,18 +70,18 @@ The framework defines:
 ```markdown
 You are the product-docs agent. Your job is to:
 1. Validate frontmatter schemas across canonical roadmap and task item files
-2. Reconcile canonical items and regenerate ROADMAP.md and TASKS.md without inventing records
+2. Author structured proposals without inventing records and delegate writes to vef create/update
 3. Detect orphans and inconsistencies
 4. Commit changes with structured messages
 
-You write markdown. You don't execute code. You don't deploy. You only read and write docs.
+You author project meaning and proposal data. You do not serialize canonical Markdown, maintain inverse links, or deploy.
 ```
 
 **Tools:**
 - `Glob` — find canonical item files, framework documents, and adapters
 - `Read` — read canonical item files and singleton documents
-- `Write` — write regenerated docs
-- `Bash` — run `git add` and `git commit` (no force-pushes)
+- `Write` — write temporary YAML/JSON proposal transport and semantic singleton prose
+- `Bash` — run `vef create`, `vef update`, validation, and authorized Git commands (no force-pushes)
 
 **Skills:**
 - The **product-docs skill suite** — `/tasks`, `/roadmap`, `/bugs`, `/decisions` (each defines its own schema + reconcile logic), plus `/apply` for one-shot migration
@@ -107,7 +125,7 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 
 ## Skill catalog
 
-> **OKF v0.2 (DEC-002).** All schemas below additionally support optional OKF fields: `tags` (cross-cutting labels), `resource` (canonical URI to artifact), `generated` {by, at}, `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. See [`CLAUDE.md` Frontmatter schemas](CLAUDE.md#frontmatter-schemas) for full detail.
+> **OKF v0.2 (DEC-002).** All schemas below additionally support optional OKF fields: `tags` (cross-cutting labels), `resource` (canonical URI to artifact), `generated` {by, at}, transaction-managed `modified` {by, at}, and `verified` [{by, at}]. Actor convention: `human:<id>` / `<producer>/<version>` / `process:<id>`. See [`CLAUDE.md` Frontmatter schemas](CLAUDE.md#frontmatter-schemas) for full detail.
 
 ### `/tasks`
 
@@ -121,11 +139,11 @@ You write markdown. You don't execute code. You don't deploy. You only read and 
 - `/tasks reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Reads canonical `docs/tasks/*.md` files
-2. Validates frontmatter schemas
-3. Reports inconsistencies
-4. Runs `vef project` and strict validation after accepted changes
-5. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+1. Reads state through `vef list/show/refs`
+2. Authors one structured create/update proposal
+3. Previews it through the CLI and reports the complete candidate diff
+4. Applies only after explicit write intent; the transaction core writes items, inverse links, and ledgers
+5. Runs `vef check`; Git actions remain separately authorized
 
 **Schema rules:**
 ```yaml
@@ -165,11 +183,10 @@ last_updated: 2026-08-12
 - `/roadmap reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Reads canonical `docs/roadmap/*.md` files
-2. Validates frontmatter schemas
-3. Reports inconsistencies
-4. Runs `vef project` and strict validation after accepted changes
-5. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+1. Reads state through deterministic queries
+2. Authors structured semantic fields and relationship target IDs
+3. Previews `vef create`/`vef update` or one batch graduation candidate
+4. Applies only through the transaction engine, then runs `vef check`
 
 **Schema rules:**
 ```yaml
@@ -220,11 +237,10 @@ last_updated: 2026-08-12
 - `/decisions reconcile` — validate schemas, detect orphans
 
 **What it does:**
-1. Reads canonical `docs/decisions/*.md` files
-2. Validates frontmatter schemas
-3. Reports inconsistencies
-4. Runs `vef project` and strict validation after accepted changes
-5. Commits with `Co-Authored-By: Claude <noreply@anthropic.com>`
+1. Determines whether a durable decision record is semantically warranted
+2. Authors context, decision, rationale, consequences, and relationship targets
+3. Previews and writes through `vef create`/`vef update`; supersession uses one batch candidate
+4. Runs `vef check`; it never serializes a decision item or ledger itself
 
 **Schema rules:**
 ```yaml
@@ -274,9 +290,11 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 
 ## Framework implementation status
 
-**Interfaces shipped:**
+**Interfaces available in 0.3.0:**
 - ✅ `/tasks`, `/roadmap`, `/bugs`, `/decisions`, and `/apply` agent adapters
 - ✅ Two-command public lifecycle: `vef setup` and `vef check`; read-only `vef doctor` troubleshooting
+- ✅ Preview-first `vef create` and `vef update` over one journaled mutation API
+- ✅ Explicit forward/rollback recovery and stale-tolerant Windows/sync-folder writer leases
 - ✅ Hidden compatibility/maintainer surfaces: `init`, `migrate`, `project`, `validate`, and `doctor --fix`
 - ✅ Deterministic read-only query commands
 
@@ -285,7 +303,7 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 - ✅ Canonical one-file-per-item storage with deterministic committed ledgers
 - ✅ Bidirectional linking via URLs
 
-> **Storage and lifecycle shipped (DEC-004 / DEC-007 / DEC-009).** Edit canonical records under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; edit collection prose in each `_index.md`; then run `vef setup` and `vef check`. Root structured ledgers are generated, and the strict check rejects drift. `vef doctor` explains core enforcement separately from optional adapter compatibility. Existing consumer-owned adapters are never overwritten.
+> **Storage, lifecycle, and the writer boundary are available in 0.3.0 (DEC-004 / DEC-007 / DEC-009 / DEC-010).** Structured automated edits use `vef create`/`vef update`; direct human edits under `docs/` remain an escape hatch followed by `vef setup` and `vef check`. Root structured ledgers are generated, strict check rejects drift, and unresolved journals block later lifecycle writes. Existing consumer-owned adapters are never overwritten.
 
 **Schema status:**
 - ✅ `description` present on Task + Roadmap schemas
@@ -295,9 +313,8 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 
 ## Next steps for the framework
 
-1. Complete TASK-031: publish and prove the `0.2.0` setup/check lifecycle before examples or distribution.
-2. Resume TASK-018 and TASK-019 only after representative consumers pass the public lifecycle.
-3. Implement the lightweight human review workspace against the canonical loader.
-4. Add transactional writes after the storage contract is stable in consumer use; add optional review adapters only after the shared contract is proven.
+1. Resume public examples, feedback, and distribution through TASK-018 and TASK-019.
+2. Implement the lightweight human review workspace against the canonical loader and candidate diff.
+3. Run a controlled independent-agent comparison against the frozen authoring baseline before making productivity claims.
 
 This AGENTS.md is the **manual** for your agent workforce. When you add a new tool or skill, document it here. When you change a gating rule, update it here. When you debug an agent behavior, start here.

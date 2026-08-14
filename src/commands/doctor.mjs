@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { auditApplyContract } from '../lib/apply-contract.mjs';
 import { auditMemoryCatalogDirectory } from '../lib/memory-catalog.mjs';
 import { loadCanonicalDocuments, planStorageMigration, projectLedgers, STORAGE_MANIFEST } from '../lib/record-store.mjs';
+import { ensureTransactionRuntime, inspectTransactionState } from '../lib/transactions.mjs';
 import { migrateCommand } from './migrate.mjs';
 import { validateCommand } from './validate.mjs';
 
@@ -71,6 +72,7 @@ export async function inspectCore(targetDir) {
   for (const doc of CORE_DOCUMENTS) documentPresence.push({ doc, present: await exists(join(targetDir, doc)) });
   const missingDocuments = documentPresence.filter((entry) => !entry.present).map((entry) => entry.doc);
   const canonical = await loadCanonicalDocuments(targetDir);
+  const transactionState = await inspectTransactionState(targetDir);
   const memoryIssues = await auditMemoryCatalogDirectory(targetDir);
   const validation = await validateCommand({ dir: targetDir, strict: true, quiet: true, setExitCode: false });
   const needsReviewCount = canonical.parsedDocs
@@ -85,6 +87,8 @@ export async function inspectCore(targetDir) {
   let state;
   if (canonical.storage.mode === 'uninitialized') {
     state = 'NOT_ADOPTED';
+  } else if (transactionState.unresolved.length > 0) {
+    state = 'TRANSACTION_RECOVERY_REQUIRED';
   } else if (
     missingDocuments.length > 0
     || memoryIssues.length > 0
@@ -112,6 +116,7 @@ export async function inspectCore(targetDir) {
     semanticValidationErrors,
     semanticWarnings,
     needsReviewCount,
+    transactionState,
   };
 }
 
@@ -169,6 +174,15 @@ export async function doctorCommand(opts) {
   const [core, adapters] = await Promise.all([inspectCore(targetDir), inspectAdapters(targetDir)]);
   log(`\n  Health check: ${targetDir}\n`);
 
+  log('  ── Transaction recovery ──');
+  if (core.transactionState.unresolved.length === 0) log('  ✓  No unresolved mutation journal');
+  else {
+    for (const journal of core.transactionState.unresolved) {
+      log(`  ✗  ${journal.id} is ${journal.state}; run vef recover ${journal.id} --rollback or --forward`);
+    }
+  }
+  if (core.transactionState.settled.length > 0) log(`  ⚠  ${core.transactionState.settled.length} settled journal(s) remain as harmless cleanup debris`);
+
   log('  ── Core documents ──');
   for (const entry of core.documentPresence) log(`  ${entry.present ? '✓' : '✗'}  ${entry.doc}`);
   printStorage(core, log);
@@ -195,6 +209,7 @@ export async function doctorCommand(opts) {
   log('\n  ── Enforcement status ──');
   const stateMessage = {
     NOT_ADOPTED: 'NOT ADOPTED — run vef setup',
+    TRANSACTION_RECOVERY_REQUIRED: 'TRANSACTION RECOVERY REQUIRED — choose explicit roll-forward or rollback before any further write',
     SEMANTIC_RECONCILIATION_REQUIRED: 'SEMANTIC RECONCILIATION REQUIRED — VEF will not invent or overwrite project meaning',
     STRUCTURALLY_REPAIRABLE: 'STRUCTURALLY REPAIRABLE — run vef setup',
     CORE_ENFORCED: 'CORE ENFORCED — canonical project memory satisfies the deterministic contract',
@@ -223,7 +238,7 @@ export async function doctorFixCommand(opts) {
   if (core.needsReviewCount > 0) preflightIssues.push(`${core.needsReviewCount} item(s) are flagged needsReview`);
 
   const uniqueIssues = [...new Set(preflightIssues)];
-  if (!plan.ready || core.state === 'NOT_ADOPTED' || core.state === 'SEMANTIC_RECONCILIATION_REQUIRED' || uniqueIssues.length > 0) {
+  if (!plan.ready || core.state === 'NOT_ADOPTED' || core.state === 'TRANSACTION_RECOVERY_REQUIRED' || core.state === 'SEMANTIC_RECONCILIATION_REQUIRED' || uniqueIssues.length > 0) {
     console.log('  ✗  Core repair preflight failed; no files were changed:');
     for (const issue of uniqueIssues) console.log(`     • ${issue}`);
     if (core.state === 'NOT_ADOPTED') console.log('     Run vef setup for a repository that has not adopted VEF yet.');
@@ -259,6 +274,8 @@ export async function doctorFixCommand(opts) {
     process.exitCode = 1;
     return { ok: false, phase: 'health' };
   }
+
+  await ensureTransactionRuntime(targetDir);
 
   console.log('  ✓ Core repair complete. Review and commit .vef/, docs/, generated ledgers, and any newly installed adapters.\n');
   return { ok: true, adapters: health.adapters };

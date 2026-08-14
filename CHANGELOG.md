@@ -2,6 +2,28 @@
 
 All notable changes to Vibe Engineering Framework are recorded here. Durable architectural context remains in `DECISIONS.md`; this file is the public release history.
 
+## Unreleased
+
+## 0.3.0 — 2026-08-14
+
+### Added
+
+- Preview-first `vef create` and `vef update`, plus adapter batch proposals, over one exported transaction API.
+- Intent-first versioned recovery journals with explicit roll-forward/rollback and strict unresolved-journal blocking.
+- Stale-tolerant PID/host/timestamp writer leases and Windows/synchronized-folder retry behavior.
+- Transaction-managed `last_updated` and `modified: { by, at }` provenance, inverse relationship closure, and schema/transaction package exports.
+- Explicit `vef update --authority frontmatter|heading` repair for a named title mismatch without relaxing unrelated preflight failures.
+
+### Changed
+
+- `/tasks`, `/roadmap`, `/decisions`, and `/apply` now delegate canonical serialization, inverse links, projection, and writes to the transaction core.
+- `/apply` returns structured operation proposals instead of canonical item-file Markdown or snapshot/copy rollback instructions.
+
+### Safety
+
+- Hard process termination at every target-write boundary is recoverable from hash-verified before/after content.
+- Cleanup failures are warnings after success; settled journal/lease debris does not block later work.
+
 ## 0.2.0 — 2026-08-14
 
 ### Added

@@ -148,6 +148,13 @@ export async function setupCommand(opts) {
     return { ok: false, phase: 'semantic-reconciliation', core };
   }
 
+  if (core.state === 'TRANSACTION_RECOVERY_REQUIRED') {
+    await doctorCommand({ dir: targetDir, fix: false });
+    console.log('  SETUP PAUSED — explicitly recover the unresolved transaction before any lifecycle write.\n');
+    process.exitCode = 1;
+    return { ok: false, phase: 'transaction-recovery', core };
+  }
+
   const repaired = await doctorFixCommand({ dir: targetDir, fix: true, lifecycle: true });
   const ci = repaired.ok ? await deployEnforcement(targetDir, opts.github) : null;
   if (repaired.ok) console.log('  ✓ SETUP COMPLETE — VEF CORE ENFORCED\n');

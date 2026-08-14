@@ -17,7 +17,7 @@ export const SCHEMAS = {
       last_updated: { kind: 'date' }, roadmap_item: ref('roadmap', { cardinality: 'one', inverse: 'related_tasks' }),
       depends_on: ref('tasks'), related_bugs: ref('bugs', { external: true }),
       related_decisions: ref('decisions', { inverse: 'related_tasks' }), tags: { kind: 'array' },
-      resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' },
+      resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, modified: { kind: 'provenance' },
       verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
     },
   },
@@ -28,7 +28,7 @@ export const SCHEMAS = {
       status: { kind: 'enum', values: ['Deferred', 'In Progress', 'Completed', 'Blocked'] }, priority: { kind: 'enum', values: ['P0', 'P1', 'P2', 'P3'] },
       last_updated: { kind: 'date' }, vision_theme: ref('vision', { cardinality: 'one', inverse: 'related_roadmap_items' }),
       related_tasks: ref('tasks', { inverse: 'roadmap_item' }), related_decisions: ref('decisions', { inverse: 'related_roadmap_items' }),
-      tags: { kind: 'array' }, resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
+      tags: { kind: 'array' }, resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, modified: { kind: 'provenance' }, verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
     },
   },
   decisions: {
@@ -38,7 +38,7 @@ export const SCHEMAS = {
       context: { kind: 'string' }, decision: { kind: 'string' }, rationale: { kind: 'string' }, consequences: { kind: 'string' }, last_updated: { kind: 'date' },
       superseded_by: ref('decisions', { cardinality: 'one' }), related_vision: ref('vision', { inverse: 'related_decisions' }),
       related_roadmap_items: ref('roadmap', { inverse: 'related_decisions' }), related_tasks: ref('tasks', { inverse: 'related_decisions' }), related_decisions: ref('decisions'),
-      tags: { kind: 'array' }, resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
+      tags: { kind: 'array' }, resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, modified: { kind: 'provenance' }, verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
     },
   },
   vision: {
@@ -46,7 +46,7 @@ export const SCHEMAS = {
     fields: {
       id: { kind: 'string' }, title: { kind: 'string' }, status: { kind: 'enum', values: ['draft', 'active', 'deprecated'] }, description: { kind: 'string' },
       related_roadmap_items: ref('roadmap', { inverse: 'vision_theme' }), related_decisions: ref('decisions', { inverse: 'related_vision' }),
-      tags: { kind: 'array' }, resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
+      tags: { kind: 'array' }, resource: { kind: 'url' }, log_ref: { kind: 'object' }, generated: { kind: 'provenance' }, modified: { kind: 'provenance' }, verified: { kind: 'provenanceArray' }, needsReview: { kind: 'boolean' },
     },
   },
 };

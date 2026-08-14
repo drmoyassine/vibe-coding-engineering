@@ -1,10 +1,15 @@
 {
   "name": "vibe-engineering-framework",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Git-native durable project memory and integrity for AI-assisted engineering.",
   "type": "module",
   "bin": {
     "vef": "bin/vef.mjs"
+  },
+  "exports": {
+    "./schema": "./src/lib/schemas.mjs",
+    "./transactions": "./src/lib/transactions.mjs",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "test": "node --test",

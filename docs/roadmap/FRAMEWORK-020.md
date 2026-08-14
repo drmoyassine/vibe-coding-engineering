@@ -45,8 +45,11 @@ related_decisions:
   - id: DEC-009
     name: Make setup and check the complete public adoption lifecycle
     url: /DECISIONS.md#DEC-009
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T15:47:16.538Z'
 ---
 # FRAMEWORK-020 — Publish and publicly launch VEF
 
-This is the immediate framework priority. `0.1.0` established the verified public package and secured release path, but adoption examples and distribution are paused until the lifecycle itself is simple enough to teach truthfully. TASK-030 implements DEC-009's two-command contract: `setup` owns installation-through-enforcement orchestration and `check` is the one strict acceptance gate. TASK-031 must publish and prove that `0.2.0` flow on fresh and representative upgrading consumers before TASK-018 and TASK-019 resume. Deferred transaction work must not be advertised as shipped.
+`0.2.0` completed the verified two-command adoption lifecycle on 2026-08-14: public latest acquisition, clean setup/check, and two representative consumer upgrades all passed. `0.3.0` then made FRAMEWORK-022's transaction writer publicly available. TASK-018 and TASK-019 can now resume public examples, feedback, and distribution without teaching manual inverse-link bookkeeping as the normal authoring experience.

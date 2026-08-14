@@ -2,13 +2,13 @@
 
 **vibe-engineering-framework Decisions** — Architectural, product, and technical decisions with context and rationale.
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ---
 
 ## Decision schema
 
-Each decision uses YAML frontmatter (canonical source: this file + `CLAUDE.md` "Frontmatter schemas"). Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
+Each decision uses YAML frontmatter (`src/lib/schemas.mjs` is the executable canonical schema). Related references follow the **`id + name + url`** pattern (relative URL for same-repo, absolute for cross-repo):
 
 ```yaml
 ---
@@ -26,6 +26,9 @@ superseded_by:                   # SINGULAR object, only when status = supersede
 generated:                       # OPTIONAL (OKF trust signal) — who wrote this, when
   by: "human:<id>" | "<producer>/<version>" | "process:<id>"
   at: "2026-08-12T00:00:00Z"
+modified:                        # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 verified:                        # OPTIONAL (OKF trust signal) — who confirmed this
   - by: "human:<id>"
     at: "2026-08-12T00:00:00Z"

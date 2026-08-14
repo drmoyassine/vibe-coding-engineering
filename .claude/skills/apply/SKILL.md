@@ -82,19 +82,21 @@ a `review` action; `create` is allowed only when independent source evidence des
 
 ### 3. Extract
 
-Render candidate entries using the installed VEF schema and `id + name + url` references. Preserve supported IDs and
-project prose. Record truthful source references in the proposal metadata. Do not guess required values; flag them.
+Return structured create/update operations using the installed VEF schema. Preserve supported IDs and project prose;
+omit allocatable task/decision IDs for the engine to assign. Put internal relationship target IDs in `relationships`
+and let the core resolve canonical metadata and inverse links. Do not render frontmatter or Markdown. Record truthful
+source references in proposal metadata. Do not guess required values; flag them.
 
 ### 4. Advisory review
 
 Agent validators report likely schema, content, duplicate, and relationship problems. Any error, orphan, or
 `needsReview` item sets `acceptance.proposalBlocked:true`. Passing this phase does not accept the migration.
 
-### 5. Render proposals
+### 5. Build transaction proposals
 
-Pure rendering returns `proposedItemFiles[]` and `proposedEntries[]`. Canonical structured records target `docs/vision/`,
-`docs/roadmap/`, `docs/tasks/`, or `docs/decisions/`; root ledgers are never proposal write targets. The workflow has no filesystem write authority.
-It always returns `acceptance.accepted:false` because only deterministic staging can accept a candidate.
+Pure transformation returns `proposedOperations[]` and `proposedEntries[]`; it never renders canonical YAML, Markdown,
+paths, or ledgers. The workflow has no filesystem write authority. It always returns `acceptance.accepted:false`
+because only the shared transaction engine can accept a candidate.
 
 ### 6. Alignment review
 
@@ -106,15 +108,15 @@ automatically or mix them into the canonical-document write gate.
 The caller performs these steps only when `--write` was explicit:
 
 1. Stop if agent checks report blocking errors, orphans, or any `needsReview` item.
-2. Snapshot the exact target item files and the four generated ledgers so a failed post-write check can restore only those files.
-3. Build a temporary staging directory containing the complete current canonical item store and singleton documents.
-4. Apply `proposedItemFiles[]` to that staging copy, then run `vef project --dir <staging-directory>`.
-5. Run `vef validate --strict --dir <staging-directory>`.
-6. If validation fails, report the diagnostics and leave the repository untouched.
-7. If validation passes, write the exact staged canonical item files and generated ledgers into the repository.
-8. Run `vef validate --strict` in the repository. If it fails, restore the target-document snapshots and report the
-   failure. Do not alter unrelated working-tree changes.
-9. Show the resulting diff for human review. Do not commit, push, delete sources, or apply alignment proposals.
+2. Put the complete `proposedOperations[]` array into one temporary JSON proposal object; this is transport data, not
+   a canonical serializer.
+3. Run `vef create batch --from <proposal> --actor <agent-id>` without `--write` and show the core-produced preview.
+4. If deterministic candidate validation fails, report diagnostics and leave the repository untouched.
+5. Only when `--write` was explicit, rerun that operation with `--write`. The core journals intent, acquires the lease,
+   writes every canonical item and ledger, and validates the complete result.
+6. If interrupted, stop. Do not improvise repairs or auto-rollback; report the transaction ID and require explicit
+   `vef recover <id> --forward|--rollback` direction.
+7. Show the resulting diff for human review. Do not commit, push, delete sources, or apply alignment proposals.
 
 ## Invocation contract
 

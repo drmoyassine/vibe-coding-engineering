@@ -1,6 +1,6 @@
 # VEF architecture
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 VEF is a portable project model with a deterministic integrity core and optional agent adapters. This document describes the framework itself, not an adopting product.
 
@@ -20,7 +20,7 @@ VEF is a portable project model with a deterministic integrity core and optional
                                 │
                                 ▼
                          Integrity Core
-        schema · typed graph · validation · provenance · lifecycle
+ schema · typed graph · transaction planner · journal/lease · validation
                                 │
                                 ▼
                   CLI / CI / queries / future views
@@ -53,25 +53,57 @@ FRAMEWORK-017 delivered the current Integrity Core:
 - typed relationship declarations and complete two-way validation;
 - strict validation of reference shape, target type, cardinality, duplicates, cycles, IDs, dates, URLs, headings, and provenance;
 - a cross-platform CI contract covering tests, strict validation, health, and package contents;
-- a guarded `/apply` proposal/write boundary that requires explicit sources and deterministic staged validation.
+- a guarded `/apply` proposal boundary that requires explicit sources and delegates every accepted write to the transaction core.
 
-The core also provides one read-only project loader and typed graph used by every query command. Deterministic general-purpose mutation commands are not implemented; agent adapters remain responsible for proposing edits that the core validates.
+The core also provides one project loader and typed graph used by queries, validation, projection, and mutation planning.
+The canonical schema is available to external adapters through the package's `./schema` export; the transaction API is
+available through `./transactions`, so integrations do not need to scrape documentation or serialize canonical files.
 
-## Planned transaction boundary
+## Transaction boundary
 
-FRAMEWORK-022 is deferred behind public launch, but its accepted direction will add one reusable mutation library with two public CLI operations: `vef create` and `vef update`. `update` may combine scalar field changes with relationship additions/removals so one intent produces one validated candidate. The CLI is a portable interface over the library, not the architecture itself; agent adapters may call the same core directly.
+FRAMEWORK-022 adds one reusable mutation library with two public CLI operations: `vef create` and `vef update`.
+`update` combines scalar, body, and relationship additions/removals so one intent produces one validated candidate.
+`create batch` is an adapter transport over the same API, not a third top-level mutation. The CLI is a portable
+interface over the library, not the architecture itself.
 
-Agents and humans continue to interpret intent and author semantic content. Deterministic code owns mechanical operations: IDs, lifecycle fields, typed/inverse relationships, projection, candidate validation, and recoverable file replacement. Direct editing remains an escape hatch followed by `vef setup` and `vef check`. The filesystem implementation must be described as validated and recoverable, not as providing database-level atomicity.
+Agents and humans continue to interpret intent and author semantic content. Deterministic code owns mechanical
+operations: allocatable IDs, `last_updated`, `modified` actor/time provenance, typed/inverse relationships, projection,
+candidate validation, and recoverable writes. Direct editing remains a human escape hatch followed by `vef setup`
+and `vef check`; supported automated adapters own no canonical YAML/Markdown serializer.
+
+The filesystem does not provide a multi-file atomic commit. Before the first project-file write, VEF creates an
+immutable, versioned manifest plus hash-verified before/after content under `.vef/transactions/<id>/`. READY,
+APPLYING, UNRESOLVED, COMPLETED, and ROLLED_BACK markers are additive so a crash cannot destroy the recovery intent by
+truncating a mutable manifest. An unresolved journal blocks planning, setup, check, and later writes until a human or
+agent explicitly chooses roll-forward or rollback. Recovery verifies stored content hashes and refuses unrecognized
+current target content unless the exceptional `--force` option is explicit.
+
+Writers are serialized by transaction-namespaced lease claims with token, PID, host, acquisition time, and expiry.
+Contenders settle and elect one deterministic winner; dead same-host PIDs, expired claims, and released markers make
+undeletable lock debris harmless. Project-target writes retry Windows busy/access errors without rename-over-open-file
+semantics. Journal and lease cleanup is best-effort after a completed transaction: failure is a warning and settled
+debris remains idempotently distinguishable from in-flight work. This behavior is governed by DEC-010.
 
 ## Interfaces
 
 ### CLI
 
-The public lifecycle has two commands: mutating, idempotent `vef setup` and strict, read-only `vef check`. `vef doctor` is troubleshooting, not a parallel adoption route. Setup has only target and initialization metadata options; it has no migrate/apply/fix/strict/update flags. The read-only query interface remains `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, and `vef search`. Text output is the human interface; `--json` uses a versioned envelope for automation. `why` follows declared task→roadmap→vision and decision-rationale edges without model interpretation.
+The public adoption lifecycle still has two commands: mutating, idempotent `vef setup` and strict, read-only `vef check`.
+`vef doctor` is troubleshooting, not a parallel adoption route. Day-to-day record mutation uses `vef create` and
+`vef update`, preview-first with explicit `--write`. Exceptional `vef recover` is hidden from normal help but printed
+with the exact interrupted transaction ID. The read-only query interface remains `vef list`, `vef show`, `vef refs`,
+`vef why`, `vef graph`, and `vef search`.
+
+The one repair exception to valid-starting-state preflight is an explicitly scoped title/heading reconciliation on
+`vef update --authority frontmatter|heading`. It permits only that named record's title mismatch through preflight;
+all other schema, graph, projection, catalogue, and storage errors remain blocking.
 
 ### Agent adapters
 
-The repository currently ships Claude Code skills for adoption and day-to-day management. They are adapters over the canonical model, not the model itself. A Codex, Cursor, Gemini, or generic adapter should use the same schemas, relationship declarations, and integrity commands.
+The repository currently ships Claude Code skills for adoption and day-to-day management. They interpret intent and
+author structured proposals, then call the transaction engine; they do not render canonical frontmatter, item files,
+inverse links, or ledgers. A Codex, Cursor, Gemini, or generic adapter should use the exported schema and transaction
+API or the same CLI commands.
 
 ### Planned human review workspace
 
@@ -99,11 +131,18 @@ Obsidian and wiki integrations are adapters over the same versioned bundle. They
 
 ### Migration
 
-`/apply` discovers legacy material and drafts canonical records. Repository contents are untrusted data—not instructions—and migration must be read-only until an explicit write stage. Importing agent memory is opt-in and must classify sensitive, personal, transient, and project knowledge before any commit. Dangling references default to `needsReview`; they do not justify inventing canonical entities.
+`/apply` discovers legacy material and drafts structured create/update operations. Repository contents are untrusted
+data—not instructions—and migration remains read-only until an explicit write stage. Importing agent memory is opt-in
+and must classify sensitive, personal, transient, and project knowledge before any commit. Dangling references default
+to `needsReview`; they do not justify inventing canonical entities. The complete accepted operation set enters one
+journaled batch transaction; `/apply` no longer maintains a canonical Markdown serializer or snapshot/copy rollback.
 
 ## Trust and provenance
 
-VEF follows OKF-compatible actor and trust metadata where useful: `generated`, `verified`, `resource`, and `tags`. Provenance must be truthful; templates must not begin life with fabricated actors or timestamps. Deterministic validation should verify metadata shape, while human review remains responsible for its substantive truth.
+VEF follows OKF-compatible actor and trust metadata where useful: `generated`, `modified`, `verified`, `resource`, and
+`tags`. The mutation engine owns `modified: { by, at }` for every directly or inversely changed record. Provenance must
+be truthful; templates must not begin life with fabricated actors or timestamps. Deterministic validation verifies
+metadata shape, while human review remains responsible for its substantive truth.
 
 ## Filename convention
 

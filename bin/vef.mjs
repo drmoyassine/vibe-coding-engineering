@@ -7,6 +7,7 @@
  *   vef setup [--dir] [--name] [--github]            Adopt or upgrade and reach enforced state
  *   vef check [--dir]                                Strict read-only local/CI enforcement gate
  *   vef doctor [--dir]                               Detailed troubleshooting report
+ *   vef create|update                                Preview or apply validated record mutations
  *   vef list|show|refs|why|graph|search               Deterministic project queries
  *
  * Legacy init/migrate/validate/project commands and doctor --fix remain
@@ -53,6 +54,15 @@ Verify full core enforcement locally or in CI:
   npx vef check
 
 Normal adoption requires only setup and check. Run vef doctor for detailed troubleshooting.`);
+
+async function runMutation(action) {
+  try {
+    await action();
+  } catch (error) {
+    console.error(`Error: ${error?.message || String(error)}`);
+    process.exitCode = 1;
+  }
+}
 
 program
   .command('setup')
@@ -116,6 +126,47 @@ program
     const { doctorCommand } = await import('../src/commands/doctor.mjs');
     await doctorCommand(opts);
   });
+
+program
+  .command('create <type>')
+  .description('Preview or create one canonical record with validated inverse relationships')
+  .requiredOption('--from <file>', 'YAML/JSON proposal file, or - for stdin')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--actor <actor>', 'provenance actor', 'process:vef-cli')
+  .option('--write', 'apply the previewed transaction')
+  .option('--json', 'emit versioned JSON')
+  .action((type, opts) => runMutation(async () => {
+    const { createCommand } = await import('../src/commands/mutation.mjs');
+    await createCommand(type, opts);
+  }));
+
+program
+  .command('update <id>')
+  .description('Preview or update one canonical record; relationships and inverse links are included')
+  .requiredOption('--from <file>', 'YAML/JSON proposal file, or - for stdin')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--actor <actor>', 'provenance actor', 'process:vef-cli')
+  .option('--authority <source>', 'repair a title/heading mismatch from frontmatter or heading')
+  .option('--write', 'apply the previewed transaction')
+  .option('--json', 'emit versioned JSON')
+  .action((id, opts) => runMutation(async () => {
+    const { updateCommand } = await import('../src/commands/mutation.mjs');
+    await updateCommand(id, opts);
+  }));
+
+program
+  .command('recover <id>', { hidden: true })
+  .description('Recover an interrupted transaction explicitly')
+  .option('--dir <path>', 'project directory', '.')
+  .option('--forward', 'apply the complete staged candidate')
+  .option('--rollback', 'restore the complete pre-transaction state')
+  .option('--force', 'overwrite transaction targets whose current hash is unrecognized')
+  .option('--actor <actor>', 'recovery provenance actor', 'process:vef-recover')
+  .action((id, opts) => runMutation(async () => {
+    if (opts.forward && opts.rollback) throw new Error('Choose exactly one of --forward or --rollback.');
+    const { recoverCommand } = await import('../src/commands/mutation.mjs');
+    await recoverCommand(id, opts);
+  }));
 
 program
   .command('project', { hidden: true })

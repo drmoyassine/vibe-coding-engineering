@@ -2,7 +2,7 @@
 
 **vibe-engineering-framework Tasks** — Concrete work breakdown for the framework itself. Directional themes live in ROADMAP.md (FRAMEWORK-XXX); decisions live in DECISIONS.md.
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ---
 
@@ -24,6 +24,9 @@ roadmap_item:                 # SINGULAR object — a task belongs to one roadma
 assignee:                     # name, or empty
 depends_on: []                # array of task refs
 related_decisions: []         # array of decision refs (DECISIONS, not LOG)
+modified:                      # transaction-managed actor/time provenance
+  by: "agent/session"
+  at: "2026-08-14T00:00:00Z"
 last_updated: 2026-08-12
 ---
 
@@ -407,13 +410,13 @@ Completed 2026-08-13. One canonical loader now serves validation, queries, proje
 id: TASK-013
 title: Build the recoverable transaction engine
 description: Plan, validate, preview, and recoverably apply multi-record structural changes without partial graph updates.
-status: pending
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-022
   name: Build transactional project mutations
   url: /ROADMAP.md#FRAMEWORK-022
-assignee: null
+assignee: Codex
 depends_on:
   - id: TASK-012
     name: Implement the canonical record store and ledger projector
@@ -425,10 +428,20 @@ related_decisions:
   - id: DEC-004
     name: Store canonical items in per-type folders and generate the ledgers
     url: /DECISIONS.md#DEC-004
-last_updated: '2026-08-13'
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex
+  at: '2026-08-14T15:20:24.671Z'
 ---
 
-The engine owns mechanically implied dates, provenance, typed target checks, inverse relationships, minimal candidate diffs, pre-write validation, controlled file replacement, and recovery information. It must not claim database-level atomicity or decide semantic truth.
+Completed 2026-08-14. The shared library now plans complete multi-record candidates in memory, validates the starting graph and candidate, closes typed inverse relationships, stamps last_updated and modified provenance, and renders minimal canonical-item plus ledger changes.
+
+Before touching project files it writes an immutable versioned manifest, hash-verified before/after content, and additive state markers under .vef/transactions. A renewable token/PID/host/timestamp lease serializes writers without depending on lock deletion. Project-target writes retry Windows busy/access failures without rename-over-open-file behavior; cleanup failures remain warnings.
+
+Interrupted transactions block planning, setup, check, validation, projection, migration, and later mutations until explicit hash-checked roll-forward or rollback. Tests cover thrown interruptions, hard process termination at every write boundary, forward/back recovery, competing writers, stale leases, cleanup debris, busy destinations, stale previews, malformed journals, invalid graphs, idempotency, and path confinement.
 
 ---
 
@@ -440,13 +453,13 @@ title: Expose vef create and vef update
 description: >-
   Provide two portable public commands over the transaction engine for record creation and combined field/relationship
   updates.
-status: pending
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-022
   name: Build transactional project mutations
   url: /ROADMAP.md#FRAMEWORK-022
-assignee: null
+assignee: Codex
 depends_on:
   - id: TASK-013
     name: Build the recoverable transaction engine
@@ -455,10 +468,18 @@ related_decisions:
   - id: DEC-003
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
-last_updated: '2026-08-13'
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex
+  at: '2026-08-14T15:20:56.169Z'
 ---
 
-`vef create` accepts a complete proposed record, including initial relationships. `vef update` combines scalar changes with link/unlink operations in one transaction. Preview is the safe default and an explicit write flag applies the validated candidate. No delete or semantic inference command is included.
+Completed 2026-08-14. The CLI exposes preview-first vef create and vef update over the shared planner. Create accepts complete records and initial relationships; update combines scalar, body, and add/remove/set relationship changes. --write is explicit, --actor stamps provenance, JSON output is available, and adapter batch proposals remain a create submode rather than another top-level mutation command.
+
+The stable package exports expose the executable schema and transaction API. Exceptional recover is hidden from normal help but every unresolved-journal diagnostic prints the exact forward/rollback commands.
 
 ---
 
@@ -470,13 +491,13 @@ title: Migrate agent adapters and complete mutation tests
 description: >-
   Make shipped skills use the shared mutation contract for mechanical edits and prove the contract across failures and
   platforms.
-status: pending
-priority: P1
+status: completed
+priority: P0
 roadmap_item:
   id: FRAMEWORK-022
   name: Build transactional project mutations
   url: /ROADMAP.md#FRAMEWORK-022
-assignee: null
+assignee: Codex
 depends_on:
   - id: TASK-014
     name: Expose vef create and vef update
@@ -485,10 +506,18 @@ related_decisions:
   - id: DEC-003
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
-last_updated: '2026-08-13'
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex
+  at: '2026-08-14T15:20:56.169Z'
 ---
 
-Adapters continue interpreting intent and authoring semantic prose, but delegate IDs, lifecycle fields, graph links, projection, and validated writes to the shared core. Tests cover dry runs, idempotency, invalid transitions, inverse updates, malformed starting state, interrupted writes, migration compatibility, and Windows/Linux behavior.
+Completed 2026-08-14 in the same release boundary as TASK-014. The tasks, roadmap, decisions, and apply adapters now author semantic proposal data and delegate canonical Markdown, IDs, lifecycle fields, provenance, inverse links, ledgers, validation, journaling, and recovery to the shared core. /apply returns proposedOperations instead of proposedItemFiles and uses one batch transaction for accepted writes.
+
+Tests cover preview/write behavior, batch delegation, idempotency, invalid candidates and starting graphs, inverse closure, stale previews, Windows-style busy destinations, cleanup debris, stale and competing leases, thrown interruptions, hard termination at every write boundary, explicit forward/back recovery, malformed journals, and a 17-record first-pass strict-integrity replay.
 
 ---
 
@@ -535,12 +564,15 @@ related_decisions:
   - id: DEC-008
     name: Bootstrap npm manually, then use staged trusted publishing
     url: /DECISIONS.md#DEC-008
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T15:47:16.538Z'
 ---
 
-Completed 2026-08-13. Reconciled the README/front door, truthful pre-publication and post-publication installation paths, current-versus-planned capability table, package/repository metadata, changelog, contribution contract, security reporting, maintainer release procedure, and reusable `0.1.0` launch copy.
+Completed 2026-08-13. Reconciled the README/front door, truthful pre-publication and post-publication installation paths, current-versus-planned capability table, package/repository metadata, changelog, contribution contract, security reporting, maintainer release procedure, and reusable 0.1.0 launch copy.
 
-The public narrative now leads with Git-native durable project memory and its deterministic integrity boundary. It names per-item storage, generated ledgers, queries, adoption, and optional adapters as shipped; it explicitly marks the human-review workspace as planned and transactional `create`/`update` as deferred. Registry publication itself remains TASK-001, and distribution/adoption execution remains TASK-018/TASK-019.
+The public narrative leads with Git-native durable project memory and its deterministic integrity boundary. At this task's completion it truthfully marked transactional create/update as deferred; FRAMEWORK-022 later delivered them on 2026-08-14 and VEF 0.3.0 makes that writer boundary publicly available. The human-review workspace remains planned. Distribution/adoption execution remains TASK-018/TASK-019.
 
 ---
 
@@ -863,7 +895,7 @@ title: Release and prove the VEF 0.2 adoption lifecycle
 description: >-
   Publish the two-command lifecycle and verify that real consumers can update through latest setup and reach enforced
   state without reconstructing internal commands.
-status: in-progress
+status: completed
 priority: P0
 roadmap_item:
   id: FRAMEWORK-020
@@ -884,19 +916,22 @@ related_decisions:
   - id: DEC-008
     name: Bootstrap npm manually, then use staged trusted publishing
     url: /DECISIONS.md#DEC-008
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T15:47:16.538Z'
 ---
 
-`0.2.0` is the adoption-lifecycle release candidate. Completion requires:
+Completed 2026-08-14. The adoption-lifecycle release was proven across every declared boundary:
 
-- the complete release gate and cross-platform CI on the tagged artifact;
-- staged OIDC publication and human 2FA approval through DEC-008;
-- public-registry verification of `setup`, `check`, and the exact package integrity;
-- clean fresh-repository setup plus check from npm;
-- upgrade proof on representative independently owned consumer repositories using only `npx vibe-engineering-framework@latest setup`, semantic reconciliation when explicitly reported, and `check`;
-- final README/release notes that distinguish core enforcement from optional adapter compatibility and state that no CLI can invent missing product meaning.
+- merged PR #1 after the complete release gate and eight passing Ubuntu/Windows checks, then tagged merge commit `e5b37fb` as `v0.2.0`;
+- staged the tag through GitHub OIDC, published signed provenance, and released it after human 2FA approval under DEC-008;
+- verified npm `latest` resolves to `0.2.0`, registry SHA-1 `9fa04f7f8cd235b101c83870743ccec522d486da`, and SHA-512 integrity `sha512-5/zsyx+zylpgqWTZkd2IUTGEHHkjUJTAfLvrOszk9BRR++mMosZijIG0dO9LmU0qpdLaHIa5AdSZ3h0yOVEEww==`;
+- installed public `@latest` into a clean temporary repository and passed fresh `setup` followed by `check`;
+- ran public latest `setup` and `check` against two independently governed adopted repositories: one idempotent current state and one safe regeneration of four stale derived ledgers from semantically coherent canonical records;
+- published the matching GitHub Release and retained the documented boundary between deterministic core enforcement, optional adapters, and unresolved product meaning.
 
-TASK-018 and TASK-019 remain blocked behind this proof. Public examples and launch distribution must teach the simplified lifecycle rather than the obsolete 0.1 command sequence.
+TASK-018 and TASK-019 are no longer blocked by the lifecycle release. FRAMEWORK-022 subsequently delivered deterministic day-to-day record writes so public examples no longer need to teach manual inverse-link bookkeeping.
 
 <!-- End VEF generated items. -->
 
@@ -916,9 +951,9 @@ TASK-018 and TASK-019 remain blocked behind this proof. Public examples and laun
 | TASK-010 | Durable-memory catalogue coherence | completed | P0 |
 | TASK-011 | Canonical item storage and ledger projection contract | completed | P0 |
 | TASK-012 | Canonical record store and ledger projector | completed | P0 |
-| TASK-013 | Recoverable transaction engine | pending | P0 |
-| TASK-014 | `vef create` and `vef update` | pending | P0 |
-| TASK-015 | Agent-adapter migration and mutation tests | pending | P1 |
+| TASK-013 | Recoverable transaction engine | completed | P0 |
+| TASK-014 | `vef create` and `vef update` | completed | P0 |
+| TASK-015 | Agent-adapter migration and mutation tests | completed | P0 |
 | TASK-016 | Rename the local repository directory | pending | P3 |
 | TASK-017 | Public VEF release and launch narrative | completed | P0 |
 | TASK-018 | Adoption examples and public feedback loop | pending | P0 |
@@ -930,6 +965,9 @@ TASK-018 and TASK-019 remain blocked behind this proof. Public examples and laun
 | TASK-028 | One-command doctor remediation | completed | P0 |
 | TASK-029 | Core enforcement and adapter separation | completed | P0 |
 | TASK-030 | Simplify the complete VEF adoption lifecycle | completed | P0 |
-| TASK-031 | Release and prove the VEF 0.2 adoption lifecycle | in-progress | P0 |
+| TASK-031 | Release and prove the VEF 0.2 adoption lifecycle | completed | P0 |
 
-**Next priority:** Complete TASK-031 by releasing and proving DEC-009's `0.2.0` two-command lifecycle. Only then do TASK-018 and TASK-019 resume adoption examples, feedback, and distribution. TASK-025 then TASK-026 continue the parallel lightweight human-review track. TASK-013 through TASK-015 remain deferred under FRAMEWORK-022; TASK-016 is cosmetic; TASK-027 remains adapter-specific follow-up work. Consumer and commercial priorities are tracked only in their owning repositories.
+**Next priority:** TASK-018 and TASK-019 resume the public examples, feedback, and distribution work now that
+FRAMEWORK-022 no longer requires examples to teach manual inverse bookkeeping. TASK-025 then TASK-026 continue the
+lightweight human-review workspace against the new candidate-diff/transaction boundary. TASK-016 is cosmetic and
+TASK-027 remains adapter-specific follow-up. Consumer and commercial priorities stay in their owning repositories.
