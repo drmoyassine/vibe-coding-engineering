@@ -2,7 +2,7 @@
 
 All notable changes to Vibe Engineering Framework are recorded here. Durable architectural context remains in `DECISIONS.md`; this file is the public release history.
 
-## 0.2.0 — Unreleased
+## 0.2.0 — 2026-08-14
 
 ### Added
 
