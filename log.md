@@ -8,10 +8,10 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-14
 
-### VEF 0.3.0 transaction release candidate prepared
-- Versioned the package and public release notes as `0.3.0`, the backward-compatible feature release for FRAMEWORK-022 and TASK-013 through TASK-015.
-- Reconciled current framework surfaces so the transaction writer, exported schema/API, adapter writer boundary, explicit recovery, Windows/synchronized-folder behavior, and narrow title-authority repair are described as the 0.3.0 contract rather than unreleased source work.
-- Kept the DEC-008 provenance boundary: the exact tagged candidate must pass the complete release gate and enter npm through the trusted stage-only GitHub publisher before human 2FA approval makes it public.
+### VEF 0.3.0 transaction release published and verified
+- Merged PR #2 after all eight Ubuntu/Windows release jobs passed, tagged merge commit `0079a24` as `v0.3.0`, and staged the exact artifact through the trusted GitHub OIDC publisher. Human 2FA approval made `vibe-engineering-framework@0.3.0` public with the `latest` tag.
+- Verified registry SHA-1 `0caa047911a7556211da00feee766b31a503af2b`, SHA-512 `sha512-dsKA7tETUyeInFHild0aTLvTzB6GgaJetrKPkt9nxNmU78+29CedPovGjehYVhAmZfGUQRCtqkr3bJP0rcr72w==`, SLSA provenance, an empty staged-package queue, and a clean public-registry `setup` followed by `check`.
+- Published the matching GitHub Release. The transaction writer, exported schema/API, adapter writer boundary, explicit recovery, Windows/synchronized-folder behavior, and narrow title-authority repair are now the public 0.3.0 contract.
 
 ### Recoverable transaction writer completed and dogfooded
 - Completed FRAMEWORK-022 and TASK-013 through TASK-015 as one writer-boundary release unit. `vef create` and `vef update` preview complete candidates by default; explicit `--write` routes single or adapter-batch operations through the same exported transaction API.
