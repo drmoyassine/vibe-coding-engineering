@@ -61,13 +61,16 @@ try {
 
   const helpResult = await run(process.execPath, [cli, '--help'], consumerDir);
   assert.match(helpResult.stdout, /Vibe Engineering Framework/);
+  assert.match(helpResult.stdout, /setup/);
+  assert.match(helpResult.stdout, /check/);
   assert.match(helpResult.stdout, /doctor/);
+  assert.doesNotMatch(helpResult.stdout, /migrate \[options\]/);
+  assert.doesNotMatch(helpResult.stdout, /validate \[options\]/);
 
-  await run(process.execPath, [cli, 'init', '--dir', projectDir, '--name', 'Release Smoke'], consumerDir);
-  const doctor = await run(process.execPath, [cli, 'doctor', '--dir', projectDir], consumerDir);
-  assert.match(doctor.stdout, /CORE ENFORCED/);
-  const validation = await run(process.execPath, [cli, 'validate', '--strict', '--dir', projectDir], consumerDir);
-  assert.match(validation.stdout, /Errors: 0   Warnings: 0/);
+  const setup = await run(process.execPath, [cli, 'setup', '--dir', projectDir, '--name', 'Release Smoke'], consumerDir);
+  assert.match(setup.stdout, /SETUP COMPLETE — VEF CORE ENFORCED/);
+  const check = await run(process.execPath, [cli, 'check', '--dir', projectDir], consumerDir);
+  assert.match(check.stdout, /CHECK PASSED — VEF CORE ENFORCED/);
 
   console.log(`Release smoke passed for ${packageJson.name}@${packageJson.version}.`);
 } finally {

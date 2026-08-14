@@ -61,6 +61,24 @@ test('CLI version is sourced from package metadata', async () => {
   assert.equal(stdout.trim(), packageJson.version);
 });
 
+test('CLI presents one setup command and one strict check command for adoption', async () => {
+  const { stdout } = await execFileAsync(process.execPath, ['bin/vef.mjs', '--help']);
+  assert.match(stdout, /setup \[options\]/);
+  assert.match(stdout, /check \[options\]/);
+  assert.match(stdout, /Normal adoption requires only setup and check/);
+  assert.doesNotMatch(stdout, /npx --yes/);
+  for (const internal of ['init [options]', 'migrate [options]', 'validate [options]', 'project [options]']) {
+    assert.doesNotMatch(stdout, new RegExp(internal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  const { stdout: doctorHelp } = await execFileAsync(process.execPath, ['bin/vef.mjs', 'doctor', '--help']);
+  assert.doesNotMatch(doctorHelp, /--fix/);
+
+  for (const humanSurface of ['README.md', 'docs/releases/v0.2.0.md']) {
+    assert.doesNotMatch(await readFile(humanSurface, 'utf8'), /npx --yes/);
+  }
+});
+
 test('release metadata and workflow preserve the verified publication boundary', async () => {
   const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
   assert.equal(packageJson.name, 'vibe-engineering-framework');
@@ -108,7 +126,8 @@ test('keeps named consumers out of framework product and agent surfaces', async 
     'CONTRIBUTING.md',
     'SECURITY.md',
     'RELEASING.md',
-    'docs/releases/v0.1.0.md'
+    'docs/releases/v0.1.0.md',
+    'docs/releases/v0.2.0.md'
   ];
   for (const surface of surfaces) {
     const content = await readFile(surface, 'utf8');

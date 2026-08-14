@@ -276,7 +276,8 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 
 **Interfaces shipped:**
 - ✅ `/tasks`, `/roadmap`, `/bugs`, `/decisions`, and `/apply` agent adapters
-- ✅ `vef init`, `migrate`, `project`, `validate`, and `doctor`
+- ✅ Two-command public lifecycle: `vef setup` and `vef check`; read-only `vef doctor` troubleshooting
+- ✅ Hidden compatibility/maintainer surfaces: `init`, `migrate`, `project`, `validate`, and `doctor --fix`
 - ✅ Deterministic read-only query commands
 
 **Schema patterns proven:**
@@ -284,7 +285,7 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 - ✅ Canonical one-file-per-item storage with deterministic committed ledgers
 - ✅ Bidirectional linking via URLs
 
-> **Storage topology shipped (DEC-004 / DEC-007 / TASK-012 / TASK-028 / TASK-029).** Edit canonical records under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; edit collection prose in each `_index.md`; then run `vef project`. Root structured ledgers are generated, and strict validation rejects drift. Plain `vef doctor` reports deterministic core enforcement separately from optional adapter compatibility; consumers may explicitly authorize supported core remediation with `vef doctor --fix`. Existing consumer-owned adapters are never overwritten.
+> **Storage and lifecycle shipped (DEC-004 / DEC-007 / DEC-009).** Edit canonical records under `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; edit collection prose in each `_index.md`; then run `vef setup` and `vef check`. Root structured ledgers are generated, and the strict check rejects drift. `vef doctor` explains core enforcement separately from optional adapter compatibility. Existing consumer-owned adapters are never overwritten.
 
 **Schema status:**
 - ✅ `description` present on Task + Roadmap schemas
@@ -294,9 +295,9 @@ The predicate belongs to the per-profile tool/skill assignment so the same capab
 
 ## Next steps for the framework
 
-1. Publish the verified package and public adoption materials.
-2. Implement the lightweight human review workspace against the canonical loader.
-3. Add transactional writes after the storage contract is stable in consumer use.
-4. Add optional Obsidian and wiki review adapters after the shared review contract is proven.
+1. Complete TASK-031: publish and prove the `0.2.0` setup/check lifecycle before examples or distribution.
+2. Resume TASK-018 and TASK-019 only after representative consumers pass the public lifecycle.
+3. Implement the lightweight human review workspace against the canonical loader.
+4. Add transactional writes after the storage contract is stable in consumer use; add optional review adapters only after the shared contract is proven.
 
 This AGENTS.md is the **manual** for your agent workforce. When you add a new tool or skill, document it here. When you change a gating rule, update it here. When you debug an agent behavior, start here.

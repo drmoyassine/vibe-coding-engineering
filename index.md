@@ -28,15 +28,15 @@ VEF maintains a portable, version-controlled project model for humans and AI age
 
 ## Current strategic state
 
-[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, and [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage with deterministic ledgers. VEF `0.1.0` is publicly available from npm. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) now continues through adoption examples and distribution, while [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) advances lightweight human review. General-purpose mutations are deferred to FRAMEWORK-022.
+[FRAMEWORK-017](ROADMAP.md#FRAMEWORK-017) delivered the Integrity Core, [FRAMEWORK-018](ROADMAP.md#FRAMEWORK-018) delivered deterministic project queries, and [FRAMEWORK-019](ROADMAP.md#FRAMEWORK-019) delivered canonical per-item storage with deterministic ledgers. VEF `0.1.0` is publicly available from npm. [FRAMEWORK-020](ROADMAP.md#FRAMEWORK-020) now gates examples and distribution on the simplified `0.2.0` setup/check lifecycle and consumer proof, while [FRAMEWORK-015](ROADMAP.md#FRAMEWORK-015) advances lightweight human review. General-purpose mutations are deferred to FRAMEWORK-022.
 
 ## Current interfaces
 
-- CLI integrity/adoption: consumer-facing `vef init`, `vef doctor`, and `vef doctor --fix`; advanced `vef migrate`, `vef project`, and `vef validate`
+- CLI lifecycle: `vef setup` adopts or upgrades and reaches the strongest safe enforced state; `vef check` is the strict local/CI gate; `vef doctor` explains blockers
 - CLI queries: `vef list`, `vef show`, `vef refs`, `vef why`, `vef graph`, `vef search` (text or versioned JSON)
 - Claude Code adapter: `/apply`, `/tasks`, `/roadmap`, `/decisions`, `/bugs`
 - External bugs: GitHub Issues are canonical; VEF references them rather than maintaining a duplicate bug document.
-- Structured items: `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/` are canonical. The linked root ledgers are generated, committed views; run `vef project` after item changes.
+- Structured items: `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/` are canonical. The linked root ledgers are generated, committed views; run `vef setup`, then `vef check`, after direct item changes.
 
 ## License
 

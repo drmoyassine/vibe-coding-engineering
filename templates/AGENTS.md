@@ -15,8 +15,8 @@ Use `vef list`, `show`, `refs`, `why`, `graph`, and `search` for read-only proje
 Structured records live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `docs/decisions/`; each collection's `_index.md` owns ledger-level prose. The root `VISION.md`, `ROADMAP.md`, `TASKS.md`, and `DECISIONS.md` files are generated committed ledgers. Never edit their generated item blocks directly. After canonical item changes, run:
 
 ```bash
-vef project
-vef validate --strict
+vef setup
+vef check
 ```
 
 ## Editing workflow
@@ -47,6 +47,6 @@ npm test
   - `/roadmap reconcile` — validate roadmap schemas
   - `/decisions reconcile` — validate decision schemas + cross-links
 - Run `/apply` to migrate scattered content into the canonical schema.
-- Plain `vef doctor` is read-only and reports core enforcement separately from optional adapter compatibility. To repair supported core storage using the current CLI, run `vef doctor --fix`, review the resulting `.vef/`, `docs/`, regenerated ledgers, and any newly installed adapter files, then commit them together. Existing adapter files are never overwritten.
+- `vef setup` is the only normal lifecycle write: it initializes or upgrades, repairs, projects, validates, and enforces. `vef check` is the strict read-only local/CI gate; `vef doctor` explains blockers. Review and commit `.vef/`, `docs/`, regenerated ledgers, any newly installed adapters, and the managed enforcement workflow together. Existing adapter files are never overwritten.
 
 <!-- PROJECT: Add your project-specific conventions here. -->

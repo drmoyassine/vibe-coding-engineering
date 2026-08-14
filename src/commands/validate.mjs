@@ -42,13 +42,13 @@ export async function validateCommand(opts) {
   if (loaded.storage.mode === 'per-item') {
     log(`  ✓  Per-item canonical storage (${STORAGE_MANIFEST})`);
   } else if (loaded.storage.mode === 'per-item-root') {
-    log('  ⚠  Retired root-directory storage; run vef doctor --fix');
+    log('  ⚠  Retired root-directory storage; run vef setup');
     recordIssue('warning', 'storage', 'Retired root-directory storage');
   } else if (loaded.storage.mode === 'legacy' || loaded.storage.mode === 'legacy-partial' || loaded.storage.mode === 'legacy-incomplete') {
-    log('  ⚠  Legacy monolithic ledger storage; run vef doctor --fix');
+    log('  ⚠  Legacy monolithic ledger storage; run vef setup');
     recordIssue('warning', 'storage', 'Legacy monolithic ledger storage');
   } else if (loaded.storage.mode === 'uninitialized') {
-    log('  ⚠  VEF structured storage is not initialized; run vef init');
+    log('  ⚠  VEF structured storage is not initialized; run vef setup');
     recordIssue('warning', 'storage', 'VEF structured storage is not initialized');
   }
   for (const issue of loaded.storageIssues) {

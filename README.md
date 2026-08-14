@@ -90,7 +90,7 @@ docs/
     <id>.md       <id>.md        <id>.md         <id>.md
     _index.md     _index.md      _index.md       _index.md
         │             │              │               │
-        └─────────────┴──── vef project ─────────────┘
+        └─────────────┴──── vef setup ───────────────┘
                                 │
               VISION.md · ROADMAP.md · TASKS.md · DECISIONS.md
                     generated, committed reading ledgers
@@ -116,10 +116,10 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 
 ## What works today
 
-- `vef init` scaffolds a project with the docs, templates, and current agent skills.
-- `vef doctor` reports deterministic core enforcement and optional agent-adapter compatibility as separate results; `--fix` performs supported non-destructive core repair.
-- Advanced `vef migrate` and `vef project` commands expose storage migration and deterministic ledger projection for maintainers.
-- `vef validate --strict` provides the CI gate for field contracts, typed targets, dangling links, inverse relationships, duplicates, dependency cycles, and the canonical durable-memory catalogue.
+- `vef setup` is the one idempotent lifecycle write: initialize or upgrade, repair, project, validate, and enforce.
+- `vef check` is the one strict read-only gate for local use and CI.
+- `vef doctor` explains blockers without becoming another setup path.
+- Legacy `init`, `migrate`, `project`, `validate`, and `doctor --fix` remain callable for compatibility but are hidden from normal help.
 - `vef list`, `show`, `refs`, `why`, `graph`, and `search` expose the canonical model without an LLM.
 - Claude Code skills manage tasks, roadmap items, decisions, bugs, and AI-assisted migration.
 - The framework is dogfooded in this repository and designed for adoption by independent product repositories.
@@ -132,7 +132,7 @@ GitHub Issues remain the canonical bug tracker. A task can reference an external
 | Integrity validation and cross-platform CI | Shipped in 0.1.0 |
 | Per-item storage and deterministic ledgers | Shipped in 0.1.0 |
 | Deterministic read-only graph queries | Shipped in 0.1.0 |
-| Safe initialization and non-destructive doctor remediation | Shipped in 0.1.0 |
+| Two-command setup and enforcement lifecycle | Prepared for 0.2.0 |
 | Claude Code agent adapters | Shipped as optional adapters |
 | Lightweight human review workspace | Planned under FRAMEWORK-015 |
 | Transactional `vef create` and `vef update` | Deferred under FRAMEWORK-022 |
@@ -151,78 +151,79 @@ The Integrity Core makes deterministic code authoritative for:
 
 LLMs are valuable for interpreting legacy prose, classifying ambiguous evidence, and explaining conflicts. They should not be the authority for mechanical invariants. That boundary is a product principle, not an implementation detail.
 
-## Install
+## Adopt VEF
 
-VEF requires Node.js 18 or newer. Scaffold a new project directly from npm:
+VEF requires Node.js 18 or newer. New repositories, existing repositories, and upgrades all begin with the same command:
 
 ```bash
-npx vibe-engineering-framework@latest init --name "My Project"
-npx vibe-engineering-framework@latest doctor
-npx vibe-engineering-framework@latest validate --strict
+npx vibe-engineering-framework@latest setup
 ```
 
-For an existing repository, install VEF as a development dependency so the version is explicit and repeatable:
+That invocation includes package acquisition. `setup` detects the repository's state and performs the strongest safe lifecycle it can prove:
+
+```text
+acquire current CLI → initialize or upgrade → repair → project → validate → enforce
+                                                       │
+                                                       └─ stop before writes if meaning is unresolved
+```
+
+The result is explicit:
+
+- `SETUP COMPLETE — VEF CORE ENFORCED`: the deterministic project-memory contract passes.
+- `SETUP PAUSED`: schemas or relationships require human/agent semantic reconciliation; structural writes did not run.
+- `SETUP BLOCKED`: existing framework-surface files conflict with a fresh scaffold; no files were changed.
+
+Existing adapters are consumer-owned and are never overwritten. Missing adapters may be installed, but adapter compatibility remains separate from core enforcement.
+
+### Validate and enforce
+
+There is one strict read-only acceptance command:
+
+```bash
+npx vibe-engineering-framework@latest check
+```
+
+`check` fails unless storage, generated ledgers, schemas, typed targets, inverse relationships, duplicates, cycles, review state, and the durable-memory catalogue all satisfy the implemented contract. Use the same command locally and in CI.
+
+When setup detects GitHub, it creates or refreshes a clearly marked VEF-managed workflow pinned to the current framework version. Existing custom enforcement workflows are preserved. For another CI provider, setup prints the single pinned `check` command to add. This is the deployment boundary: commit `.vef/`, `docs/`, the root ledgers, optional adapters, and the enforcement workflow together.
+
+### Update
+
+Updating uses the same lifecycle command—there is no separate upgrade flag or migration sequence:
+
+```bash
+npx vibe-engineering-framework@latest setup
+```
+
+The current CLI upgrades mechanically compatible storage and managed CI, validates the complete candidate, and stops on semantic ambiguity. An obsolete local dependency never controls the upgrade because the command explicitly acquires `@latest`.
+
+### Troubleshoot
+
+If setup or check stops, use the read-only explanation surface:
+
+```bash
+npx vibe-engineering-framework@latest doctor
+```
+
+Normal adoption requires only `setup` and `check`. The former `init`, `migrate --apply`, `project`, `validate --strict`, and `doctor --fix` surfaces remain callable for compatibility and framework maintenance but are intentionally hidden from normal help.
+
+### Query and maintain project state
+
+Install VEF as a development dependency when you want short local query commands:
 
 ```bash
 npm install --save-dev vibe-engineering-framework
-npx vef doctor
-npx vef doctor --fix
+npx vef list tasks --status pending
+npx vef show TASK-009
+npx vef refs TASK-009
+npx vef why TASK-009
+npx vef graph --json
+npx vef search "migration trust" --type decisions --json
 ```
 
-Query the project model directly:
+Queries are read-only. Human-readable text is the default; `--json` emits the versioned `schemaVersion: 1` automation envelope. Use `tasks:TASK-009`-style selectors only if an invalid repository contains a cross-type ambiguity.
 
-```bash
-vef list tasks --status pending
-vef show TASK-009
-vef refs TASK-009 --direction both
-vef why TASK-009
-vef graph --json
-vef search "migration trust" --type decisions --json
-```
-
-Queries are read-only. Human-readable text is the default; every command accepts `--json` and emits a versioned
-`schemaVersion: 1` envelope; lookup and filter failures use the same envelope on stderr. `show`, `refs`, and `why` resolve a stable ID across
-all document types; use `tasks:TASK-009`-style selectors if an invalid repository contains a cross-type ambiguity.
-
-For an existing repository with VEF installed as a development dependency, remediation is one explicitly authorized command:
-
-```bash
-npx vef doctor
-npx vef doctor --fix
-```
-
-Plain `doctor` is read-only and reports two independent results: deterministic **core enforcement** and optional **agent-adapter compatibility**. Core status is one of:
-
-| Status | Meaning | Next action |
-|---|---|---|
-| `NOT ADOPTED` | The repository has no VEF structured state | Run `vef init` |
-| `SEMANTIC RECONCILIATION REQUIRED` | Records contain missing meaning, invalid relationships, or review flags | Reconcile the reported records, then rerun `vef doctor --fix` |
-| `STRUCTURALLY REPAIRABLE` | Meaning is coherent; storage or projections need deterministic repair | Run `vef doctor --fix` |
-| `CORE ENFORCED` | Canonical project memory satisfies the deterministic contract | No core repair needed |
-
-`doctor --fix` preflights the complete candidate, creates or relocates canonical records under `docs/`, regenerates the root ledgers, runs strict validation, and finishes with the same health report. It may install adapter files that are missing, but it **never modifies an existing adapter file**. Adapter attention does not invalidate `CORE ENFORCED`; adapters are consumer-owned and require reviewed reconciliation. Neither doctor mode commits changes.
-
-Lower-level commands remain available for framework maintainers, troubleshooting, and CI, but consumers do not need to compose them:
-
-```bash
-vef migrate            # advanced storage migration preview
-vef migrate --apply    # advanced storage migration apply
-vef project            # regenerate committed ledgers
-vef validate --strict  # CI/integrity gate
-```
-
-The CLI must already contain the relevant migration behavior: an obsolete installed binary cannot discover commands introduced after it was packaged. Update the installed development dependency before relying on newer repair behavior; `npx vef doctor` will then classify the repository and provide the supported path.
-
-Commit `.vef/`, `docs/`, the four regenerated root ledgers, and any newly installed adapter files together. The repair checks schemas and typed relationships before writing, refuses semantic blockers and conflicting partial directories, preserves IDs and root-ledger anchors, and leaves legacy ledgers readable until the apply step succeeds. It also relocates the retired root-directory preview layout under `docs/`. The former `--update-adapters` option is retired and fails without changing files.
-
-For normal record maintenance, edit the canonical item file and project the public views:
-
-```bash
-vef project
-vef validate --strict
-```
-
-Then use the installed agent adapter to maintain the model. In Claude Code, for example:
+For semantic maintenance, use the installed agent adapter. In Claude Code, for example:
 
 ```text
 /tasks add
@@ -258,7 +259,7 @@ This is an early framework with a strong thesis and intentionally narrow scope. 
 
 The most valuable contribution is helping make this statement literally true:
 
-> If `vef validate --strict` passes, the repository's documented project state satisfies VEF's implemented structural contract.
+> If `vef check` passes, the repository's documented project state satisfies VEF's implemented structural contract.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development and pull-request contract, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [CHANGELOG.md](CHANGELOG.md) for release history, and [RELEASING.md](RELEASING.md) for the maintainer publication boundary.
 

@@ -165,7 +165,7 @@ export function resolveRecord(project, selector) {
       const id = raw.slice(colon + 1);
       const matches = project.byKey.get(keyFor(type, id)) || [];
       if (matches.length === 0) throw new ProjectQueryError(`No ${type} item found with ID "${id}".`);
-      if (matches.length > 1) throw new ProjectQueryError(`ID "${id}" is duplicated in ${type}; run vef validate --strict.`);
+      if (matches.length > 1) throw new ProjectQueryError(`ID "${id}" is duplicated in ${type}; run vef check.`);
       return matches[0];
     }
   }
@@ -174,7 +174,7 @@ export function resolveRecord(project, selector) {
   if (matches.length === 0) throw new ProjectQueryError(`No project item found with ID "${raw}".`);
   if (matches.length > 1) {
     const types = [...new Set(matches.map((record) => record.type))].sort(compareText);
-    if (types.length === 1) throw new ProjectQueryError(`ID "${raw}" is duplicated in ${types[0]}; run vef validate --strict.`);
+    if (types.length === 1) throw new ProjectQueryError(`ID "${raw}" is duplicated in ${types[0]}; run vef check.`);
     throw new ProjectQueryError(`ID "${raw}" is ambiguous (${types.join(', ')}); use <type>:${raw}.`);
   }
   return matches[0];

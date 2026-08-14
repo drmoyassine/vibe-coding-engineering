@@ -64,4 +64,4 @@ tags: [docs, framework]
 last_updated: 2026-01-01
 ---
 
-This decision establishes the documentation substrate for the project. The framework was scaffolded via `vef init`. See [vibe-engineering-framework](https://github.com/drmoyassine/vibe-engineering-framework) for the canonical definition.
+This decision establishes the documentation substrate for the project. The framework was adopted via `vef setup`. See [vibe-engineering-framework](https://github.com/drmoyassine/vibe-engineering-framework) for the canonical definition.

@@ -34,3 +34,5 @@ The shipped behavior now:
 - stops before writes when schemas, relationships, catalogue meaning, or review flags require human/agent reconciliation.
 
 Regression coverage models both important adoption shapes: a structurally ready legacy repository with customized adapters reaches `CORE ENFORCED` without changing those adapters, while a repository with a dangling roadmap-to-vision relationship receives the exact semantic blocker and remains untouched.
+
+DEC-009 and TASK-030 preserve this boundary while presenting `setup` and `check` as the complete public lifecycle. The older doctor repair mode remains a hidden compatibility surface.

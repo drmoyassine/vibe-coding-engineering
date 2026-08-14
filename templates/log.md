@@ -16,4 +16,4 @@ Chronological log of decisions, discoveries, and session learnings. This is the 
 
 ## {{TODAY}} — Framework adopted
 
-Adopted `vibe-engineering-framework`. Scaffolding created via `vef init`. Framework docs (VISION, ROADMAP, TASKS, DECISIONS) are the single sources of truth. Claude Code skills (`/tasks`, `/roadmap`, `/decisions`, `/bugs`, `/apply`) installed in `.claude/skills/`.
+Adopted `vibe-engineering-framework` through `vef setup`; `vef check` confirmed deterministic core enforcement. Framework docs (VISION, ROADMAP, TASKS, DECISIONS) are the public reading surfaces over canonical records. Claude Code skills (`/tasks`, `/roadmap`, `/decisions`, `/bugs`, `/apply`) were installed in `.claude/skills/`.

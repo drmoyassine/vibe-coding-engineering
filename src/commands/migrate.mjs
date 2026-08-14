@@ -76,10 +76,11 @@ export async function migrateCommand(opts) {
   const targetDir = opts.dir;
   const dryRun = !opts.apply;
   const mode = dryRun ? '[DRY RUN]' : '[APPLY]';
+  const log = opts.quiet ? () => {} : console.log;
 
   if (opts.updateAdapters) {
-    console.log('\n  ✗  --update-adapters is retired because adapters are consumer-owned and may contain intentional customizations.');
-    console.log('     No files were changed. Run `vef doctor` to inspect adapter compatibility; reconcile adapters through review.\n');
+    log('\n  ✗  --update-adapters is retired because adapters are consumer-owned and may contain intentional customizations.');
+    log('     No files were changed. Run `vef doctor` to inspect adapter compatibility; reconcile adapters through review.\n');
     process.exitCode = 1;
     return { ok: false, applied: false, phase: 'deprecated-adapter-update' };
   }
@@ -87,10 +88,10 @@ export async function migrateCommand(opts) {
   const storagePlan = await planStorageMigration(targetDir);
   const skillDryRun = dryRun || !storagePlan.ready;
 
-  console.log(`\n  ${mode} Analyzing: ${targetDir}\n`);
+  log(`\n  ${mode} Analyzing: ${targetDir}\n`);
 
   // ── Step 1: Install skills ──
-  console.log('  ── Skills ──');
+  log('  ── Skills ──');
   const skillsDir = join(targetDir, '.claude', 'skills');
   let skillsInstalled = 0;
   let skillsAlready = 0;
@@ -100,35 +101,35 @@ export async function migrateCommand(opts) {
     const present = await exists(skillPath);
     if (present) skillsAlready++;
     if (present) {
-      console.log(`  ✓  /${skill} (preserved)`);
+      log(`  ✓  /${skill} (preserved)`);
     } else {
       const copied = await copySkill(skill, skillsDir, skillDryRun, { targetDir });
       if (copied) {
-        console.log(`  +  /${skill} ${skillDryRun ? '(would install)' : '(installed)'}`);
+        log(`  +  /${skill} ${skillDryRun ? '(would install)' : '(installed)'}`);
         skillsInstalled++;
       } else {
-        console.log(`  !  /${skill} (template not found)`);
+        log(`  !  /${skill} (template not found)`);
       }
     }
   }
 
   // ── Step 2: Detect framework docs ──
-  console.log('\n  ── Framework docs ──');
+  log('\n  ── Framework docs ──');
   const foundDocs = [];
   const missingDocs = [];
 
   for (const doc of FRAMEWORK_DOCS) {
     if (await exists(join(targetDir, doc))) {
       foundDocs.push(doc);
-      console.log(`  ✓  ${doc}`);
+      log(`  ✓  ${doc}`);
     } else {
       missingDocs.push(doc);
-      console.log(`  ✗  ${doc} (missing)`);
+      log(`  ✗  ${doc} (missing)`);
     }
   }
 
   // ── Step 3: Analyze items ──
-  console.log('\n  ── Item analysis ──');
+  log('\n  ── Item analysis ──');
   let totalItems = 0;
   let itemsWithoutFm = 0;
   let itemsWithNeedsReview = 0;
@@ -150,79 +151,79 @@ export async function migrateCommand(opts) {
     itemsWithNeedsReview += needsReview.length;
 
     const icon = noFm.length > 0 ? '⚠' : '✓';
-    console.log(`  ${icon}  ${doc}: ${items.length} items${noFm.length > 0 ? `, ${noFm.length} without frontmatter` : ''}`);
+    log(`  ${icon}  ${doc}: ${items.length} items${noFm.length > 0 ? `, ${noFm.length} without frontmatter` : ''}`);
 
     for (const item of noFm) {
       const label = item.id || item.heading;
-      console.log(`       → ${label} (no frontmatter — needs /apply extraction)`);
+      log(`       → ${label} (no frontmatter — needs /apply extraction)`);
       docsWithoutFm.push({ doc, item });
     }
   }
 
   // ── Step 4: CLAUDE.md check ──
-  console.log('\n  ── CLAUDE.md ──');
+  log('\n  ── CLAUDE.md ──');
   const claudePath = join(targetDir, 'CLAUDE.md');
   if (await exists(claudePath)) {
     const claudeContent = await readFile(claudePath, 'utf-8');
     const hasSkills = claudeContent.includes('/apply') || claudeContent.includes('Skills');
     const hasFramework = claudeContent.includes('TASKS.md') && claudeContent.includes('DECISIONS.md');
     if (hasSkills && hasFramework) {
-      console.log('  ✓  References skills + doc framework');
+      log('  ✓  References skills + doc framework');
     } else {
-      console.log('  ⚠  Missing skills/framework section');
-      console.log('     Consider adding a doc-framework section (see template CLAUDE.md)');
+      log('  ⚠  Missing skills/framework section');
+      log('     Consider adding a doc-framework section (see template CLAUDE.md)');
     }
   } else {
-    console.log('  ✗  CLAUDE.md not found');
+    log('  ✗  CLAUDE.md not found');
   }
 
   // ── Step 5: Summary ──
-  console.log('\n  ── Summary ──');
-  console.log(`  Docs found:      ${foundDocs.length}/${FRAMEWORK_DOCS.length}`);
-  console.log(`  Skills present:  ${skillsAlready}/${SKILLS.length}`);
-  console.log(`  Skills ${skillDryRun ? 'to install' : 'installed'}: ${skillsInstalled}`);
-  console.log(`  Total items:     ${totalItems}`);
-  console.log(`  No frontmatter:  ${itemsWithoutFm}`);
-  console.log(`  Needs review:    ${itemsWithNeedsReview}`);
+  log('\n  ── Summary ──');
+  log(`  Docs found:      ${foundDocs.length}/${FRAMEWORK_DOCS.length}`);
+  log(`  Skills present:  ${skillsAlready}/${SKILLS.length}`);
+  log(`  Skills ${skillDryRun ? 'to install' : 'installed'}: ${skillsInstalled}`);
+  log(`  Total items:     ${totalItems}`);
+  log(`  No frontmatter:  ${itemsWithoutFm}`);
+  log(`  Needs review:    ${itemsWithNeedsReview}`);
 
   // ── Canonical storage migration ──
-  console.log('\n  ── Canonical storage ──');
+  log('\n  ── Canonical storage ──');
   if (storagePlan.alreadyMigrated) {
-    console.log(`  ✓  Per-item storage already enabled (${STORAGE_MANIFEST})`);
+    log(`  ✓  Per-item storage already enabled (${STORAGE_MANIFEST})`);
   } else if (!storagePlan.ready) {
-    console.log('  ✗  Storage migration is blocked:');
-    for (const issue of storagePlan.issues) console.log(`     • ${issue}`);
+    log('  ✗  Storage migration is blocked:');
+    for (const issue of storagePlan.issues) log(`     • ${issue}`);
     process.exitCode = 1;
   } else if (dryRun) {
-    console.log(`  +  Would ${storagePlan.fromRootLayout ? 'relocate' : 'extract'} ${storagePlan.itemCount} canonical item file(s)`);
-    console.log('  +  Would create docs/vision/, docs/roadmap/, docs/tasks/, docs/decisions/, and .vef/storage.json');
-    if (storagePlan.fromRootLayout) console.log('  +  Would remove the retired root record directories after verified copies are written');
-    console.log('  +  Would regenerate VISION.md, ROADMAP.md, TASKS.md, and DECISIONS.md deterministically');
+    log(`  +  Would ${storagePlan.fromRootLayout ? 'relocate' : 'extract'} ${storagePlan.itemCount} canonical item file(s)`);
+    log('  +  Would create docs/vision/, docs/roadmap/, docs/tasks/, docs/decisions/, and .vef/storage.json');
+    if (storagePlan.fromRootLayout) log('  +  Would remove the retired root record directories after verified copies are written');
+    log('  +  Would regenerate VISION.md, ROADMAP.md, TASKS.md, and DECISIONS.md deterministically');
   } else {
     await migrateLegacyStorage(targetDir);
-    console.log(`  ✓  ${storagePlan.fromRootLayout ? 'Relocated' : 'Extracted'} ${storagePlan.itemCount} canonical item file(s) under docs/`);
-    console.log(`  ✓  Enabled per-item storage with ${STORAGE_MANIFEST}`);
-    console.log('  ✓  Regenerated the four committed ledgers');
+    log(`  ✓  ${storagePlan.fromRootLayout ? 'Relocated' : 'Extracted'} ${storagePlan.itemCount} canonical item file(s) under docs/`);
+    log(`  ✓  Enabled per-item storage with ${STORAGE_MANIFEST}`);
+    log('  ✓  Regenerated the four committed ledgers');
   }
 
   if (itemsWithoutFm > 0 || missingDocs.length > 0) {
-    console.log('\n  Next steps:');
+    log('\n  Next steps:');
     if (itemsWithoutFm > 0) {
-      console.log(`    • Run Claude Code's /apply to extract ${itemsWithoutFm} item(s) into canonical frontmatter`);
+      log(`    • Run Claude Code's /apply to extract ${itemsWithoutFm} item(s) into canonical frontmatter`);
     }
     if (missingDocs.length > 0) {
-      console.log(`    • Run 'vef init' to scaffold missing docs: ${missingDocs.join(', ')}`);
+      log(`    • Reconcile missing docs, then run 'vef setup': ${missingDocs.join(', ')}`);
     }
   }
 
   if (!storagePlan.ready) {
-    console.log(`\n  Storage migration was not applied. Resolve the reported conflicts and re-run the preview.`);
+    log(`\n  Storage migration was not applied. Resolve the reported conflicts and re-run the preview.`);
   } else if (dryRun) {
-    console.log('\n  (Dry run — no changes made. Use `vef doctor --fix` for supported remediation.)');
+    log('\n  (Dry run — no changes made. Use `vef setup` for supported remediation.)');
   } else {
-    console.log('\n  Migration applied. Run vef doctor, then review and commit the complete diff.');
+    log('\n  Migration applied. Run vef check, then review and commit the complete diff.');
   }
-  console.log('');
+  log('');
   return {
     ok: storagePlan.ready,
     applied: !dryRun && storagePlan.ready,

@@ -16,6 +16,7 @@ import { migrateLegacyStorage, projectLedgers } from '../lib/record-store.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, '..', '..', 'templates');
+const SEMANTIC_INIT_SURFACES = new Set(['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md']);
 
 /**
  * Recursively walk a directory, returning relative file paths.
@@ -32,6 +33,23 @@ async function walkDir(dir, base = dir) {
     }
   }
   return files;
+}
+
+/** Inspect initialization without writing so `vef setup` cannot leave a partial scaffold. */
+export async function planInitialization(opts) {
+  const targetDir = opts.dir;
+  const templateFiles = await walkDir(TEMPLATES_DIR);
+  const conflicts = [];
+  for (const relPath of templateFiles) {
+    try {
+      await stat(join(targetDir, relPath));
+      conflicts.push(relPath);
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+  }
+  const blockingConflicts = conflicts.filter((path) => SEMANTIC_INIT_SURFACES.has(path));
+  return { targetDir, templateFiles, conflicts, blockingConflicts, ready: blockingConflicts.length === 0 };
 }
 
 /**
@@ -78,7 +96,7 @@ export async function initCommand(opts) {
   console.log('');
 
   // Walk templates
-  const templateFiles = await walkDir(TEMPLATES_DIR);
+  const { templateFiles } = await planInitialization(opts);
   let created = 0;
   let skipped = 0;
   const createdPaths = new Set();
@@ -127,7 +145,8 @@ export async function initCommand(opts) {
   console.log(`\n  Next steps:`);
   console.log(`    1. Fill in docs/vision/_index.md with your product vision`);
   console.log(`    2. Edit canonical items in docs/vision/, docs/roadmap/, docs/tasks/, and docs/decisions/`);
-  console.log(`    3. Run /apply in Claude Code to migrate any existing docs`);
-  console.log(`    4. Run 'vef project' after item edits and add 'vef validate --strict' to CI`);
+  console.log(`    3. Run /apply in Claude Code to reconcile existing project meaning`);
+  console.log(`    4. Run 'vef check' locally and in CI`);
   console.log('');
+  return { ok: true, created, skipped, initializedStructuredModel };
 }

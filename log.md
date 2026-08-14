@@ -8,6 +8,12 @@ This is an OKF v0.2 `log.md` (reserved filename). Date-grouped entries, newest f
 
 ## 2026-08-13
 
+### Two-command adoption lifecycle becomes the launch gate
+- Paused TASK-018 and TASK-019 after recognizing that the 0.1 lifecycle still exposed internal migration, repair, projection, and strictness phases to adopters.
+- Accepted DEC-009 and completed TASK-030. `vef setup` now owns fresh installation, compatible upgrades, safe repair, ledger projection, strict validation, enforcement reporting, and GitHub CI deployment; `vef check` is the single read-only local/CI gate; doctor is troubleshooting only.
+- Hidden compatibility paths preserve 0.1 callers while normal help removes `init`, `migrate`, `project`, `validate`, and `doctor --fix`. Setup preflights fresh-surface conflicts, preserves existing adapters and custom CI, and stops before structural writes when project meaning is unresolved.
+- Opened TASK-031 as the immediate P0 gate: publish `0.2.0`, verify the public package, and prove representative consumer upgrades using only latest setup, explicit semantic reconciliation when reported, and check.
+
 ### VEF 0.1.0 published and independently verified
 - Published `vibe-engineering-framework@0.1.0` publicly to npm and confirmed that the `latest` distribution tag resolves to `0.1.0`.
 - Matched the public registry's tarball SHA-1 and SHA-512 integrity metadata to the exact release candidate tagged `v0.1.0` at commit `a24b341`.

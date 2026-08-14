@@ -66,7 +66,7 @@ async function inspectAdapters(targetDir) {
   return { status, presence, installed, trustIssues, claudeExists, claudeIntegrated };
 }
 
-async function inspectCore(targetDir) {
+export async function inspectCore(targetDir) {
   const documentPresence = [];
   for (const doc of CORE_DOCUMENTS) documentPresence.push({ doc, present: await exists(join(targetDir, doc)) });
   const missingDocuments = documentPresence.filter((entry) => !entry.present).map((entry) => entry.doc);
@@ -115,48 +115,48 @@ async function inspectCore(targetDir) {
   };
 }
 
-function printStorage(core) {
+function printStorage(core, log = console.log) {
   const { canonical } = core;
-  console.log('\n  ── Canonical storage ──');
+  log('\n  ── Canonical storage ──');
   if (canonical.storage.mode === 'per-item') {
-    console.log(`  ✓  Per-item records enabled by ${STORAGE_MANIFEST}`);
-    for (const issue of canonical.storageIssues) console.log(`  ✗  ${issue}`);
-    for (const issue of canonical.projectionIssues) console.log(`  ✗  ${issue}`);
+    log(`  ✓  Per-item records enabled by ${STORAGE_MANIFEST}`);
+    for (const issue of canonical.storageIssues) log(`  ✗  ${issue}`);
+    for (const issue of canonical.projectionIssues) log(`  ✗  ${issue}`);
     if (canonical.storageIssues.length === 0 && canonical.projectionIssues.length === 0) {
-      console.log('  ✓  Canonical items and generated ledgers agree');
+      log('  ✓  Canonical items and generated ledgers agree');
     } else if (canonical.projectionIssues.length > 0) {
-      console.log('     Repair: vef doctor --fix');
+      log('     Repair: vef setup');
     }
   } else if (canonical.storage.mode === 'per-item-root') {
-    console.log('  ⚠  Canonical records use the retired root-directory layout');
-    console.log('     Repair: vef doctor --fix');
+    log('  ⚠  Canonical records use the retired root-directory layout');
+    log('     Repair: vef setup');
   } else if (canonical.storage.mode === 'legacy') {
-    console.log('  ⚠  Legacy monolithic ledgers are still canonical');
-    console.log('     Repair: vef doctor --fix');
+    log('  ⚠  Legacy monolithic ledgers are still canonical');
+    log('     Repair: vef setup');
   } else if (canonical.storage.mode === 'uninitialized') {
-    console.log('  ✗  VEF structured storage is not initialized');
-    console.log('     Adopt: vef init');
+    log('  ✗  VEF structured storage is not initialized');
+    log('     Adopt: vef setup');
   } else if (canonical.storage.mode === 'legacy-incomplete') {
-    console.log(`  ✗  Incomplete legacy document set (${canonical.storage.legacyLedgers.join(', ')})`);
+    log(`  ✗  Incomplete legacy document set (${canonical.storage.legacyLedgers.join(', ')})`);
   } else if (canonical.storage.mode === 'legacy-partial') {
-    console.log(`  ✗  Conflicting partial storage detected (${canonical.storage.partialDirectories.join(', ')})`);
+    log(`  ✗  Conflicting partial storage detected (${canonical.storage.partialDirectories.join(', ')})`);
   } else {
-    for (const issue of [...canonical.storage.issues, ...canonical.storageIssues]) console.log(`  ✗  ${issue}`);
+    for (const issue of [...canonical.storage.issues, ...canonical.storageIssues]) log(`  ✗  ${issue}`);
   }
 }
 
-function printAdapters(adapters) {
-  console.log('\n  ── Agent adapters (optional integration) ──');
-  for (const entry of adapters.presence) console.log(`  ${entry.present ? '✓' : '○'}  /${entry.skill}${entry.present ? ' (consumer-owned; preserved)' : ''}`);
+function printAdapters(adapters, log = console.log) {
+  log('\n  ── Agent adapters (optional integration) ──');
+  for (const entry of adapters.presence) log(`  ${entry.present ? '✓' : '○'}  /${entry.skill}${entry.present ? ' (consumer-owned; preserved)' : ''}`);
   if (adapters.status === 'COMPATIBLE') {
-    console.log('  ✓  Claude adapter contract is compatible');
+    log('  ✓  Claude adapter contract is compatible');
   } else if (adapters.status === 'NOT_INSTALLED') {
-    console.log('  ○  Claude adapters are not installed; core enforcement is unaffected');
+    log('  ○  Claude adapters are not installed; core enforcement is unaffected');
   } else {
-    console.log('  ⚠  Adapter attention required; core enforcement is reported separately');
-    for (const issue of adapters.trustIssues) console.log(`     ${issue}`);
-    if (adapters.claudeExists && !adapters.claudeIntegrated) console.log('     CLAUDE.md does not reference the installed adapter/document contract');
-    console.log('     Existing adapter files will never be overwritten by VEF. Reconcile them through review.');
+    log('  ⚠  Adapter attention required; core enforcement is reported separately');
+    for (const issue of adapters.trustIssues) log(`     ${issue}`);
+    if (adapters.claudeExists && !adapters.claudeIntegrated) log('     CLAUDE.md does not reference the installed adapter/document contract');
+    log('     Existing adapter files will never be overwritten by VEF. Reconcile them through review.');
   }
 }
 
@@ -165,44 +165,45 @@ export async function doctorCommand(opts) {
   if (opts.fix) return doctorFixCommand(opts);
 
   const targetDir = opts.dir;
+  const log = opts.quiet ? () => {} : console.log;
   const [core, adapters] = await Promise.all([inspectCore(targetDir), inspectAdapters(targetDir)]);
-  console.log(`\n  Health check: ${targetDir}\n`);
+  log(`\n  Health check: ${targetDir}\n`);
 
-  console.log('  ── Core documents ──');
-  for (const entry of core.documentPresence) console.log(`  ${entry.present ? '✓' : '✗'}  ${entry.doc}`);
-  printStorage(core);
+  log('  ── Core documents ──');
+  for (const entry of core.documentPresence) log(`  ${entry.present ? '✓' : '✗'}  ${entry.doc}`);
+  printStorage(core, log);
 
-  console.log('\n  ── Durable-memory catalogue ──');
-  if (core.memoryIssues.length === 0) console.log('  ✓  Canonical records and document surfaces align');
-  else for (const issue of core.memoryIssues) console.log(`  ✗  ${issue.surface}: ${issue.message}`);
+  log('\n  ── Durable-memory catalogue ──');
+  if (core.memoryIssues.length === 0) log('  ✓  Canonical records and document surfaces align');
+  else for (const issue of core.memoryIssues) log(`  ✗  ${issue.surface}: ${issue.message}`);
 
-  console.log('\n  ── Strict integrity ──');
+  log('\n  ── Strict integrity ──');
   if (core.semanticIssues.length === 0) {
-    console.log(`  ✓  ${core.validation.valid} canonical record(s) are semantically coherent`);
+    log(`  ✓  ${core.validation.valid} canonical record(s) are semantically coherent`);
   } else {
-    console.log(`  ✗  ${core.semanticValidationErrors} semantic error(s), ${core.semanticWarnings} semantic warning(s)`);
-    for (const issue of core.semanticIssues) console.log(`     ${issue.level === 'error' ? '✗' : '⚠'} ${issue.message}`);
-    console.log('     Reconcile these records, then rerun vef doctor --fix');
+    log(`  ✗  ${core.semanticValidationErrors} semantic error(s), ${core.semanticWarnings} semantic warning(s)`);
+    for (const issue of core.semanticIssues) log(`     ${issue.level === 'error' ? '✗' : '⚠'} ${issue.message}`);
+    log('     Reconcile these records, then rerun vef setup');
   }
 
-  console.log('\n  ── Review state ──');
-  if (core.needsReviewCount === 0) console.log('  ✓  No items flagged needsReview');
-  else console.log(`  ✗  ${core.needsReviewCount} item(s) flagged needsReview`);
+  log('\n  ── Review state ──');
+  if (core.needsReviewCount === 0) log('  ✓  No items flagged needsReview');
+  else log(`  ✗  ${core.needsReviewCount} item(s) flagged needsReview`);
 
-  printAdapters(adapters);
+  printAdapters(adapters, log);
 
-  console.log('\n  ── Enforcement status ──');
+  log('\n  ── Enforcement status ──');
   const stateMessage = {
-    NOT_ADOPTED: 'NOT ADOPTED — run vef init',
+    NOT_ADOPTED: 'NOT ADOPTED — run vef setup',
     SEMANTIC_RECONCILIATION_REQUIRED: 'SEMANTIC RECONCILIATION REQUIRED — VEF will not invent or overwrite project meaning',
-    STRUCTURALLY_REPAIRABLE: 'STRUCTURALLY REPAIRABLE — run vef doctor --fix',
+    STRUCTURALLY_REPAIRABLE: 'STRUCTURALLY REPAIRABLE — run vef setup',
     CORE_ENFORCED: 'CORE ENFORCED — canonical project memory satisfies the deterministic contract',
   }[core.state];
-  console.log(`  ${core.state === 'CORE_ENFORCED' ? '✓' : core.state === 'STRUCTURALLY_REPAIRABLE' ? '⚠' : '✗'}  ${stateMessage}`);
-  if (adapters.status === 'ATTENTION_REQUIRED') console.log('  ⚠  ADAPTER ATTENTION REQUIRED (does not invalidate core enforcement)');
-  else if (adapters.status === 'COMPATIBLE') console.log('  ✓  ADAPTER COMPATIBLE');
-  else console.log('  ○  ADAPTER NOT INSTALLED (optional)');
-  console.log('');
+  log(`  ${core.state === 'CORE_ENFORCED' ? '✓' : core.state === 'STRUCTURALLY_REPAIRABLE' ? '⚠' : '✗'}  ${stateMessage}`);
+  if (adapters.status === 'ATTENTION_REQUIRED') log('  ⚠  ADAPTER ATTENTION REQUIRED (does not invalidate core enforcement)');
+  else if (adapters.status === 'COMPATIBLE') log('  ✓  ADAPTER COMPATIBLE');
+  else log('  ○  ADAPTER NOT INSTALLED (optional)');
+  log('');
 
   const ok = core.state === 'CORE_ENFORCED';
   if (!ok) process.exitCode = 1;
@@ -210,7 +211,7 @@ export async function doctorCommand(opts) {
 }
 
 /** Explicit write authorization over deterministic, non-destructive repairs. */
-async function doctorFixCommand(opts) {
+export async function doctorFixCommand(opts) {
   const targetDir = opts.dir;
   console.log(`\n  Repairing VEF core: ${targetDir}\n`);
 
@@ -225,32 +226,35 @@ async function doctorFixCommand(opts) {
   if (!plan.ready || core.state === 'NOT_ADOPTED' || core.state === 'SEMANTIC_RECONCILIATION_REQUIRED' || uniqueIssues.length > 0) {
     console.log('  ✗  Core repair preflight failed; no files were changed:');
     for (const issue of uniqueIssues) console.log(`     • ${issue}`);
-    if (core.state === 'NOT_ADOPTED') console.log('     Run vef init for a repository that has not adopted VEF yet.');
-    else console.log('     Reconcile project meaning, then rerun vef doctor --fix.');
+    if (core.state === 'NOT_ADOPTED') console.log('     Run vef setup for a repository that has not adopted VEF yet.');
+    else console.log('     Reconcile project meaning, then rerun vef setup.');
     process.exitCode = 1;
     return { ok: false, phase: 'preflight', core };
   }
 
   console.log('  ✓  Core repair preflight passed');
   console.log('  ✓  Existing consumer adapters are protected from overwrite');
-  const migration = await migrateCommand({ ...opts, apply: true, updateAdapters: false, fix: undefined });
+  const migration = await migrateCommand({ ...opts, apply: true, updateAdapters: false, fix: undefined, quiet: true });
   if (!migration.ok) {
     process.exitCode = 1;
     return { ok: false, phase: 'migration' };
   }
+  if (migration.storagePlan.alreadyMigrated) console.log('  ✓  Canonical storage is current');
+  else console.log(`  ✓  ${migration.storagePlan.fromRootLayout ? 'Relocated' : 'Extracted'} ${migration.storagePlan.itemCount} canonical item file(s) under docs/`);
+  if (migration.skillsInstalled > 0) console.log(`  ✓  Installed ${migration.skillsInstalled} missing adapter(s); existing adapter files were preserved`);
 
   const projected = await projectLedgers(targetDir, { write: true });
   if (projected.written > 0) console.log(`  ✓  Regenerated ${projected.written} stale ledger projection(s)`);
   else console.log('  ✓  Ledger projections are current');
 
-  const validation = await validateCommand({ dir: targetDir, strict: true });
+  const validation = await validateCommand({ dir: targetDir, strict: true, quiet: opts.lifecycle === true });
   if (!validation.ok) {
     console.log('  ✗  Core repair stopped because strict validation failed');
     process.exitCode = 1;
     return { ok: false, phase: 'validation' };
   }
 
-  const health = await doctorCommand({ dir: targetDir, fix: false });
+  const health = await doctorCommand({ dir: targetDir, fix: false, quiet: opts.lifecycle === true });
   if (!health.ok) {
     process.exitCode = 1;
     return { ok: false, phase: 'health' };
