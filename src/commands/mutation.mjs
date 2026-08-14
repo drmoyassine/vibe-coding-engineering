@@ -6,6 +6,7 @@ import {
   formatTransactionPlan,
   inspectTransactionState,
   planTransaction,
+  recoverLeases,
   recoverTransaction,
   TransactionError,
 } from '../lib/transactions.mjs';
@@ -112,11 +113,22 @@ export async function createCommand(type, opts) {
 }
 
 export async function updateCommand(id, opts) {
-  const proposal = await readProposal(opts.from, opts.dir);
+  if (!opts.from && !opts.authority) {
+    throw new TransactionError('Ordinary updates require --from <file>; authority-only title repair may omit it.');
+  }
+  const proposal = opts.from ? await readProposal(opts.from, opts.dir) : {};
   return executeMutation(opts.dir, [updateOperation(id, proposal, opts.authority)], opts);
 }
 
 export async function recoverCommand(id, opts) {
+  if (id === 'leases') {
+    const result = await recoverLeases(opts.dir, { force: opts.force, actor: opts.actor });
+    console.log(`\n  ✓ Lease recovery quarantined ${result.quarantined.length} malformed family/families.`);
+    if (result.active.length > 0) console.log(`  ○ ${result.active.length} active writer lease(s) were preserved.`);
+    for (const warning of result.warnings || []) console.log(`  ⚠ ${warning}`);
+    console.log('');
+    return result;
+  }
   const direction = opts.forward ? 'forward' : opts.rollback ? 'rollback' : null;
   if (!direction) {
     const state = await inspectTransactionState(opts.dir);

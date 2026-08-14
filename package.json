@@ -1,6 +1,6 @@
 {
   "name": "vibe-engineering-framework",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Git-native durable project memory and integrity for AI-assisted engineering.",
   "type": "module",
   "bin": {

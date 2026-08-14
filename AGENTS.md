@@ -30,6 +30,11 @@ The skills are write/reconciliation adapters. For read-only project retrieval, p
 
 All query commands support `--json`; they do not modify files or invoke an agent.
 
+For exceptional transaction recovery, use the exact command printed by `vef doctor`: `vef recover <id> --forward|--rollback`
+for an unresolved journal, or `vef recover leases` for malformed writer-lease state after confirming
+that no writer is active. Recovery is not part of normal setup/check adoption, and lease files must not be deleted
+manually.
+
 ## Deterministic mutation boundary
 
 Automated adapters never edit structured item Markdown or generated ledgers directly:
@@ -41,11 +46,13 @@ Automated adapters never edit structured item Markdown or generated ledgers dire
 | `vef create batch --from <proposal>` | Adapter-only multi-operation candidate through the same transaction engine |
 
 If—and only if—pre-existing frontmatter and heading titles disagree, `vef update` accepts explicit
-`--authority frontmatter` or `--authority heading`. It does not relax any other preflight failure.
+`--authority frontmatter` or `--authority heading`, and authority-only repair may omit `--from`. It does not relax any
+other preflight failure.
 
 The agent owns interpretation and semantic prose. VEF owns allocatable IDs, dates, `modified` provenance, canonical
 reference metadata, inverse links, ledgers, validation, journaling, and leases. If an interrupted journal exists,
-stop and ask for an explicit `vef recover <id> --forward` or `--rollback` choice. Direct human editing remains an
+stop and ask for an explicit `vef recover <id> --forward` or `--rollback` choice. Malformed writer leases require
+`vef recover leases` only after confirming no writer is active. Direct human editing remains an
 escape hatch followed by `vef setup` and `vef check`.
 
 ---

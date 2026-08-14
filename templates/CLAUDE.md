@@ -36,7 +36,9 @@ Text is the default; `--json` emits the versioned automation contract. Use `type
 
 For automated structural writes, author proposal data and delegate to `vef create` or `vef update`. Preview first;
 add `--write --actor <agent-id>` only after acceptance. Skills never render canonical frontmatter, item files, inverse
-links, or ledgers. If a journal is unresolved, stop for an explicit `vef recover <id> --forward|--rollback` choice.
+links, or ledgers. If a journal is unresolved, stop for an explicit `vef recover <id> --forward|--rollback` choice. If
+doctor reports malformed writer leases, confirm no writer is active and use `vef recover leases`; do not delete lease
+files manually.
 
 ## Doc framework
 

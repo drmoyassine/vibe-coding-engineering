@@ -4,6 +4,19 @@ All notable changes to Vibe Engineering Framework are recorded here. Durable arc
 
 ## Unreleased
 
+## 0.3.1 — 2026-08-14
+
+### Fixed
+
+- Malformed or incomplete writer-lease files are now diagnosed instead of permanently bricking every mutation. Explicit `vef recover leases` writes additive quarantine markers, while expired, dead, released, and orphan-renewal families are settled and swept without relying on deletion.
+- Roadmap creation now allocates `ROADMAP-001` in a fresh project, continues one coherent existing numeric family, and reports mixed-family ambiguity instead of requiring IDs in every case.
+- Authority-only title repair no longer requires an empty proposal file.
+
+### Changed
+
+- `vef doctor` inventories active, malformed, quarantined, expired, dead, released, settled, and orphan-renewal lease state with an exact remedy.
+- `vef recover` is visible in normal help, and `vef update --help` documents the proposal grammar.
+
 ## 0.3.0 — 2026-08-14
 
 ### Added

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, readdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -64,6 +64,7 @@ try {
   assert.match(helpResult.stdout, /setup/);
   assert.match(helpResult.stdout, /check/);
   assert.match(helpResult.stdout, /doctor/);
+  assert.match(helpResult.stdout, /recover/);
   assert.doesNotMatch(helpResult.stdout, /migrate \[options\]/);
   assert.doesNotMatch(helpResult.stdout, /validate \[options\]/);
 
@@ -71,6 +72,89 @@ try {
   assert.match(setup.stdout, /SETUP COMPLETE — VEF CORE ENFORCED/);
   const check = await run(process.execPath, [cli, 'check', '--dir', projectDir], consumerDir);
   assert.match(check.stdout, /CHECK PASSED — VEF CORE ENFORCED/);
+
+  const updateHelp = await run(process.execPath, [cli, 'update', '--help'], consumerDir);
+  assert.match(updateHelp.stdout, /set: \{ status: completed \}/);
+  assert.match(updateHelp.stdout, /unset: \[assignee\]/);
+  assert.match(updateHelp.stdout, /body: Updated semantic prose/);
+  assert.match(updateHelp.stdout, /depends_on: \{ add: \[TASK-009\] \}/);
+
+  console.log('Proving installed authoring allocation and authority repair...');
+  const firstRoadmapProposal = join(consumerDir, 'first-roadmap.yml');
+  await writeFile(firstRoadmapProposal, `
+title: First installed roadmap
+description: Proves fresh roadmap allocation.
+status: In Progress
+priority: P0
+body: Fresh allocation must be deterministic.
+`, 'utf8');
+  await run(process.execPath, [cli, 'create', 'roadmap', '--from', firstRoadmapProposal, '--write', '--actor', 'process:release-smoke', '--dir', projectDir], consumerDir);
+  await access(join(projectDir, 'docs', 'roadmap', 'ROADMAP-001.md'));
+
+  const secondRoadmapProposal = join(consumerDir, 'second-roadmap.yml');
+  await writeFile(secondRoadmapProposal, `
+title: Second installed roadmap
+description: Proves coherent-family continuation.
+status: Deferred
+priority: P1
+`, 'utf8');
+  await run(process.execPath, [cli, 'create', 'roadmap', '--from', secondRoadmapProposal, '--write', '--actor', 'process:release-smoke', '--dir', projectDir], consumerDir);
+  await access(join(projectDir, 'docs', 'roadmap', 'ROADMAP-002.md'));
+
+  const taskProposal = join(consumerDir, 'task.yml');
+  await writeFile(taskProposal, `
+title: Installed authority repair
+description: Proves authority-only repair without an empty proposal.
+status: pending
+priority: P1
+`, 'utf8');
+  await run(process.execPath, [cli, 'create', 'task', '--from', taskProposal, '--write', '--actor', 'process:release-smoke', '--dir', projectDir], consumerDir);
+  const taskPath = join(projectDir, 'docs', 'tasks', 'TASK-001.md');
+  const task = await readFile(taskPath, 'utf8');
+  await writeFile(taskPath, task.replace('# TASK-001 — Installed authority repair', '# TASK-001 — Incorrect heading'), 'utf8');
+  await run(process.execPath, [cli, 'update', 'TASK-001', '--authority', 'frontmatter', '--write', '--actor', 'process:release-smoke', '--dir', projectDir], consumerDir);
+  assert.match(await readFile(taskPath, 'utf8'), /# TASK-001 — Installed authority repair/);
+
+  console.log('Proving installed malformed-lease diagnosis, recovery, and debris sweep...');
+  const leaseRoot = join(projectDir, '.vef', 'transactions', '_leases');
+  await mkdir(leaseRoot, { recursive: true });
+  const malformedLease = join(leaseRoot, 'malformed.json');
+  await writeFile(malformedLease, '{"schemaVersion":1,"token":', 'utf8');
+  const old = new Date(Date.now() - 10_000);
+  await utimes(malformedLease, old, old);
+  await assert.rejects(
+    run(process.execPath, [cli, 'doctor', '--dir', projectDir], consumerDir),
+    (error) => error.code === 1 && /malformed\.json: malformed/.test(error.stdout) && /vef recover leases/.test(error.stdout),
+  );
+  const leaseRecovery = await run(process.execPath, [cli, 'recover', 'leases', '--dir', projectDir], consumerDir);
+  assert.match(leaseRecovery.stdout, /quarantined 1 malformed family/);
+
+  const expiredLease = join(leaseRoot, 'expired.json');
+  await writeFile(expiredLease, `${JSON.stringify({
+    schemaVersion: 1,
+    token: 'expired',
+    transactionId: 'release-smoke-expired',
+    pid: 999999,
+    host: 'other-host',
+    acquiredAt: '2026-01-01T00:00:00.000Z',
+    expiresAt: '2026-01-01T00:01:00.000Z',
+  })}\n`, 'utf8');
+  const thirdRoadmapProposal = join(consumerDir, 'third-roadmap.yml');
+  await writeFile(thirdRoadmapProposal, `
+title: Third installed roadmap
+description: Triggers bounded inactive-lease sweeping.
+status: Deferred
+priority: P2
+`, 'utf8');
+  await run(process.execPath, [cli, 'create', 'roadmap', '--from', thirdRoadmapProposal, '--write', '--actor', 'process:release-smoke', '--dir', projectDir], consumerDir);
+  await access(join(projectDir, 'docs', 'roadmap', 'ROADMAP-003.md'));
+  await assert.rejects(access(expiredLease), (error) => error.code === 'ENOENT');
+  const markerDir = join(leaseRoot, '_markers');
+  const markerContents = await Promise.all((await readdir(markerDir)).map((name) => readFile(join(markerDir, name), 'utf8')));
+  assert(markerContents.some((content) => /"family": "expired\.json"/.test(content) && /"state": "settled"/.test(content)));
+
+  const finalCheck = await run(process.execPath, [cli, 'check', '--dir', projectDir], consumerDir);
+  assert.match(finalCheck.stdout, /CHECK PASSED — VEF CORE ENFORCED/);
 
   console.log(`Release smoke passed for ${packageJson.name}@${packageJson.version}.`);
 } finally {

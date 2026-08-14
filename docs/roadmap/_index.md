@@ -47,15 +47,21 @@ last_updated: 2026-08-12
 | Phase 0 — Foundation | ✅ Completed | FRAMEWORK-001, -002, -003 |
 | Phase 1 — Queryable Project Memory | ✅ Completed | FRAMEWORK-018 |
 | Phase 2 — Public Launch | 🔄 In Progress | FRAMEWORK-020 |
+| Phase 2 — Evidence-Gated Public Launch | 🔄 In Progress | FRAMEWORK-025 |
 | Phase 2 — Canonical Record Storage | ✅ Completed | FRAMEWORK-019 |
 | Phase 2 — Human Review | 🔄 In Progress | FRAMEWORK-015 (parallel, non-blocking contract and workspace) |
 | Phase 3 — Transactional Project Memory | ✅ Completed | FRAMEWORK-022 |
+| Phase 3 — Transactional Project Memory | 🔄 In Progress | FRAMEWORK-023 (0.3.1 hardening) |
 | Phase 1 — Consumer Validation | ✅ Core completed | FRAMEWORK-004, -005, -006 completed; FRAMEWORK-007 deferred |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
+| Phase 4 — Schema Interoperability | ⏸ Deferred | FRAMEWORK-024 |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
+| Phase 5 — Extensibility | ⏸ Deferred | FRAMEWORK-026 |
 
-**Next priority:** FRAMEWORK-020 resumes public examples and distribution using the completed FRAMEWORK-022 authoring
-boundary. FRAMEWORK-015 continues the lightweight human-review workspace against the new candidate diff; adapter-specific
-UI remains deferred under FRAMEWORK-016. Named consumer implementations and commercial programs remain canonical in
-their own repositories rather than VEF's roadmap.
+**Next priority:** FRAMEWORK-023 is the immediate release gate: TASK-032 through TASK-034 are complete, and TASK-035 must
+now release and publicly prove 0.3.1. FRAMEWORK-025
+may freeze its evaluation protocol in parallel, but evaluation execution waits for that hotfix and its published evidence
+gates broad promotion under FRAMEWORK-020. FRAMEWORK-024 and FRAMEWORK-015 follow as parallel interoperability and human-
+review tracks. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial programs
+remain canonical in their own repositories rather than VEF's roadmap.

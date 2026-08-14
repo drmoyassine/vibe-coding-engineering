@@ -125,12 +125,21 @@ generated:
 verified:
   - by: human:drmoy
     at: '2026-08-12T00:00:00Z'
-related_tasks: []
+related_tasks:
+  - id: TASK-037
+    name: Ship versioned JSON Schemas and vef schema
+    url: /TASKS.md#TASK-037
 related_roadmap_items:
   - id: FRAMEWORK-006
     name: Migrate studygram-app docs to id+name+url pattern
     url: /ROADMAP.md#FRAMEWORK-006
-last_updated: '2026-08-12'
+  - id: FRAMEWORK-024
+    name: Ship schema and editor interoperability
+    url: /ROADMAP.md#FRAMEWORK-024
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
 **What we adopt from OKF v0.2:**
@@ -220,6 +229,33 @@ related_tasks:
   - id: TASK-018
     name: Publish adoption examples and a public feedback loop
     url: /TASKS.md#TASK-018
+  - id: TASK-033
+    name: Make roadmap ID allocation predictable
+    url: /TASKS.md#TASK-033
+  - id: TASK-034
+    name: Complete authoring help and break-glass CLI ergonomics
+    url: /TASKS.md#TASK-034
+  - id: TASK-037
+    name: Ship versioned JSON Schemas and vef schema
+    url: /TASKS.md#TASK-037
+  - id: TASK-038
+    name: Decide and migrate roadmap-to-vision cardinality
+    url: /TASKS.md#TASK-038
+  - id: TASK-039
+    name: Freeze the controlled VEF effectiveness evaluation protocol
+    url: /TASKS.md#TASK-039
+  - id: TASK-040
+    name: Run the blinded comparative VEF effectiveness evaluation
+    url: /TASKS.md#TASK-040
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+  - id: TASK-042
+    name: Decide whether VEF needs namespaced record extensions
+    url: /TASKS.md#TASK-042
+  - id: TASK-043
+    name: Test typed-graph positioning and the VEF descriptor
+    url: /TASKS.md#TASK-043
 related_roadmap_items:
   - id: FRAMEWORK-017
     name: Build the VEF Integrity Core
@@ -233,6 +269,18 @@ related_roadmap_items:
   - id: FRAMEWORK-022
     name: Build transactional project mutations
     url: /ROADMAP.md#FRAMEWORK-022
+  - id: FRAMEWORK-023
+    name: Harden public transactional authoring
+    url: /ROADMAP.md#FRAMEWORK-023
+  - id: FRAMEWORK-024
+    name: Ship schema and editor interoperability
+    url: /ROADMAP.md#FRAMEWORK-024
+  - id: FRAMEWORK-025
+    name: Prove VEF effectiveness before broad promotion
+    url: /ROADMAP.md#FRAMEWORK-025
+  - id: FRAMEWORK-026
+    name: Evaluate namespaced record-type extensions
+    url: /ROADMAP.md#FRAMEWORK-026
 tags:
   - integrity
   - architecture
@@ -240,7 +288,10 @@ tags:
 generated:
   by: process:codex
   at: '2026-08-13T00:00:00Z'
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
 This decision separates implemented product claims from intended capabilities. FRAMEWORK-017 and FRAMEWORK-018 delivered the current core; later storage, launch, and transaction milestones must continue describing shipped versus planned behavior precisely.
@@ -544,6 +595,9 @@ related_tasks:
   - id: TASK-031
     name: Release and prove the VEF 0.2 adoption lifecycle
     url: /TASKS.md#TASK-031
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
 related_roadmap_items:
   - id: FRAMEWORK-020
     name: Publish and publicly launch VEF
@@ -563,7 +617,10 @@ tags:
 generated:
   by: process:codex
   at: '2026-08-13T00:00:00Z'
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
 The operational checklist is maintained in `RELEASING.md`. Publication remains a maintainer-authorized external action; a passing repository gate does not itself authorize consuming an npm name/version.
@@ -605,6 +662,9 @@ related_tasks:
   - id: TASK-031
     name: Release and prove the VEF 0.2 adoption lifecycle
     url: /TASKS.md#TASK-031
+  - id: TASK-036
+    name: Classify and implement isolated deterministic repairs
+    url: /TASKS.md#TASK-036
 related_roadmap_items:
   - id: FRAMEWORK-020
     name: Publish and publicly launch VEF
@@ -624,7 +684,10 @@ tags:
 generated:
   by: process:codex
   at: '2026-08-13T00:00:00Z'
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
 The normal path is deliberately memorable:
@@ -679,10 +742,25 @@ related_tasks:
   - id: TASK-015
     name: Migrate agent adapters and complete mutation tests
     url: /TASKS.md#TASK-015
+  - id: TASK-032
+    name: Recover safely from malformed and accumulated lease claims
+    url: /TASKS.md#TASK-032
+  - id: TASK-034
+    name: Complete authoring help and break-glass CLI ergonomics
+    url: /TASKS.md#TASK-034
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
+  - id: TASK-036
+    name: Classify and implement isolated deterministic repairs
+    url: /TASKS.md#TASK-036
 related_roadmap_items:
   - id: FRAMEWORK-022
     name: Build transactional project mutations
     url: /ROADMAP.md#FRAMEWORK-022
+  - id: FRAMEWORK-023
+    name: Harden public transactional authoring
+    url: /ROADMAP.md#FRAMEWORK-023
 related_decisions:
   - id: DEC-003
     name: Make the Integrity Core authoritative and keep agent adapters portable
@@ -694,6 +772,9 @@ generated:
   by: process:codex
   at: '2026-08-14T00:00:00Z'
 last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
 Accepted while TASK-013 was still uncommitted, after independent QA identified Windows synchronization, interruption,

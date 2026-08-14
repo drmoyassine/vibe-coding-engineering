@@ -16,12 +16,23 @@ depends_on:
   - id: TASK-018
     name: Publish adoption examples and a public feedback loop
     url: /TASKS.md#TASK-018
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+  - id: TASK-043
+    name: Test typed-graph positioning and the VEF descriptor
+    url: /TASKS.md#TASK-043
 related_decisions:
   - id: DEC-008
     name: Bootstrap npm manually, then use staged trusted publishing
     url: /DECISIONS.md#DEC-008
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 # TASK-019 — Execute the public launch and distribution plan
 
-Define the launch sequence, public posts, calls to action, adoption checkpoints, and feedback review cadence. Distribution through independently governed channels is outside this repository's canonical product plan.
+Define the launch sequence, public posts, calls to action, adoption checkpoints, and feedback review cadence. Broad or paid promotion must wait for the public 0.3.1 hardening proof, the controlled effectiveness evidence, and tested typed-graph positioning.
+
+Distribution through independently governed channels remains outside this repository's canonical product plan. Claims must distinguish proven structural integrity from measured—and still bounded—agent inheritance effects.

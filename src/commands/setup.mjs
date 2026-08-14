@@ -155,6 +155,13 @@ export async function setupCommand(opts) {
     return { ok: false, phase: 'transaction-recovery', core };
   }
 
+  if (core.state === 'LEASE_RECOVERY_REQUIRED') {
+    await doctorCommand({ dir: targetDir, fix: false });
+    console.log('  SETUP PAUSED — confirm no writer is active, then run vef recover leases.\n');
+    process.exitCode = 1;
+    return { ok: false, phase: 'lease-recovery', core };
+  }
+
   const repaired = await doctorFixCommand({ dir: targetDir, fix: true, lifecycle: true });
   const ci = repaired.ok ? await deployEnforcement(targetDir, opts.github) : null;
   if (repaired.ok) console.log('  ✓ SETUP COMPLETE — VEF CORE ENFORCED\n');

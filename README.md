@@ -229,7 +229,10 @@ npx vef update TASK-013 --from complete-task.yml
 npx vef update TASK-013 --from complete-task.yml --write --actor agent/my-session
 ```
 
-`create` accepts a complete proposed record and optional initial relationship IDs. `update` combines scalar, body,
+`create` accepts a complete proposed record and optional initial relationship IDs. Tasks and decisions allocate their
+declared numeric families. A fresh roadmap allocates `ROADMAP-001`; an existing roadmap with one coherent numeric family
+continues that family, while mixed or non-numeric existing IDs require an explicit ID. Vision themes always require
+semantic slug IDs. `update` combines scalar, body,
 and relationship changes, so inverse links and ledgers are part of the same validated candidate. The engine owns
 allocatable IDs, `last_updated`, `modified` provenance, canonical reference metadata, inverse closure, projection,
 and final validation. Agent adapters can submit several create/update operations together through `vef create batch`
@@ -237,7 +240,14 @@ without maintaining their own canonical Markdown serializer.
 
 A pre-existing title/heading mismatch remains blocking unless the update names the authority explicitly with
 `--authority frontmatter` or `--authority heading`. That exception repairs only the named record's title mismatch;
-unrelated malformed state still blocks the complete transaction.
+unrelated malformed state still blocks the complete transaction. Authority-only repair does not require an empty
+proposal file:
+
+```bash
+npx vef update TASK-013 --authority frontmatter --write
+```
+
+Run `npx vef update --help` for the `set`, `unset`, `body`, and relationship `set`/`add`/`remove` proposal grammar.
 
 VEF does not claim database-level filesystem atomicity. It records a versioned write-ahead journal before changing
 project files and serializes writers with a PID/host/timestamp lease. If a process stops, `check`, `setup`, and later
@@ -249,9 +259,17 @@ npx vef recover <transaction-id> --rollback
 npx vef recover <transaction-id> --forward
 ```
 
-Recovery is exceptional troubleshooting and therefore remains outside normal help. Cleanup failures from Windows,
-OneDrive, Dropbox, antivirus, or open editors are reported as warnings after a successful transaction; settled debris
-does not invalidate or block the project.
+`recover` is a visible break-glass command, not an adoption step. `doctor` also inventories writer lease families. If it
+reports malformed lease state, first confirm that no writer is active and then run:
+
+```bash
+npx vef recover leases
+```
+
+Fresh partial claims are preserved because they may still be in flight; `--force` is available only after the operator
+confirms that no writer is active. Recovery writes additive quarantine or settlement markers before best-effort cleanup,
+so failed deletion and synchronized-folder resurrection cannot restore ownership. Cleanup failures from Windows,
+OneDrive, Dropbox, antivirus, or open editors are warnings; settled debris does not invalidate or block the project.
 
 ### Query and maintain project state
 
@@ -301,7 +319,7 @@ VEF builds on the [Open Knowledge Format](https://github.com/GoogleCloudPlatform
 
 ## Contributing and status
 
-This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating the current source, treat its checks, versioned queries, per-item storage contract, deterministic projections, journaled mutations, consumer migration path, and CI gate as the implemented contract. The `0.3.0` package adds the verified transaction writer to the setup/check baseline. `/apply` remains the guarded agent-assisted semantic migration path.
+This is an early framework with a strong thesis and intentionally narrow scope. If you are evaluating the current source, treat its checks, versioned queries, per-item storage contract, deterministic projections, journaled mutations, consumer migration path, and CI gate as the implemented contract. The `0.3.0` package added the transaction writer; `0.3.1` hardens lease recovery and completes the adjacent authoring ergonomics. `/apply` remains the guarded agent-assisted semantic migration path.
 
 The most valuable contribution is helping make this statement literally true:
 

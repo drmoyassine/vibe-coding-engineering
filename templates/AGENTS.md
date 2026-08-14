@@ -17,8 +17,9 @@ Structured records live in `docs/vision/`, `docs/roadmap/`, `docs/tasks/`, and `
 Automated agents must author semantic proposal data and use `vef create`/`vef update`; they must not serialize
 canonical item Markdown, inverse links, or ledgers. Preview is the default and writes require `--write --actor <id>`.
 VEF owns IDs when omitted, dates, `modified` provenance, relationship closure, journaling, and validation. If a write
-is interrupted, stop for an explicit `vef recover <id> --forward|--rollback` direction. Direct human item editing is
-an escape hatch; after it, run:
+is interrupted, stop for an explicit `vef recover <id> --forward|--rollback` direction. If doctor reports malformed
+writer leases, confirm no writer is active and run `vef recover leases`; never delete lease files as a recovery policy.
+Direct human item editing is an escape hatch; after it, run:
 
 ```bash
 vef setup

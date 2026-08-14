@@ -98,7 +98,9 @@ vef update TASK-009 --from task-update.yml --write --actor agent/session
 
 Never let a skill or agent maintain its own frontmatter, inverse-link, ledger, or rollback serializer. The engine owns
 IDs when omitted, lifecycle dates, `modified` provenance, typed relationship closure, projection, validation, journal,
-and lease. An unresolved transaction requires explicit `vef recover <id> --forward|--rollback` direction.
+and lease. An unresolved transaction requires explicit `vef recover <id> --forward|--rollback` direction. If doctor
+reports malformed writer leases, confirm no writer is active and use `vef recover leases`; do not delete lease files
+manually.
 
 ## Key patterns
 

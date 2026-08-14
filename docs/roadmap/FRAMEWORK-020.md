@@ -35,6 +35,9 @@ related_tasks:
   - id: TASK-031
     name: Release and prove the VEF 0.2 adoption lifecycle
     url: /TASKS.md#TASK-031
+  - id: TASK-043
+    name: Test typed-graph positioning and the VEF descriptor
+    url: /TASKS.md#TASK-043
 related_decisions:
   - id: DEC-007
     name: Separate core enforcement from agent adapter compatibility
@@ -47,8 +50,8 @@ related_decisions:
     url: /DECISIONS.md#DEC-009
 last_updated: '2026-08-14'
 modified:
-  by: agent/codex-release
-  at: '2026-08-14T15:47:16.538Z'
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 # FRAMEWORK-020 — Publish and publicly launch VEF
 

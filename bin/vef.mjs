@@ -143,25 +143,41 @@ program
 program
   .command('update <id>')
   .description('Preview or update one canonical record; relationships and inverse links are included')
-  .requiredOption('--from <file>', 'YAML/JSON proposal file, or - for stdin')
+  .option('--from <file>', 'YAML/JSON proposal file, or - for stdin (required except for authority-only repair)')
   .option('--dir <path>', 'project directory', '.')
   .option('--actor <actor>', 'provenance actor', 'process:vef-cli')
   .option('--authority <source>', 'repair a title/heading mismatch from frontmatter or heading')
   .option('--write', 'apply the previewed transaction')
   .option('--json', 'emit versioned JSON')
+  .addHelpText('after', `
+Proposal keys in the YAML/JSON file:
+  set: { status: completed }       replace ordinary fields
+  unset: [assignee]                remove ordinary fields
+  body: Updated semantic prose     replace the Markdown body
+  relationships:                  set/add/remove typed links with inverse closure
+    depends_on: { add: [TASK-009] }
+
+Authority-only title repair may omit --from:
+  vef update TASK-010 --authority frontmatter --write`)
   .action((id, opts) => runMutation(async () => {
     const { updateCommand } = await import('../src/commands/mutation.mjs');
     await updateCommand(id, opts);
   }));
 
 program
-  .command('recover <id>', { hidden: true })
-  .description('Recover an interrupted transaction explicitly')
+  .command('recover <id>')
+  .description('Recover an interrupted transaction or malformed writer leases explicitly')
   .option('--dir <path>', 'project directory', '.')
   .option('--forward', 'apply the complete staged candidate')
   .option('--rollback', 'restore the complete pre-transaction state')
-  .option('--force', 'overwrite transaction targets whose current hash is unrecognized')
+  .option('--force', 'overwrite unrecognized transaction targets, or quarantine a recent malformed lease after operator confirmation')
   .option('--actor <actor>', 'recovery provenance actor', 'process:vef-recover')
+  .addHelpText('after', `
+Journal recovery requires one direction:
+  vef recover <transaction-id> --forward|--rollback
+
+Malformed lease recovery is separate and preserves active writers:
+  vef recover leases`)
   .action((id, opts) => runMutation(async () => {
     if (opts.forward && opts.rollback) throw new Error('Choose exactly one of --forward or --rollback.');
     const { recoverCommand } = await import('../src/commands/mutation.mjs');

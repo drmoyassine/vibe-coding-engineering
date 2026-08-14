@@ -47,6 +47,11 @@ export async function validateCommand(opts) {
     log(`  ✗  ${message}`);
     recordIssue('error', 'transactions', message);
   }
+  for (const lease of transactionState.leases.blocking) {
+    const message = `Lease family ${lease.family} is malformed; confirm no writer is active, then run vef recover leases`;
+    log(`  ✗  ${message}`);
+    recordIssue('error', 'transactions', message);
+  }
 
   log('  ── Canonical storage ──');
   if (loaded.storage.mode === 'per-item') {

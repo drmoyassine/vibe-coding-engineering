@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { access, mkdir, open, readFile, readdir, rm } from 'node:fs/promises';
+import { access, mkdir, open, readFile, readdir, rm, stat } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -360,6 +360,28 @@ function propagateReferenceMetadata(model, changed, metadataChanged) {
 }
 
 function allocateId(type, model) {
+  if (type === 'roadmap') {
+    const ids = [...model.byKey.keys()]
+      .filter((key) => key.startsWith('roadmap:'))
+      .map((key) => key.slice('roadmap:'.length));
+    if (ids.length === 0) return 'ROADMAP-001';
+    const families = new Map();
+    for (const id of ids) {
+      const match = id.match(/^(.+)-(\d+)$/);
+      if (!match) {
+        throw new TransactionError(`Roadmap IDs do not form one coherent numeric family because "${id}" is non-numeric. Provide an explicit roadmap id.`);
+      }
+      const [, prefix, number] = match;
+      const values = families.get(prefix) || [];
+      values.push(Number(number));
+      families.set(prefix, values);
+    }
+    if (families.size !== 1) {
+      throw new TransactionError(`Roadmap IDs use mixed numeric families (${[...families.keys()].sort().join(', ')}). Provide an explicit roadmap id.`);
+    }
+    const [[prefix, values]] = families;
+    return `${prefix}-${String(Math.max(...values) + 1).padStart(3, '0')}`;
+  }
   const prefix = getSchema(type)?.idPrefix;
   if (!prefix) return null;
   let maximum = 0;
@@ -554,6 +576,12 @@ async function assertReadyProject(projectDir, operations = []) {
       pending: transactionState.unresolved.map(({ id, state }) => ({ id, state })),
     });
   }
+  if (transactionState.leases.blocking.length > 0) {
+    throw new TransactionError(
+      `Malformed transaction lease state blocks planning (${transactionState.leases.blocking.map((lease) => lease.family).join(', ')}). Run "vef recover leases" after confirming no writer is active.`,
+      { leases: transactionState.leases.blocking },
+    );
+  }
   const loaded = await loadCanonicalDocuments(projectDir);
   const repairs = authorityRepairs(cloneLoaded(loaded), operations);
   const issues = [];
@@ -636,6 +664,8 @@ export async function ensureTransactionRuntime(projectDir = '.') {
 }
 
 const LEASE_DIRECTORY = '_leases';
+const LEASE_MARKER_DIRECTORY = '_markers';
+const MALFORMED_LEASE_GRACE_MS = 2_000;
 const JOURNAL_MARKERS = {
   ready: 'READY.json',
   applying: 'APPLYING.json',
@@ -671,6 +701,16 @@ async function durableCreate(path, content) {
   }
 }
 
+async function readJsonResult(path) {
+  const raw = await readOptional(path);
+  if (raw === null) return { value: null, error: 'file disappeared during inspection' };
+  try {
+    return { value: JSON.parse(raw), error: null };
+  } catch (error) {
+    return { value: null, error: `invalid JSON (${error.message})` };
+  }
+}
+
 function processIsAlive(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
   try {
@@ -681,30 +721,235 @@ function processIsAlive(pid) {
   }
 }
 
-async function activeLeaseClaims(root, now = Date.now()) {
-  if (!(await exists(root))) return [];
-  const entries = await readdir(root, { withFileTypes: true });
-  const claims = [];
-  for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.endsWith('.json') || entry.name.endsWith('.released.json') || entry.name.endsWith('.renew.json')) continue;
-    const path = join(root, entry.name);
-    const claim = await readJson(path, 'Transaction lease claim');
-    if (!claim?.token || !claim?.acquiredAt || !claim?.expiresAt) {
-      throw new TransactionError(`Transaction lease claim is incomplete: ${path}`);
-    }
-    if (locallyReleasedLeases.has(claim.token) || await exists(join(root, `${claim.token}.released.json`))) continue;
-    const renewals = entries.filter((candidate) => candidate.isFile() && candidate.name.startsWith(`${claim.token}.`) && candidate.name.endsWith('.renew.json'));
-    let effectiveExpiry = Date.parse(claim.expiresAt);
-    for (const renewalEntry of renewals) {
-      const renewal = await readJson(join(root, renewalEntry.name), 'Transaction lease renewal');
-      if (renewal?.token !== claim.token || !renewal?.expiresAt) throw new TransactionError(`Transaction lease renewal is incomplete: ${join(root, renewalEntry.name)}`);
-      effectiveExpiry = Math.max(effectiveExpiry, Date.parse(renewal.expiresAt));
-    }
-    if (effectiveExpiry <= now) continue;
-    if (claim.host === hostname() && !processIsAlive(Number(claim.pid))) continue;
-    claims.push({ ...claim, expiresAt: new Date(effectiveExpiry).toISOString(), path });
+function leaseFamilyForFilename(filename) {
+  if (filename.endsWith('.released.json')) return `${filename.slice(0, -'.released.json'.length)}.json`;
+  if (filename.endsWith('.renew.json')) {
+    const stem = filename.slice(0, -'.renew.json'.length);
+    const separator = stem.indexOf('.');
+    return `${separator === -1 ? stem : stem.slice(0, separator)}.json`;
   }
-  return claims.sort((left, right) => String(left.acquiredAt).localeCompare(String(right.acquiredAt)) || String(left.token).localeCompare(String(right.token)));
+  return filename.endsWith('.json') ? filename : null;
+}
+
+async function markerMap(root) {
+  const directory = join(root, LEASE_MARKER_DIRECTORY);
+  if (!(await exists(directory))) return new Map();
+  const markers = new Map();
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+    const parsed = await readJsonResult(join(directory, entry.name));
+    const marker = parsed.value;
+    if (parsed.error || !marker?.family || !['quarantined', 'settled'].includes(marker?.state)) continue;
+    const list = markers.get(marker.family) || [];
+    list.push({ ...marker, path: join(directory, entry.name) });
+    markers.set(marker.family, list);
+  }
+  return markers;
+}
+
+async function inspectLeaseDirectory(root, now = Date.now()) {
+  if (!(await exists(root))) return [];
+  const entries = (await readdir(root, { withFileTypes: true }))
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.json'));
+  const markers = await markerMap(root);
+  const groups = new Map();
+  for (const entry of entries) {
+    const family = leaseFamilyForFilename(entry.name);
+    if (!family) continue;
+    const group = groups.get(family) || { family, entries: [] };
+    group.entries.push(entry.name);
+    groups.set(family, group);
+  }
+  for (const family of markers.keys()) {
+    if (!groups.has(family)) groups.set(family, { family, entries: [] });
+  }
+
+  const families = [];
+  for (const group of groups.values()) {
+    const familyMarkers = markers.get(group.family) || [];
+    const quarantine = familyMarkers.find((marker) => marker.state === 'quarantined');
+    const settlement = familyMarkers.find((marker) => marker.state === 'settled');
+    const tokenFromFilename = group.family.slice(0, -'.json'.length);
+    const claimName = group.entries.includes(group.family) ? group.family : null;
+    const releaseName = group.entries.find((name) => name === `${tokenFromFilename}.released.json`);
+    const renewalNames = group.entries.filter((name) => name.endsWith('.renew.json'));
+    let lastModified = 0;
+    for (const name of group.entries) {
+      try {
+        lastModified = Math.max(lastModified, (await stat(join(root, name))).mtimeMs);
+      } catch (error) {
+        if (error?.code !== 'ENOENT') throw error;
+      }
+    }
+    const base = {
+      family: group.family,
+      token: tokenFromFilename,
+      files: [...group.entries].sort(),
+      lastModifiedAt: lastModified ? new Date(lastModified).toISOString() : null,
+    };
+    if (quarantine) {
+      families.push({ ...base, state: 'quarantined', reason: quarantine.reason || 'explicitly quarantined', marker: quarantine.path });
+      continue;
+    }
+    if (settlement) {
+      families.push({ ...base, state: 'settled', reason: settlement.reason || 'confirmed inactive', marker: settlement.path });
+      continue;
+    }
+    if (releaseName || locallyReleasedLeases.has(tokenFromFilename)) {
+      families.push({ ...base, state: 'released', reason: 'writer recorded release' });
+      continue;
+    }
+    if (!claimName) {
+      if (renewalNames.length > 0) families.push({ ...base, state: 'orphan-renewal', reason: 'renewal exists without its base claim' });
+      continue;
+    }
+
+    const claimResult = await readJsonResult(join(root, claimName));
+    const claim = claimResult.value;
+    const acquiredAt = Date.parse(claim?.acquiredAt);
+    let effectiveExpiry = Date.parse(claim?.expiresAt);
+    const problems = [];
+    if (claimResult.error) problems.push(claimResult.error);
+    if (!claim?.token || !claim?.transactionId || !claim?.acquiredAt || !claim?.expiresAt || !claim?.host || !Number.isInteger(Number(claim?.pid))) {
+      problems.push('claim is missing token, transactionId, pid, host, acquiredAt, or expiresAt');
+    }
+    if (claim?.schemaVersion !== TRANSACTION_SCHEMA_VERSION) problems.push(`unsupported schemaVersion ${claim?.schemaVersion}`);
+    if (claim?.token && claim.token !== tokenFromFilename) problems.push(`claim token ${claim.token} does not match filename`);
+    if (!Number.isFinite(acquiredAt) || !Number.isFinite(effectiveExpiry) || effectiveExpiry < acquiredAt) problems.push('claim timestamps are invalid');
+
+    for (const renewalName of renewalNames) {
+      const renewalResult = await readJsonResult(join(root, renewalName));
+      const renewal = renewalResult.value;
+      const renewalExpiry = Date.parse(renewal?.expiresAt);
+      if (renewalResult.error) problems.push(`${renewalName}: ${renewalResult.error}`);
+      else if (renewal?.schemaVersion !== TRANSACTION_SCHEMA_VERSION || renewal?.token !== claim?.token || !Number.isFinite(renewalExpiry)) {
+        problems.push(`${renewalName}: renewal is incomplete or belongs to another token`);
+      } else {
+        effectiveExpiry = Math.max(effectiveExpiry, renewalExpiry);
+      }
+    }
+    if (problems.length > 0) {
+      families.push({ ...base, state: 'malformed', reason: [...new Set(problems)].join('; '), transactionId: claim?.transactionId || null });
+      continue;
+    }
+
+    const detail = { ...base, transactionId: claim.transactionId, pid: Number(claim.pid), host: claim.host, acquiredAt: claim.acquiredAt, expiresAt: new Date(effectiveExpiry).toISOString() };
+    if (effectiveExpiry <= now) families.push({ ...detail, state: 'expired', reason: 'effective expiry is in the past' });
+    else if (claim.host === hostname() && !processIsAlive(Number(claim.pid))) families.push({ ...detail, state: 'dead', reason: 'local owner process is no longer alive' });
+    else families.push({ ...detail, state: 'active', reason: 'owner may still be writing' });
+  }
+  return families.sort((left, right) => left.family.localeCompare(right.family));
+}
+
+/** Inventory writer lease families without treating malformed debris as an exception. */
+export async function inspectLeaseState(projectDir = '.', options = {}) {
+  const root = join(transactionRoot(projectDir), LEASE_DIRECTORY);
+  const families = await inspectLeaseDirectory(root, options.now ?? Date.now());
+  return {
+    families,
+    blocking: families.filter((family) => family.state === 'malformed'),
+    active: families.filter((family) => family.state === 'active'),
+  };
+}
+
+async function writeLeaseMarker(root, family, state, detail = {}) {
+  const directory = join(root, LEASE_MARKER_DIRECTORY);
+  await mkdir(directory, { recursive: true });
+  const at = new Date().toISOString();
+  const path = join(directory, `${Date.now()}-${randomUUID()}.json`);
+  await durableCreate(path, `${JSON.stringify({
+    schemaVersion: TRANSACTION_SCHEMA_VERSION,
+    family,
+    state,
+    at,
+    ...detail,
+  }, null, 2)}\n`);
+  return path;
+}
+
+async function cleanLeaseFamily(root, family, files, options = {}) {
+  const warnings = [];
+  for (const filename of files) {
+    try {
+      if (options.cleanupLeaseFile) await options.cleanupLeaseFile(join(root, filename));
+      else await removeWithRetry(join(root, filename), { force: true });
+    } catch (error) {
+      warnings.push(`Could not clean transaction lease debris ${join(root, filename)}: ${error.message}`);
+    }
+  }
+  return warnings;
+}
+
+async function sweepLeaseDebris(root, options = {}) {
+  const warnings = [];
+  const families = await inspectLeaseDirectory(root, options.now ?? Date.now());
+  const candidates = families
+    .filter((family) => ['expired', 'dead', 'released', 'orphan-renewal', 'quarantined', 'settled'].includes(family.state))
+    .filter((family) => !options.excludeFamilies?.has(family.family))
+    .slice(0, options.limit ?? 32);
+  for (const family of candidates) {
+    if (!['quarantined', 'settled'].includes(family.state)) {
+      try {
+        await writeLeaseMarker(root, family.family, 'settled', { reason: `${family.state}: ${family.reason}` });
+      } catch (error) {
+        warnings.push(`Could not settle transaction lease family ${family.family}: ${error.message}`);
+        continue;
+      }
+    }
+    warnings.push(...await cleanLeaseFamily(root, family.family, family.files, options));
+  }
+  return warnings;
+}
+
+/** Explicitly quarantine malformed lease families and settle provably inactive debris. */
+export async function recoverLeases(projectDir = '.', options = {}) {
+  const root = join(await ensureTransactionRuntime(projectDir), LEASE_DIRECTORY);
+  await mkdir(root, { recursive: true });
+  const now = options.now ?? Date.now();
+  const families = await inspectLeaseDirectory(root, now);
+  const recentMalformed = families.filter((family) => family.state === 'malformed'
+    && family.lastModifiedAt
+    && now - Date.parse(family.lastModifiedAt) < (options.malformedGraceMilliseconds ?? MALFORMED_LEASE_GRACE_MS));
+  if (recentMalformed.length > 0 && !options.force) {
+    throw new TransactionError(
+      `Refusing to quarantine ${recentMalformed.map((family) => family.family).join(', ')} because the malformed claim may still be in flight. Wait and retry, or use --force after confirming no writer is active.`,
+      { leases: recentMalformed },
+    );
+  }
+
+  const quarantined = [];
+  const warnings = [];
+  for (const family of families.filter((candidate) => candidate.state === 'malformed')) {
+    await writeLeaseMarker(root, family.family, 'quarantined', {
+      reason: family.reason,
+      actor: String(options.actor || 'process:vef-recover'),
+    });
+    quarantined.push(family.family);
+    warnings.push(...await cleanLeaseFamily(root, family.family, family.files, options));
+  }
+  warnings.push(...await sweepLeaseDebris(root, options));
+  const state = await inspectLeaseDirectory(root, now);
+  return {
+    quarantined,
+    active: state.filter((family) => family.state === 'active'),
+    families: state,
+    warnings,
+  };
+}
+
+async function activeLeaseClaims(root, now = Date.now()) {
+  const families = await inspectLeaseDirectory(root, now);
+  const malformed = families.filter((family) => family.state === 'malformed');
+  if (malformed.length > 0) {
+    throw new TransactionError(
+      `Malformed transaction lease state blocks mutations (${malformed.map((family) => family.family).join(', ')}). Run "vef recover leases" after confirming no writer is active.`,
+      { leases: malformed },
+    );
+  }
+  return families
+    .filter((family) => family.state === 'active')
+    .map((family) => ({ ...family, path: join(root, family.family) }))
+    .sort((left, right) => String(left.acquiredAt).localeCompare(String(right.acquiredAt)) || String(left.token).localeCompare(String(right.token)));
 }
 
 async function acquireLease(projectDir, transactionId, options = {}) {
@@ -726,32 +971,11 @@ async function acquireLease(projectDir, transactionId, options = {}) {
   await durableCreate(claimPath, `${JSON.stringify(claim, null, 2)}\n`);
   await delay(options.settleMilliseconds ?? 75);
 
-  const assertOwned = async () => {
-    let active = await activeLeaseClaims(root);
-    let winner = active[0];
-    if (!winner || winner.token !== token) {
-      throw new TransactionError(
-        winner
-          ? `Another VEF mutation holds the lease (${winner.transactionId}, pid ${winner.pid}, ${winner.host}).`
-          : `Mutation lease ${token} expired before the transaction completed.`,
-        { lease: winner || claim },
-      );
-    }
-    const renewedAt = new Date();
-    const renewal = {
-      schemaVersion: TRANSACTION_SCHEMA_VERSION,
-      token,
-      renewedAt: renewedAt.toISOString(),
-      expiresAt: new Date(renewedAt.getTime() + leaseMilliseconds).toISOString(),
-    };
-    await durableCreate(join(root, `${token}.${renewedAt.getTime()}-${randomUUID()}.renew.json`), `${JSON.stringify(renewal, null, 2)}\n`);
-    active = await activeLeaseClaims(root);
-    winner = active[0];
-    if (!winner || winner.token !== token) throw new TransactionError(`Mutation lease ${token} lost ownership during renewal.`, { lease: winner || claim });
-  };
-  await assertOwned();
+  const warnings = await sweepLeaseDebris(root, {
+    ...options,
+    excludeFamilies: new Set([`${token}.json`]),
+  });
 
-  const warnings = [];
   const release = async () => {
     locallyReleasedLeases.add(token);
     const releasedPath = join(root, `${token}.released.json`);
@@ -779,6 +1003,36 @@ async function acquireLease(projectDir, transactionId, options = {}) {
     }
     return warnings;
   };
+
+  const assertOwned = async () => {
+    let active = await activeLeaseClaims(root);
+    let winner = active[0];
+    if (!winner || winner.token !== token) {
+      throw new TransactionError(
+        winner
+          ? `Another VEF mutation holds the lease (${winner.transactionId}, pid ${winner.pid}, ${winner.host}).`
+          : `Mutation lease ${token} expired before the transaction completed.`,
+        { lease: winner || claim },
+      );
+    }
+    const renewedAt = new Date();
+    const renewal = {
+      schemaVersion: TRANSACTION_SCHEMA_VERSION,
+      token,
+      renewedAt: renewedAt.toISOString(),
+      expiresAt: new Date(renewedAt.getTime() + leaseMilliseconds).toISOString(),
+    };
+    await durableCreate(join(root, `${token}.${renewedAt.getTime()}-${randomUUID()}.renew.json`), `${JSON.stringify(renewal, null, 2)}\n`);
+    active = await activeLeaseClaims(root);
+    winner = active[0];
+    if (!winner || winner.token !== token) throw new TransactionError(`Mutation lease ${token} lost ownership during renewal.`, { lease: winner || claim });
+  };
+  try {
+    await assertOwned();
+  } catch (error) {
+    await release();
+    throw error;
+  }
 
   return { claim, assertOwned, release, warnings };
 }
@@ -810,16 +1064,18 @@ async function readJournalDirectory(directory, fallbackId) {
 /** Inspect durable journals without modifying or automatically recovering them. */
 export async function inspectTransactionState(projectDir = '.') {
   const root = transactionRoot(projectDir);
-  if (!(await exists(root))) return { unresolved: [], settled: [] };
+  if (!(await exists(root))) return { unresolved: [], settled: [], leases: { families: [], blocking: [], active: [] } };
   const entries = await readdir(root, { withFileTypes: true });
   const journals = [];
   for (const entry of entries) {
     if (!entry.isDirectory() || entry.name === LEASE_DIRECTORY) continue;
     journals.push(await readJournalDirectory(join(root, entry.name), entry.name));
   }
+  const leases = await inspectLeaseState(projectDir);
   return {
     unresolved: journals.filter((journal) => !['completed', 'rolled-back'].includes(journal.state)),
     settled: journals.filter((journal) => ['completed', 'rolled-back'].includes(journal.state)),
+    leases,
   };
 }
 

@@ -89,6 +89,8 @@ export async function inspectCore(targetDir) {
     state = 'NOT_ADOPTED';
   } else if (transactionState.unresolved.length > 0) {
     state = 'TRANSACTION_RECOVERY_REQUIRED';
+  } else if (transactionState.leases.blocking.length > 0) {
+    state = 'LEASE_RECOVERY_REQUIRED';
   } else if (
     missingDocuments.length > 0
     || memoryIssues.length > 0
@@ -182,6 +184,23 @@ export async function doctorCommand(opts) {
     }
   }
   if (core.transactionState.settled.length > 0) log(`  ⚠  ${core.transactionState.settled.length} settled journal(s) remain as harmless cleanup debris`);
+  const leaseFamilies = core.transactionState.leases.families;
+  if (leaseFamilies.length === 0) log('  ✓  No writer lease debris');
+  for (const lease of leaseFamilies) {
+    const detail = lease.transactionId ? ` (${lease.transactionId})` : '';
+    if (lease.state === 'active') {
+      log(`  ○  ${lease.family}: active${detail}; wait for the writer to finish`);
+    } else if (lease.state === 'malformed') {
+      log(`  ✗  ${lease.family}: malformed — ${lease.reason}`);
+      log('     Recovery: confirm no writer is active, then run vef recover leases');
+    } else if (lease.state === 'quarantined') {
+      log(`  ⚠  ${lease.family}: quarantined; ownership is disabled and debris is harmless`);
+    } else if (lease.state === 'settled') {
+      log(`  ○  ${lease.family}: settled; retained additive marker protects against sync resurrection`);
+    } else {
+      log(`  ⚠  ${lease.family}: ${lease.state} — ${lease.reason}; run vef recover leases or allow the next mutation to sweep it`);
+    }
+  }
 
   log('  ── Core documents ──');
   for (const entry of core.documentPresence) log(`  ${entry.present ? '✓' : '✗'}  ${entry.doc}`);
@@ -210,6 +229,7 @@ export async function doctorCommand(opts) {
   const stateMessage = {
     NOT_ADOPTED: 'NOT ADOPTED — run vef setup',
     TRANSACTION_RECOVERY_REQUIRED: 'TRANSACTION RECOVERY REQUIRED — choose explicit roll-forward or rollback before any further write',
+    LEASE_RECOVERY_REQUIRED: 'LEASE RECOVERY REQUIRED — confirm no writer is active, then run vef recover leases',
     SEMANTIC_RECONCILIATION_REQUIRED: 'SEMANTIC RECONCILIATION REQUIRED — VEF will not invent or overwrite project meaning',
     STRUCTURALLY_REPAIRABLE: 'STRUCTURALLY REPAIRABLE — run vef setup',
     CORE_ENFORCED: 'CORE ENFORCED — canonical project memory satisfies the deterministic contract',

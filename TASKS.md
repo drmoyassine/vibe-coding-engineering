@@ -598,14 +598,22 @@ depends_on:
   - id: TASK-031
     name: Release and prove the VEF 0.2 adoption lifecycle
     url: /TASKS.md#TASK-031
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
 related_decisions:
   - id: DEC-003
     name: Make the Integrity Core authoritative and keep agent adapters portable
     url: /DECISIONS.md#DEC-003
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
-Publish a compact sample repository or walkthrough covering the `setup` → semantic-reconciliation-if-needed → `check` lifecycle, structured records, queries, managed CI enforcement, and agent-adapter boundaries. Establish GitHub Issues/Discussions or an equally explicit public feedback path without creating a duplicate internal bug ledger.
+After the public 0.3.1 hardening proof, publish a compact sample repository or walkthrough covering `setup` → semantic reconciliation if needed → `check`, transactional create/update with inverse closure, recovery, structured queries, managed CI enforcement, and agent-adapter boundaries.
+
+Establish GitHub Issues/Discussions or an equally explicit feedback path without creating a duplicate internal bug ledger. Publish GitHub CI/release evidence for maintainers and teach consumers to run `vef check`; do not imply that VEF's excluded internal test suite belongs in the npm package.
 
 ---
 
@@ -629,14 +637,25 @@ depends_on:
   - id: TASK-018
     name: Publish adoption examples and a public feedback loop
     url: /TASKS.md#TASK-018
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+  - id: TASK-043
+    name: Test typed-graph positioning and the VEF descriptor
+    url: /TASKS.md#TASK-043
 related_decisions:
   - id: DEC-008
     name: Bootstrap npm manually, then use staged trusted publishing
     url: /DECISIONS.md#DEC-008
-last_updated: '2026-08-13'
+last_updated: '2026-08-14'
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
-Define the launch sequence, public posts, calls to action, adoption checkpoints, and feedback review cadence. Distribution through independently governed channels is outside this repository's canonical product plan.
+Define the launch sequence, public posts, calls to action, adoption checkpoints, and feedback review cadence. Broad or paid promotion must wait for the public 0.3.1 hardening proof, the controlled effectiveness evidence, and tested typed-graph positioning.
+
+Distribution through independently governed channels remains outside this repository's canonical product plan. Claims must distinguish proven structural integrity from measured—and still bounded—agent inheritance effects.
 
 ---
 
@@ -933,6 +952,455 @@ Completed 2026-08-14. The adoption-lifecycle release was proven across every dec
 
 TASK-018 and TASK-019 are no longer blocked by the lifecycle release. FRAMEWORK-022 subsequently delivered deterministic day-to-day record writes so public examples no longer need to teach manual inverse-link bookkeeping.
 
+---
+
+## TASK-032 — Recover safely from malformed and accumulated lease claims
+
+---
+id: TASK-032
+title: Recover safely from malformed and accumulated lease claims
+description: >-
+  Quarantine uncertain lease debris, expose diagnosis and recovery, and sweep stale families without weakening writer
+  serialization.
+status: completed
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-023
+  name: Harden public transactional authoring
+  url: /ROADMAP.md#FRAMEWORK-023
+related_decisions:
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+related_bugs:
+  - id: '3'
+    name: Malformed lease claim can permanently block every mutation
+    url: https://github.com/drmoyassine/vibe-engineering-framework/issues/3
+modified:
+  by: agent/codex-implementation
+  at: '2026-08-14T16:42:38.334Z'
+---
+
+Completed 2026-08-14 for the 0.3.1 candidate. Lease inspection now classifies active, malformed, quarantined, expired, dead, released, settled, and orphan-renewal families without throwing on uncertain JSON. `vef doctor` reports every family and an exact remedy; malformed state blocks setup, check, planning, and writes until explicit `vef recover leases` quarantine.
+
+Recovery preserves fresh possibly in-flight claims unless the operator confirms `--force`, never settles active writers, writes additive quarantine or settlement markers before best-effort deletion, and retains those markers against synchronized-folder resurrection. New mutations sweep at most 32 provably inactive families while cleanup failures remain warnings. A failed lease race now releases the losing claim instead of adding avoidable debris.
+
+Fault tests cover malformed JSON, fresh partial claims, active writers, dead/expired/released claims, orphan renewals, hard process termination, sync resurrection, failed deletion, competing writers, and successful mutation plus strict check after recovery. GitHub issue #3 remains the release-tracking bug until TASK-035 proves the public package.
+
+---
+
+## TASK-033 — Make roadmap ID allocation predictable
+
+---
+id: TASK-033
+title: Make roadmap ID allocation predictable
+description: Allocate roadmap IDs in fresh and coherent existing projects while explaining mixed-prefix ambiguity.
+status: completed
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-023
+  name: Harden public transactional authoring
+  url: /ROADMAP.md#FRAMEWORK-023
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+related_bugs:
+  - id: '4'
+    name: Roadmap creation cannot auto-allocate a record ID
+    url: https://github.com/drmoyassine/vibe-engineering-framework/issues/4
+modified:
+  by: agent/codex-implementation
+  at: '2026-08-14T16:42:38.334Z'
+---
+
+Completed 2026-08-14 for the 0.3.1 candidate. Roadmap creation without an ID now allocates `ROADMAP-001` in a fresh collection and continues the next number when every existing roadmap ID belongs to one coherent numeric prefix such as `FRAMEWORK-*`.
+
+Mixed numeric families and non-numeric existing IDs produce a direct explicit-ID error rather than guessing. Explicit roadmap IDs remain schema-valid for compatibility, and vision records still require semantic slug IDs. Tests cover fresh allocation, inferred continuation, mixed-family refusal, and the unchanged vision boundary. GitHub issue #4 remains open through public-package proof in TASK-035.
+
+---
+
+## TASK-034 — Complete authoring help and break-glass CLI ergonomics
+
+---
+id: TASK-034
+title: Complete authoring help and break-glass CLI ergonomics
+description: Make authority-only repair usable, document update proposals, and surface recover as an explicit diagnostic command.
+status: completed
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-023
+  name: Harden public transactional authoring
+  url: /ROADMAP.md#FRAMEWORK-023
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+related_bugs:
+  - id: '5'
+    name: Title-authority repair unnecessarily requires an empty proposal file
+    url: https://github.com/drmoyassine/vibe-engineering-framework/issues/5
+modified:
+  by: agent/codex-implementation
+  at: '2026-08-14T16:42:38.334Z'
+---
+
+Completed 2026-08-14 for the 0.3.1 candidate. `vef update <id> --authority frontmatter|heading` now works without an empty proposal file, while every ordinary update still fails clearly unless `--from` is supplied.
+
+Normal `update --help` documents `set`, `unset`, `body`, and relationship grammar. `vef recover` is visible as a break-glass command, with separate journal and lease examples; README, shipped agent templates, and dogfood agent instructions distinguish recovery from the two-command setup/check adoption lifecycle. GitHub issue #5 remains open through public-package proof in TASK-035.
+
+---
+
+## TASK-035 — Release and publicly prove VEF 0.3.1
+
+---
+id: TASK-035
+title: Release and publicly prove VEF 0.3.1
+description: Publish the transaction-hardening patch and independently verify every repaired public CLI path from the registry.
+status: in-progress
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-023
+  name: Harden public transactional authoring
+  url: /ROADMAP.md#FRAMEWORK-023
+depends_on:
+  - id: TASK-032
+    name: Recover safely from malformed and accumulated lease claims
+    url: /TASKS.md#TASK-032
+  - id: TASK-033
+    name: Make roadmap ID allocation predictable
+    url: /TASKS.md#TASK-033
+  - id: TASK-034
+    name: Complete authoring help and break-glass CLI ergonomics
+    url: /TASKS.md#TASK-034
+related_decisions:
+  - id: DEC-008
+    name: Bootstrap npm manually, then use staged trusted publishing
+    url: /DECISIONS.md#DEC-008
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+modified:
+  by: agent/codex-release
+  at: '2026-08-14T16:43:48.683Z'
+---
+
+Run the complete release gate on Ubuntu and Windows, stage the tagged artifact through trusted publishing, require human 2FA approval, and verify registry hashes and provenance.
+
+Public-registry acceptance must include malformed-lease diagnosis/recovery, debris sweep behavior, fresh and inferred roadmap allocation, authority-only repair without a proposal, update grammar help, visible recover guidance, fresh setup, and strict check. Broad promotion remains blocked until this task completes.
+
+---
+
+## TASK-036 — Classify and implement isolated deterministic repairs
+
+---
+id: TASK-036
+title: Classify and implement isolated deterministic repairs
+description: >-
+  Distinguish mechanically safe repairs from semantic reconciliation and permit partial work only when isolation is
+  provable.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-023
+  name: Harden public transactional authoring
+  url: /ROADMAP.md#FRAMEWORK-023
+depends_on:
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
+related_decisions:
+  - id: DEC-009
+    name: Make setup and check the complete public adoption lifecycle
+    url: /DECISIONS.md#DEC-009
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Define an operation matrix: always mechanical repairs such as ledger projection and managed-CI refresh; explicitly authoritative repairs such as title/heading selection; and ambiguous repairs such as conflicting IDs, missing semantic relationships, or record-type changes.
+
+Doctor must show safe candidate repairs, interpretation blockers, and expected residual state. Independent partial repair is allowed only when the transaction engine proves the operation cannot leave a harder canonical recovery state. Arbitrary best-effort repair remains out of scope.
+
+---
+
+## TASK-037 — Ship versioned JSON Schemas and vef schema
+
+---
+id: TASK-037
+title: Ship versioned JSON Schemas and vef schema
+description: >-
+  Provide editor-compatible record schemas and deterministic schema discovery without overstating record-local
+  validation.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-024
+  name: Ship schema and editor interoperability
+  url: /ROADMAP.md#FRAMEWORK-024
+depends_on:
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
+related_decisions:
+  - id: DEC-002
+    name: Adopt the OKF v0.2 pattern (index.md, log.md, actor convention, trust signals) with product-doc extensions
+    url: /DECISIONS.md#DEC-002
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Generate and publish versioned JSON Schema artifacts for task, roadmap, decision, vision, references, and provenance from the authoritative executable schema. Add `vef schema`, `vef schema task`, and JSON output suitable for editor configuration and external tooling.
+
+Package-export and artifact-drift tests must prove the JSON Schemas match the executable field contract. Documentation must state that only `vef check` can validate graph-wide inverses, targets, duplicates, cycles, projections, and catalogue coherence.
+
+---
+
+## TASK-038 — Decide and migrate roadmap-to-vision cardinality
+
+---
+id: TASK-038
+title: Decide and migrate roadmap-to-vision cardinality
+description: >-
+  Decide whether roadmap items may serve multiple vision themes and implement a backward-compatible pre-1.0 migration if
+  accepted.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-024
+  name: Ship schema and editor interoperability
+  url: /ROADMAP.md#FRAMEWORK-024
+depends_on:
+  - id: TASK-037
+    name: Ship versioned JSON Schemas and vef schema
+    url: /TASKS.md#TASK-037
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Record a durable decision before changing the model. Evaluate singular `vision_theme` against plural `vision_themes`, inverse-link semantics, query behavior, generated ledgers, adapters, JSON Schema, and existing consumer migration.
+
+If plural is accepted, provide an idempotent migration from one object to an array, preserve strict validation throughout, and document compatibility before 1.0. Do not silently change cardinality in place.
+
+---
+
+## TASK-039 — Freeze the controlled VEF effectiveness evaluation protocol
+
+---
+id: TASK-039
+title: Freeze the controlled VEF effectiveness evaluation protocol
+description: >-
+  Define equivalent isolated conditions, fixtures, blinded scoring, and measurable outcomes before running the
+  comparison.
+status: in-progress
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-025
+  name: Prove VEF effectiveness before broad promotion
+  url: /ROADMAP.md#FRAMEWORK-025
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Extend the existing 17-record authoring trace into a controlled inheritance study rather than treating engine conformance as product proof. Freeze repository fixtures, prompts, model/settings, success rubrics, raters, and analysis before observing comparative results.
+
+Required measures are settled decisions inherited correctly, unnecessary re-litigation, roadmap/task intent preservation, structural errors, task outcome quality, authoring and maintenance overhead, tokens, and elapsed time. Define the minimum sample and uncertainty reporting; prohibit marketing interpretation from changing the scoring protocol after results are seen.
+
+---
+
+## TASK-040 — Run the blinded comparative VEF effectiveness evaluation
+
+---
+id: TASK-040
+title: Run the blinded comparative VEF effectiveness evaluation
+description: Execute equivalent bare-documentation and VEF inheritance sessions and score them without condition-aware judgment.
+status: pending
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-025
+  name: Prove VEF effectiveness before broad promotion
+  url: /ROADMAP.md#FRAMEWORK-025
+depends_on:
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
+  - id: TASK-039
+    name: Freeze the controlled VEF effectiveness evaluation protocol
+    url: /TASKS.md#TASK-039
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Run the frozen protocol against the public hardened transaction release. Require a repository-plus-ordinary-agent-docs condition and the equivalent VEF condition; include an ADR or Markdown-vault comparison only if equivalence can be defended.
+
+Preserve raw outputs, deterministic structural results, scorer notes, tokens, elapsed time, failures, and deviations. Blinded scoring must be reproducible and limitations must be reported alongside aggregate results.
+
+---
+
+## TASK-041 — Publish VEF effectiveness evidence and gate broad claims
+
+---
+id: TASK-041
+title: Publish VEF effectiveness evidence and gate broad claims
+description: Publish reproducible evaluation results and constrain launch claims to what the evidence actually supports.
+status: pending
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-025
+  name: Prove VEF effectiveness before broad promotion
+  url: /ROADMAP.md#FRAMEWORK-025
+depends_on:
+  - id: TASK-040
+    name: Run the blinded comparative VEF effectiveness evaluation
+    url: /TASKS.md#TASK-040
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Publish the protocol, fixtures, anonymized outputs where safe, scoring rubric, results, uncertainty, and limitations. Distinguish structural conformance, authoring convenience, inheritance quality, and end-task quality rather than collapsing them into one success claim.
+
+Strong marketing claims and paid promotion remain blocked until this task is reviewed. A null or negative result must change positioning or product priorities rather than being hidden.
+
+---
+
+## TASK-042 — Decide whether VEF needs namespaced record extensions
+
+---
+id: TASK-042
+title: Decide whether VEF needs namespaced record extensions
+description: Use adoption evidence to decide whether extension schemas are warranted without fragmenting the core vocabulary.
+status: pending
+priority: P3
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-026
+  name: Evaluate namespaced record-type extensions
+  url: /ROADMAP.md#FRAMEWORK-026
+depends_on:
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Collect concrete unmet record-type needs from adopters after the controlled evaluation and public feedback loop. Compare mapping into the four core types against namespaced extensions.
+
+If extensions are warranted, write a decision covering namespace ownership, schema discovery, graph edges, validation, query behavior, migrations, and the rule that extensions cannot weaken or redefine core records. Do not implement a generic plugin mechanism without this evidence.
+
+---
+
+## TASK-043 — Test typed-graph positioning and the VEF descriptor
+
+---
+id: TASK-043
+title: Test typed-graph positioning and the VEF descriptor
+description: Lead with validated project-memory graph value and test audience response before considering any product rename.
+status: pending
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+roadmap_item:
+  id: FRAMEWORK-020
+  name: Publish and publicly launch VEF
+  url: /ROADMAP.md#FRAMEWORK-020
+depends_on:
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+Test a sharper descriptor such as “The validated project-memory graph for AI-assisted engineering” against the current public narrative. Measure comprehension of validated inverses, durable inheritance, and the deterministic/agent boundary.
+
+Collect audience evidence before considering a rename. Keep “Vibe Engineering Framework” unless tested confusion materially outweighs its connection to the discipline; record any naming change as a separate durable decision.
+
 <!-- End VEF generated items. -->
 
 ## Summary
@@ -966,8 +1434,21 @@ TASK-018 and TASK-019 are no longer blocked by the lifecycle release. FRAMEWORK-
 | TASK-029 | Core enforcement and adapter separation | completed | P0 |
 | TASK-030 | Simplify the complete VEF adoption lifecycle | completed | P0 |
 | TASK-031 | Release and prove the VEF 0.2 adoption lifecycle | completed | P0 |
+| TASK-032 | Recover safely from malformed and accumulated lease claims | completed | P0 |
+| TASK-033 | Make roadmap ID allocation predictable | completed | P1 |
+| TASK-034 | Complete authoring help and break-glass CLI ergonomics | completed | P1 |
+| TASK-035 | Release and publicly prove VEF 0.3.1 | in-progress | P0 |
+| TASK-036 | Classify and implement isolated deterministic repairs | pending | P1 |
+| TASK-037 | Publish versioned JSON Schemas and `vef schema` | pending | P1 |
+| TASK-038 | Decide and migrate roadmap-to-vision cardinality | pending | P1 |
+| TASK-039 | Freeze the controlled VEF effectiveness evaluation | in-progress | P0 |
+| TASK-040 | Run the blinded VEF inheritance comparison | pending | P0 |
+| TASK-041 | Publish VEF effectiveness evidence and gate broad claims | pending | P0 |
+| TASK-042 | Decide namespaced record-type extension policy | pending | P3 |
+| TASK-043 | Test typed-graph positioning and the VEF descriptor | pending | P1 |
 
-**Next priority:** TASK-018 and TASK-019 resume the public examples, feedback, and distribution work now that
-FRAMEWORK-022 no longer requires examples to teach manual inverse bookkeeping. TASK-025 then TASK-026 continue the
-lightweight human-review workspace against the new candidate-diff/transaction boundary. TASK-016 is cosmetic and
-TASK-027 remains adapter-specific follow-up. Consumer and commercial priorities stay in their owning repositories.
+**Next priority:** TASK-035 now releases and publicly proves 0.3.1 after TASK-032 through TASK-034 passed the full source
+and packed-artifact gates. TASK-039 may freeze the evaluation protocol concurrently, but TASK-040 waits for 0.3.1 and TASK-041 must publish
+the evidence before TASK-043 and broad distribution in TASK-019. After the hotfix, TASK-037/TASK-038 and TASK-025/
+TASK-026 can progress in parallel. TASK-036 permits only mechanically isolated repair, while TASK-042, TASK-016, and
+TASK-027 remain deferred or non-blocking. Consumer and commercial priorities stay in their owning repositories.

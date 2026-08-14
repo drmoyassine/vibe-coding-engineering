@@ -530,6 +530,9 @@ related_tasks:
   - id: TASK-031
     name: Release and prove the VEF 0.2 adoption lifecycle
     url: /TASKS.md#TASK-031
+  - id: TASK-043
+    name: Test typed-graph positioning and the VEF descriptor
+    url: /TASKS.md#TASK-043
 related_decisions:
   - id: DEC-007
     name: Separate core enforcement from agent adapter compatibility
@@ -542,8 +545,8 @@ related_decisions:
     url: /DECISIONS.md#DEC-009
 last_updated: '2026-08-14'
 modified:
-  by: agent/codex-release
-  at: '2026-08-14T15:47:16.538Z'
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
 ---
 
 `0.2.0` completed the verified two-command adoption lifecycle on 2026-08-14: public latest acquisition, clean setup/check, and two representative consumer upgrades all passed. `0.3.0` then made FRAMEWORK-022's transaction writer publicly available. TASK-018 and TASK-019 can now resume public examples, feedback, and distribution without teaching manual inverse-link bookkeeping as the normal authoring experience.
@@ -589,6 +592,167 @@ Completed 2026-08-14 and released in VEF 0.3.0. VEF now has two public day-to-da
 
 DEC-010 governs the immutable journal, additive state markers, renewable stale-tolerant lease, direct retrying Windows writes, non-fatal cleanup debris, and explicit recovery. TASK-013 through TASK-015 shipped as one boundary and the frozen 17-record engine replay reaches strict integrity without manual inverse repair. The next product track can use the candidate diff and exported transaction contract for lightweight human review.
 
+---
+
+## FRAMEWORK-023 — Harden public transactional authoring
+
+---
+id: FRAMEWORK-023
+title: Harden public transactional authoring
+description: >-
+  Remove the confirmed 0.3.0 write-recovery failure and finish the minimum authoring CLI contract before further
+  promotion.
+phase: Phase 3 — Transactional Project Memory
+status: In Progress
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+  - id: DEC-010
+    name: Use a versioned VEF journal and stale-tolerant lease lock for mutations
+    url: /DECISIONS.md#DEC-010
+related_tasks:
+  - id: TASK-032
+    name: Recover safely from malformed and accumulated lease claims
+    url: /TASKS.md#TASK-032
+  - id: TASK-033
+    name: Make roadmap ID allocation predictable
+    url: /TASKS.md#TASK-033
+  - id: TASK-034
+    name: Complete authoring help and break-glass CLI ergonomics
+    url: /TASKS.md#TASK-034
+  - id: TASK-035
+    name: Release and publicly prove VEF 0.3.1
+    url: /TASKS.md#TASK-035
+  - id: TASK-036
+    name: Classify and implement isolated deterministic repairs
+    url: /TASKS.md#TASK-036
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+VEF 0.3.0 proved inverse closure, interruption recovery, concurrency, and Windows-safe writes, but independent fault injection found one adoption blocker: a malformed lease claim can brick every mutation without a CLI remedy. This track owns the 0.3.1 hotfix and the directly adjacent authoring defects and break-glass usability gaps.
+
+Promotion remains paused until TASK-032 and TASK-035 prove malformed lease recovery from the public package. TASK-033 and TASK-034 complete the small, backward-compatible authoring fixes in the same release boundary. TASK-036 then narrows any further repair behavior by mechanical isolation rather than permitting arbitrary partial canonical writes.
+
+---
+
+## FRAMEWORK-024 — Ship schema and editor interoperability
+
+---
+id: FRAMEWORK-024
+title: Ship schema and editor interoperability
+description: >-
+  Expose versioned JSON Schemas and a discoverable schema CLI while keeping graph-wide validation authoritative in vef
+  check.
+phase: Phase 4 — Schema Interoperability
+status: Deferred
+priority: P1
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+related_decisions:
+  - id: DEC-002
+    name: Adopt the OKF v0.2 pattern (index.md, log.md, actor convention, trust signals) with product-doc extensions
+    url: /DECISIONS.md#DEC-002
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+related_tasks:
+  - id: TASK-037
+    name: Ship versioned JSON Schemas and vef schema
+    url: /TASKS.md#TASK-037
+  - id: TASK-038
+    name: Decide and migrate roadmap-to-vision cardinality
+    url: /TASKS.md#TASK-038
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+The executable schema and package export serve JavaScript integrations, but they do not satisfy the original editor/tooling requirement. This track ships versioned JSON Schema artifacts and `vef schema` discovery, explicitly limiting JSON Schema to record-local structure while `vef check` remains authoritative for inverse links, duplicates, cycles, projections, and catalogue coherence.
+
+The roadmap-to-vision cardinality question is resolved here through a durable decision and backward-compatible migration rather than an incidental field edit.
+
+---
+
+## FRAMEWORK-025 — Prove VEF effectiveness before broad promotion
+
+---
+id: FRAMEWORK-025
+title: Prove VEF effectiveness before broad promotion
+description: >-
+  Run a controlled, blinded comparison that measures whether VEF improves agent inheritance enough to justify strong
+  public claims.
+phase: Phase 2 — Evidence-Gated Public Launch
+status: In Progress
+priority: P0
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+related_tasks:
+  - id: TASK-039
+    name: Freeze the controlled VEF effectiveness evaluation protocol
+    url: /TASKS.md#TASK-039
+  - id: TASK-040
+    name: Run the blinded comparative VEF effectiveness evaluation
+    url: /TASKS.md#TASK-040
+  - id: TASK-041
+    name: Publish VEF effectiveness evidence and gate broad claims
+    url: /TASKS.md#TASK-041
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+VEF's structural contract is tested, but its load-bearing product claim—better project inheritance across agent sessions—has not been measured. This track freezes the protocol before running it, compares equivalent isolated sessions, publishes limitations as well as results, and gates broad or paid promotion on evidence rather than conviction.
+
+Metrics include settled decisions inherited correctly, unnecessary re-litigation, roadmap/task intent preservation, structural errors, task outcome quality, authoring overhead, tokens, and elapsed time. A bare documentation condition and a VEF condition are required; an ADR or Markdown-vault condition is optional if it can be held equivalent.
+
+---
+
+## FRAMEWORK-026 — Evaluate namespaced record-type extensions
+
+---
+id: FRAMEWORK-026
+title: Evaluate namespaced record-type extensions
+description: >-
+  Collect real adoption demand before deciding whether VEF should support extension schemas beyond its four
+  interoperable core record types.
+phase: Phase 5 — Extensibility
+status: Deferred
+priority: P3
+last_updated: '2026-08-14'
+generated:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+related_decisions:
+  - id: DEC-003
+    name: Make the Integrity Core authoritative and keep agent adapters portable
+    url: /DECISIONS.md#DEC-003
+related_tasks:
+  - id: TASK-042
+    name: Decide whether VEF needs namespaced record extensions
+    url: /TASKS.md#TASK-042
+modified:
+  by: agent/codex-planning
+  at: '2026-08-14T16:25:57.181Z'
+---
+
+The fixed vision, roadmap, task, and decision vocabulary is an intentional interoperability constraint, not an accidental omission. This track remains deferred until evaluation and adoption evidence identify concrete missing record types. Any future design must namespace extensions and prevent them from weakening the core graph contract.
+
 <!-- End VEF generated items. -->
 
 ## Summary
@@ -599,15 +763,21 @@ DEC-010 governs the immutable journal, additive state markers, renewable stale-t
 | Phase 0 — Foundation | ✅ Completed | FRAMEWORK-001, -002, -003 |
 | Phase 1 — Queryable Project Memory | ✅ Completed | FRAMEWORK-018 |
 | Phase 2 — Public Launch | 🔄 In Progress | FRAMEWORK-020 |
+| Phase 2 — Evidence-Gated Public Launch | 🔄 In Progress | FRAMEWORK-025 |
 | Phase 2 — Canonical Record Storage | ✅ Completed | FRAMEWORK-019 |
 | Phase 2 — Human Review | 🔄 In Progress | FRAMEWORK-015 (parallel, non-blocking contract and workspace) |
 | Phase 3 — Transactional Project Memory | ✅ Completed | FRAMEWORK-022 |
+| Phase 3 — Transactional Project Memory | 🔄 In Progress | FRAMEWORK-023 (0.3.1 hardening) |
 | Phase 1 — Consumer Validation | ✅ Core completed | FRAMEWORK-004, -005, -006 completed; FRAMEWORK-007 deferred |
 | Phase 2 — Automation | ⏸ Deferred | FRAMEWORK-008, -009, -010 (consumer adapter only) |
 | Phase 3 — Generalization | ✅ Completed | FRAMEWORK-011, -012 (CLI + templates shipped) |
+| Phase 4 — Schema Interoperability | ⏸ Deferred | FRAMEWORK-024 |
 | Phase 4 — Advanced | ⏸ Deferred | FRAMEWORK-013, -014, -016 |
+| Phase 5 — Extensibility | ⏸ Deferred | FRAMEWORK-026 |
 
-**Next priority:** FRAMEWORK-020 resumes public examples and distribution using the completed FRAMEWORK-022 authoring
-boundary. FRAMEWORK-015 continues the lightweight human-review workspace against the new candidate diff; adapter-specific
-UI remains deferred under FRAMEWORK-016. Named consumer implementations and commercial programs remain canonical in
-their own repositories rather than VEF's roadmap.
+**Next priority:** FRAMEWORK-023 is the immediate release gate: TASK-032 through TASK-034 are complete, and TASK-035 must
+now release and publicly prove 0.3.1. FRAMEWORK-025
+may freeze its evaluation protocol in parallel, but evaluation execution waits for that hotfix and its published evidence
+gates broad promotion under FRAMEWORK-020. FRAMEWORK-024 and FRAMEWORK-015 follow as parallel interoperability and human-
+review tracks. FRAMEWORK-026 remains evidence-gated and deferred. Named consumer implementations and commercial programs
+remain canonical in their own repositories rather than VEF's roadmap.
