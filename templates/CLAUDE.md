@@ -16,6 +16,7 @@ Loaded at the start of every Claude session in this repo. This file covers proje
 | **`/bugs`** | Manage GitHub Issues (list, create, resolve, sync) | When triaging failures, when reporting bugs |
 | **`/decisions`** | Manage canonical `docs/decisions/` items and project DECISIONS.md | When making architectural/product decisions |
 | **`/apply`** | Migrate docs into the framework standard (multi-agent: discover → extract → cross-link → validate) | One-shot — adopting the framework, or migrating bare-ID docs to `id+name+url` |
+| **`/infrastructure`** | Opinionated infrastructure decisions — 2 questions auto-resolve 15+ platform-stack decisions with upgrade triggers, then generate a migration plan | Before production build-out; when moving an MVP to a real platform |
 
 Skills are **manual invoke only**. No auto-trigger.
 

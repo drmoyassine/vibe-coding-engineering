@@ -4,7 +4,7 @@ This file is loaded at the start of every Claude session in this repository. It 
 
 ## Project purpose
 
-**vibe-engineering-framework** is a structured documentation framework for AI-assisted product development. It's a meta-framework — a set of patterns, schemas, and a Claude skill suite (the **product-docs skills**: `/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`) that keep product documentation in sync, queryable, and discoverable.
+**vibe-engineering-framework** is a structured documentation framework for AI-assisted product development. It's a meta-framework — a set of patterns, schemas, and a Claude skill suite (the **product-docs skills**: `/tasks`, `/roadmap`, `/bugs`, `/decisions`, `/apply`, plus the **`/infrastructure`** skill for opinionated platform-stack decisions) that keep product documentation in sync, queryable, and discoverable.
 
 This repo is **not** an app. It defines a reusable system adopted by independently governed product repositories.
 

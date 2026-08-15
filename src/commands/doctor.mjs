@@ -16,7 +16,7 @@ import { migrateCommand } from './migrate.mjs';
 import { validateCommand } from './validate.mjs';
 
 const CORE_DOCUMENTS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md'];
-const CLAUDE_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
+const CLAUDE_SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs', 'infrastructure'];
 
 async function exists(path) {
   try {

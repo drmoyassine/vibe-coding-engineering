@@ -24,7 +24,7 @@ import { inspectTransactionState, TransactionError } from '../lib/transactions.m
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, '..', '..', 'templates');
 
-const SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs'];
+const SKILLS = ['apply', 'tasks', 'roadmap', 'decisions', 'bugs', 'infrastructure'];
 const FRAMEWORK_DOCS = ['VISION.md', 'ARCHITECTURE.md', 'ROADMAP.md', 'TASKS.md', 'DECISIONS.md', 'log.md', 'index.md'];
 
 async function exists(path) {

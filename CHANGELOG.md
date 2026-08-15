@@ -4,6 +4,13 @@ All notable changes to Vibe Engineering Framework are recorded here. Durable arc
 
 ## Unreleased
 
+## 0.4.0 — 2026-08-15
+
+### Added
+
+- `/infrastructure` skill: opinionated infrastructure decisions in two questions. Platform defaults (Supabase + Vercel / Cloudflare Workers) auto-resolve 15+ infrastructure decisions (database, auth, storage, caching, search, jobs, hosting, CI/CD, monitoring), each recorded as a canonical decision with an explicit upgrade trigger and upgrade path. Includes a migration planner that generates a day-by-day platform migration guide and implementation tasks; full custom-infrastructure grilling remains available for projects that genuinely need it.
+- `vef setup`, `vef migrate`, and `vef doctor` now install and recognize the `/infrastructure` adapter alongside the existing product-docs skills.
+
 ## 0.3.1 — 2026-08-14
 
 ### Fixed
