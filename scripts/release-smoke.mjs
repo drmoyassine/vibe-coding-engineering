@@ -48,7 +48,10 @@ try {
     '--pack-destination',
     artifactsDir,
   ], repoDir);
-  const [{ filename }] = JSON.parse(packed.stdout);
+  const packResult = JSON.parse(packed.stdout);
+  const filename = Array.isArray(packResult)
+    ? packResult[0].filename
+    : packResult[Object.keys(packResult)[0]].filename;
   const tarball = join(artifactsDir, filename);
 
   console.log('Installing the artifact into an isolated project...');
